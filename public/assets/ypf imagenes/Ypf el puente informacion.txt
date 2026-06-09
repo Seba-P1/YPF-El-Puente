@@ -1,0 +1,17 @@
+Estoy armando un nuevo proyecto. Esta ves el cliente es YPF.
+Quieren construir una pagina web para mostrar un menu digital que también tengo que hacerlo yo. 
+Es de la localidad de Rio Colorado, Rio Negro, y se va a llamar YPf - El Puente.
+La idea es que en la pagina tengan información especifica de los combustibles, del Boxes, y del FULL que es a lo que le quieren dar prioridad. 
+El Full tiene que ser una pagina aparte, donde va a estar el menu principal. Quieren que esta pagina sea idéntica a la pagina oficial que es: https://full.ypf.com 
+Tengo que copiar el diseño esacto para respetar la identidad de marca. El tema es que ellos quieren poder ir modificando cosas, cambiando precios, cambiando imágenes. Entonces esto lo vamos hacer desde un Panel de Administrador, que también tenemos que crear. Las imágenes tienen que estar sobre el lienzo de la pagina, y tienen que ser png sin fondo, para que se adapten al fondo, tal como esta la pagina oficial. En el panel tenemos que tener un apartado para poder cargar archivos excel o de diferentes formatos de donde vamos a extraer la información de los productos que manda ypf central, con sus códigos y con sus precios actualizados. La idea es que cuando llega un cambio de precios, yo pueda subir este archivo, y la base de datos que va a ser Supabase, cambie los valores de los precios actualizados y los muestre en la pagina. 
+Tenemos que ver como extaer todo de la pagina oficial, para poder hacer esto perfecto. 
+Luego ese menu digital, va a tener los productos con las imágenes sin fondo, las personas que ingresan tienen que poder ver los productos cargados, con su información, y precio actualizado, y agregarlos a un carrito. De ese carrito, no vamos a implementar medios de pago, sino que vamos a darle un botón directo a whatsapp integrado para que me envie este carrito al whatsapp de ypf y desde ahi continúen con la operación. 
+
+Estuve extrayendo del código fuente de la pagina en la consola todas las imágenes del full de la ypf oficial para usar en la otra pagina. Quiero que la pagina del full sea igual y funcione como se ve en la oficial. 
+La landing page vamos a usar los tonos y todo las visuales y fuentes como se ven en la oficial de ypf en combustibles, pero le vamos a dar un toque un poco nuestro ya que va a ser la YPF - El Puente. Ellos tienen logos específicos para esto, que me lo van a compartir luego. 
+se tiene que adaptar perfectamente a todos los dispositivos. en pc con sus proporciones, y en celular tiene que sentirse nativo de celulares.
+
+Usa la skill taste-skill de: ________https://github.com/leonxlnx/taste-skill________ Quiero que tengas instalada a esa skill y que la uses para mejorar todo lo que sea visual, frontend, efectos, animaciones, y todo lo referido a UX/UI. Cada cosa que haya que hacer con respecto a esto, usa la skill. Si crees conveniente agregar algun cambio en la ui para que se vea perfecto hazlo, al igual que agregar efectos, animaciones y todo usando esa skill.
+Quiero que tengas en cuenta que debe verse perfecto en celulares, con las dimensiones necesarias, y tambien en la PC o dispositivos de estas dimensiones. Hay que ser profesional en la ejecucion de estas cosas de UX/UI. Para las proporciones y diseño estructural de todo usa esta skill: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+
+

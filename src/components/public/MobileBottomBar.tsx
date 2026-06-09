@@ -1,0 +1,86 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Home, UtensilsCrossed, Car, ShoppingCart } from 'lucide-react'
+import { useCartStore } from '@/stores/cart'
+
+export function MobileBottomBar() {
+  const pathname = usePathname()
+  const { totalItems, openCart } = useCartStore()
+
+  const isActive = (path: string, exact = false) =>
+    exact ? pathname === path : pathname.startsWith(path)
+
+  return (
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50"
+      style={{
+        background: 'rgba(6,8,15,0.92)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
+      <div className="flex items-center justify-around h-16 px-2">
+        <Link
+          href="/"
+          className="flex flex-col items-center justify-center w-full h-full space-y-1"
+          style={{ color: isActive('/', true) ? '#FFD100' : 'rgba(248,250,252,0.45)' }}
+        >
+          <Home style={{ width: 22, height: 22 }} />
+          <span style={{ fontSize: 10, fontWeight: 600 }}>Inicio</span>
+        </Link>
+        <Link
+          href="/full"
+          className="flex flex-col items-center justify-center w-full h-full space-y-1"
+          style={{ color: isActive('/full') ? '#FFD100' : 'rgba(248,250,252,0.45)' }}
+        >
+          <UtensilsCrossed style={{ width: 22, height: 22 }} />
+          <span style={{ fontSize: 10, fontWeight: 600 }}>Menú Full</span>
+        </Link>
+        <Link
+          href="/boxes"
+          className="flex flex-col items-center justify-center w-full h-full space-y-1"
+          style={{ color: isActive('/boxes') ? '#FFD100' : 'rgba(248,250,252,0.45)' }}
+        >
+          <Car style={{ width: 22, height: 22 }} />
+          <span style={{ fontSize: 10, fontWeight: 600 }}>Boxes</span>
+        </Link>
+        <button
+          onClick={openCart}
+          className="flex flex-col items-center justify-center w-full h-full space-y-1 cursor-pointer"
+          style={{ color: 'rgba(248,250,252,0.45)' }}
+        >
+          <div className="relative">
+            <ShoppingCart style={{ width: 22, height: 22 }} />
+            {totalItems > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: -6,
+                  right: -10,
+                  background: '#FFD100',
+                  color: '#000',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  borderRadius: 999,
+                  minWidth: 18,
+                  height: 18,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0 4px',
+                }}
+              >
+                {totalItems}
+              </span>
+            )}
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 600 }}>Carrito</span>
+        </button>
+      </div>
+    </nav>
+  )
+}

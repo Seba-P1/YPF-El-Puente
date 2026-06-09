@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+:root {
+  /* Fondos */
+  --bg-base:        #06080F;
+  --bg-elevated:    #0D1120;
+  --bg-card:        #111827;
+  --bg-card-hover:  #162033;
+
+  /* Bordes */
+  --border:         rgba(255,255,255,0.06);
+  --border-hover:   rgba(255,255,255,0.12);
+  --border-active:  rgba(0,112,192,0.5);
+
+  /* Texto */
+  --text-primary:   #F8FAFC;
+  --text-secondary: rgba(248,250,252,0.55);
+  --text-muted:     rgba(248,250,252,0.28);
+
+  /* Marca */
+  --ypf-blue:        #005A9C;
+  --ypf-blue-bright: #0070C0;
+  --ypf-blue-glow:   rgba(0,112,192,0.28);
+  --ypf-yellow:      #FFD100;
+  --ypf-yellow-dim:  rgba(255,209,0,0.15);
+  --whatsapp:        #25D366;
+
+  /* Radios */
+  --r-sm:  8px;
+  --r-md:  14px;
+  --r-lg:  22px;
+  --r-xl:  32px;
+  --r-full: 9999px;
+
+  /* Espaciado del layout */
+  --navbar-h:    68px;
+  --bottombar-h: 64px;
+  --page-max:    1280px;
+  --page-pad-x:  clamp(20px, 5vw, 80px);
+
+  /* ── Legacy compatibility ── */
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+  --color-ypf-blue: #005A9C;
+  --color-ypf-dark: #003C6E;
+  --color-ypf-gold: #FFD100;
+  --color-whatsapp: #25D366;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-montserrat);
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-montserrat), system-ui, -apple-system, sans-serif;
+}
+
+/* ── Smooth scroll ── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Marquee animation ── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  animation: marquee 22s linear infinite;
+}
+
+.marquee-wrapper:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* ── Scroll line animation ── */
+@keyframes scroll-line {
+  0%   { transform: scaleY(0); opacity: 0; }
+  50%  { transform: scaleY(1); opacity: 1; }
+  100% { transform: scaleY(0); opacity: 0; }
+}
+
+.animate-scroll-line {
+  animation: scroll-line 2s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+/* ── Pulse dot ── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ── Indeterminate progress bar animation for Excel upload ── */
+@keyframes progress {
+  0% {
+    left: -50%;
+    width: 40%;
+  }
+  100% {
+    left: 110%;
+    width: 40%;
+  }
+}
+
+/* ── Hide scrollbar for cart sidebar but keep functionality ── */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
