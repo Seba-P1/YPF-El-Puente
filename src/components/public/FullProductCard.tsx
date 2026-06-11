@@ -12,9 +12,10 @@ import type { Producto } from '@/lib/supabase/types'
 interface FullProductCardProps {
   producto: Producto
   index: number
+  layout?: 'carousel' | 'grid'
 }
 
-export function FullProductCard({ producto, index }: FullProductCardProps) {
+export function FullProductCard({ producto, index, layout = 'carousel' }: FullProductCardProps) {
   const [imgError, setImgError] = useState(false)
   const [isDesktop, setIsDesktop] = useState(true)
   const addItem = useCartStore((state) => state.addItem)
@@ -51,7 +52,7 @@ export function FullProductCard({ producto, index }: FullProductCardProps) {
       rest: {
         y: 0,
         scale: 1,
-        filter: 'drop-shadow(0px 20px 45px rgba(0,0,0,0.55))'
+        filter: 'drop-shadow(0px 30px 60px rgba(0,0,0,0.75))'
       },
       hover: {
         y: -12,
@@ -84,8 +85,9 @@ export function FullProductCard({ producto, index }: FullProductCardProps) {
       variants={containerVariants}
       whileHover={isDesktop ? 'hover' : undefined}
       animate="rest"
-      className="flex flex-col items-center relative"
+      className="flex flex-col items-center relative snap-center"
       style={{
+        flexShrink: 0,
         background: 'transparent',
         border: 'none',
         borderRadius: 0,
@@ -95,7 +97,10 @@ export function FullProductCard({ producto, index }: FullProductCardProps) {
       {/* 1. CONTENEDOR DE LA IMAGEN */}
       <motion.div
         variants={imageHoverVars}
-        className="relative flex items-center justify-center w-[220px] h-[220px] lg:w-[260px] lg:h-[260px]"
+        className={layout === 'grid'
+          ? "relative flex items-center justify-center w-full aspect-[4/3]"
+          : "relative flex items-center justify-center w-[85vw] max-w-[430px] aspect-[4/3] md:w-[470px] lg:w-[530px]"
+        }
         style={{ background: 'transparent' }}
       >
         {!imgError ? (
@@ -103,11 +108,11 @@ export function FullProductCard({ producto, index }: FullProductCardProps) {
             src={producto.imagen_url || `/assets/placeholder.png`}
             alt={producto.nombre}
             fill
-            sizes="(max-width: 1024px) 220px, 260px"
+            sizes="(max-width: 768px) 90vw, (max-width: 1024px) 470px, 530px"
             priority={index < 4}
             className="object-contain"
             style={{
-              filter: 'drop-shadow(0px 20px 45px rgba(0,0,0,0.55))'
+              filter: 'drop-shadow(0px 30px 60px rgba(0,0,0,0.75))'
             }}
             onError={() => setImgError(true)}
           />
@@ -128,7 +133,10 @@ export function FullProductCard({ producto, index }: FullProductCardProps) {
       </motion.div>
 
       {/* 2. INFORMACIÓN DEBAJO DE LA IMAGEN */}
-      <div className="pt-[14px] text-center w-full lg:w-[260px] flex flex-col items-center">
+      <div className={layout === 'grid'
+        ? "pt-[14px] text-center w-full flex flex-col items-center"
+        : "pt-[14px] text-center w-[85vw] max-w-[430px] md:w-[470px] lg:w-[530px] flex flex-col items-center"
+      }>
         <h3
           className="text-[13px] lg:text-[14px] font-bold text-white/90 text-center w-full"
           style={{

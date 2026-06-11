@@ -1,156 +1,229 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { FullProductCard } from './FullProductCard'
 import type { Categoria, Producto } from '@/lib/supabase/types'
+
+/*
+  STRUCTURE REPLICATING full.ypf.com:
+
+  <section>  ← solid background color, min-height: 100vh, position: relative
+    │
+    ├── <img back-X.webp> ← ABSOLUTE position top-right, decorative, NOT background
+    │   Width: ~55% of container, 100% height, object-fit: cover
+    │   z-index: 0, pointer-events: none
+    │
+    ├── [HEADER] ← relative, z-index: 1
+    │   ├── section tag in Caveat font
+    │   ├── H2 title in Montserrat Black
+    │   ├── subtitle
+    │   └── "Scrolleá para ver más →"
+    │
+    └── [HORIZONTAL SCROLL] ← overflow-x: auto, display: flex, ONE ROW
+        ├── Product 1 (large image, name below)
+        ├── Product 2
+        └── ...
+*/
 
 interface FullCategorySectionProps {
   id: string
   categoria: Categoria
   productos: Producto[]
-  imagenFondo: string
-  colorOverlay?: string
+  colorFondo: string
+  imagenBack: string
+  mandalaPosition?: 'top-right' | 'bottom-right' | 'top-left' | 'bottom-left'
+  sectionBgImage?: string
 }
 
 export function FullCategorySection({
   id,
   categoria,
   productos,
-  imagenFondo,
-  colorOverlay = 'rgba(0,0,0,0.5)'
+  colorFondo,
+  imagenBack,
+  mandalaPosition = 'top-right',
+  sectionBgImage,
 }: FullCategorySectionProps) {
-  const [bgError, setBgError] = useState(false)
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null)
 
-  // Fallbacks by category
-  const getFallbackGradient = () => {
-    switch (categoria.slug) {
-      case 'hamburguesas':
-        return 'linear-gradient(135deg, #1a0a00, #3a1500)'
-      case 'cafeteria':
-        return 'linear-gradient(135deg, #0a0500, #2a1a00)'
-      case 'marca_full':
-        return 'linear-gradient(135deg, #00051a, #001030)'
-      default:
-        return 'var(--bg-base)'
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = window.innerWidth > 768 ? 600 : 300
+      scrollContainerRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' })
     }
   }
 
   return (
     <motion.section
       id={id}
-      className="relative min-h-screen flex flex-col justify-center"
-      style={{ overflow: 'hidden' }} // Contenedor principal con overflow hidden (solo para la sección entera)
+      style={{
+        backgroundColor: colorFondo,
+        position: 'relative',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        padding: 'clamp(50px, 8vw, 80px) 0',
+        borderTop: '1px solid rgba(255,255,255,0.05)',
+      }}
     >
-      {/* FONDO */}
-      <div className="absolute inset-0 z-0" style={{ background: getFallbackGradient() }}>
-        {!bgError && (
-          <Image
-            src={imagenFondo}
-            alt=""
-            fill
-            className="object-cover object-center"
-            onError={() => setBgError(true)}
-          />
-        )}
-      </div>
-
-      {/* OVERLAY DE COLOR */}
-      <div 
-        className="absolute inset-0 z-[1]" 
-        style={{ background: colorOverlay }}
-      />
-
-      {/* DEGRADADO DE ENTRADA (Arriba) */}
-      <div 
-        className="absolute top-0 left-0 right-0 h-[200px] z-[2]"
-        style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)' }}
-      />
-
-      {/* DEGRADADO DE SALIDA (Abajo) */}
-      <div 
-        className="absolute bottom-0 left-0 right-0 h-[200px] z-[2]"
-        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}
-      />
-
-      {/* CONTENIDO SOBRE EL FONDO */}
-      <div className="relative z-10 w-full h-full flex flex-col justify-center pt-[60px] lg:pt-[100px]">
-        
-        {/* HEADER DE SECCIÓN */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="mx-auto w-full"
+      {/* REPEATING BACKGROUND PATTERN */}
+      {sectionBgImage && (
+        <div 
+          className="absolute inset-0 z-0 pointer-events-none"
           style={{
-            maxWidth: 'var(--page-max, 1280px)',
-            padding: '0 var(--page-pad-x, 24px)'
+            backgroundImage: `url('${sectionBgImage}')`,
+            backgroundSize: '600px',
+            backgroundRepeat: 'repeat',
+            opacity: 0.05
+          }}
+        />
+      )}
+
+      {/* DECORATIVE BACKGROUND IMAGE */}
+      <img
+        src={imagenBack}
+        alt=""
+        style={{
+          position: 'absolute',
+          top: mandalaPosition.includes('top') ? 0 : 'auto',
+          bottom: mandalaPosition.includes('bottom') ? 0 : 'auto',
+          right: mandalaPosition.includes('right') ? 0 : 'auto',
+          left: mandalaPosition.includes('left') ? 0 : 'auto',
+          width: 'clamp(250px, 35vw, 450px)',
+          height: 'auto',
+          objectFit: 'contain',
+          objectPosition: mandalaPosition.includes('left') ? 'left' : 'right',
+          opacity: 0.35,      /* más tenue */
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+
+      {/* SECTION HEADER */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-100px' }}
+        transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          paddingTop: 80,
+          paddingLeft: 'clamp(24px, 5vw, 80px)',
+          paddingRight: 'clamp(24px, 5vw, 80px)',
+          paddingBottom: 40,
+        }}
+      >
+        {/* 1. SECTION TAG — Caveat (script) font */}
+        <p
+          style={{
+            fontFamily: 'var(--font-caveat)',
+            fontSize: 'clamp(18px, 2.5vw, 26px)',
+            fontWeight: 600,
+            color: 'rgba(255,255,255,0.55)',
+            marginBottom: 8,
+            letterSpacing: '0.02em',
           }}
         >
-          <div className="text-[14px] font-semibold text-white/50 lowercase tracking-[0.1em]">
-            {categoria.nombre}
-          </div>
-          <h1 
-            className="font-black text-white leading-none mt-2"
-            style={{
-              fontSize: 'clamp(32px, 6vw, 72px)',
-              letterSpacing: '-0.03em',
-              maxWidth: '700px'
-            }}
-          >
-            {categoria.descripcion || categoria.nombre}
-          </h1>
-          {categoria.subtitulo && (
-            <p 
-              className="text-white/65 mt-3"
-              style={{ fontSize: 'clamp(15px, 2vw, 20px)' }}
-            >
-              {categoria.subtitulo}
-            </p>
-          )}
+          {categoria?.nombre?.toLowerCase() ?? id}
+        </p>
 
-          {/* INDICADOR DE SCROLL HORIZONTAL (Mobile Only) */}
-          <div className="lg:hidden mt-5 text-[12px] text-white/40 tracking-[0.08em] animate-pulse">
-            Scrolleá para ver más  →
-          </div>
-        </motion.div>
-
-        {/* ÁREA DE PRODUCTOS (Importante: visible overflow!) */}
-        <div 
-          className="w-full pt-[40px] pb-[80px]"
-          style={{ overflow: 'visible' }}
+        {/* 2. MAIN TITLE — Montserrat Black */}
+        <h2
+          style={{
+            fontFamily: 'var(--font-montserrat)',
+            fontSize: 'clamp(36px, 7vw, 80px)',
+            fontWeight: 900,
+            color: 'white',
+            lineHeight: 1.0,
+            letterSpacing: '-0.03em',
+            maxWidth: 700,
+            marginBottom: 12,
+          }}
         >
-          {/* Contenedor condicional: Scroll horizontal (Mobile) / Grid (Desktop) */}
-          <div 
-            className="flex lg:grid gap-[28px] lg:gap-y-[40px] lg:gap-x-[32px] overflow-x-auto lg:overflow-x-visible hide-scrollbar"
+          {categoria?.descripcion || categoria?.nombre}
+        </h2>
+
+        {/* 3. SUBTITLE */}
+        {categoria?.subtitulo && (
+          <p
             style={{
-              paddingLeft: 'var(--page-pad-x, 24px)',
-              paddingRight: 'var(--page-pad-x, 24px)',
-              paddingBottom: '32px', // Espacio extra para drop-shadow
-              scrollSnapType: 'x mandatory',
-              WebkitOverflowScrolling: 'touch',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-              maxWidth: 'var(--page-max, 1280px)',
-              margin: '0 auto',
+              fontSize: 'clamp(14px, 1.8vw, 20px)',
+              color: 'rgba(255,255,255,0.6)',
+              marginBottom: 20,
             }}
           >
-            {productos.map((producto, index) => (
-              <div 
-                key={producto.id}
-                className="shrink-0 lg:shrink"
-                style={{ scrollSnapAlign: 'start' }}
-              >
-                <FullProductCard 
-                  producto={producto} 
-                  index={index} 
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+            {categoria.subtitulo}
+          </p>
+        )}
 
+        {/* 4. SCROLL INDICATOR */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            color: 'rgba(255,255,255,0.35)',
+            fontSize: 13,
+            letterSpacing: '0.05em',
+          }}
+        >
+          <span>Scrolleá para ver más</span>
+          <span style={{ fontSize: 16 }}>→</span>
+        </div>
+      </motion.div>
+
+      {/* PRODUCTS ROW WRAPPER */}
+      <div className="relative w-full group">
+        {/* SCROLL BUTTONS (Desktop only) */}
+        <button
+          onClick={() => scroll('left')}
+          className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-black/40 hover:bg-black/80 rounded-full items-center justify-center text-white backdrop-blur-md border border-white/10 transition-all opacity-0 group-hover:opacity-100 shadow-xl"
+          aria-label="Scroll left"
+        >
+          <ChevronLeft size={24} />
+        </button>
+        <button
+          onClick={() => scroll('right')}
+          className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-black/40 hover:bg-black/80 rounded-full items-center justify-center text-white backdrop-blur-md border border-white/10 transition-all opacity-0 group-hover:opacity-100 shadow-xl"
+          aria-label="Scroll right"
+        >
+          <ChevronRight size={24} />
+        </button>
+
+        {/* PRODUCTS SCROLL CONTAINER */}
+        <div
+          ref={scrollContainerRef}
+          className="hide-scrollbar scroll-smooth snap-x snap-mandatory"
+          style={{
+            position: 'relative',
+            zIndex: 1,
+            display: 'flex',
+            flexDirection: 'row',
+            overflowX: 'auto',
+            overflowY: 'visible',
+            gap: 'clamp(16px, 2vw, 32px)',
+          paddingLeft: 'clamp(24px, 5vw, 80px)',
+          paddingRight: 'clamp(24px, 5vw, 80px)',
+          paddingBottom: 60,
+          paddingTop: 20,
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
+        {productos.map((producto, i) => (
+          <FullProductCard
+            key={producto.id}
+            producto={producto}
+            index={i}
+          />
+        ))}
+        </div>
       </div>
     </motion.section>
   )

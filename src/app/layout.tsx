@@ -1,11 +1,18 @@
 import type { Metadata } from 'next'
-import { Montserrat } from 'next/font/google'
+import { Montserrat, Caveat } from 'next/font/google'
 import './globals.css'
 
 const montserrat = Montserrat({
   variable: '--font-montserrat',
   subsets: ['latin'],
-  weight: ['400', '600', '700', '800'],
+  weight: ['400', '600', '700', '800', '900'],
+  display: 'swap',
+})
+
+const caveat = Caveat({
+  variable: '--font-caveat',
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
   display: 'swap',
 })
 
@@ -39,7 +46,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`${montserrat.variable} h-full antialiased`}>
+    <html lang="es" className={`${montserrat.variable} ${caveat.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-[family-name:var(--font-montserrat)]">
         {children}
       </body>

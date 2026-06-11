@@ -1,13 +1,15 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Instagram } from 'lucide-react'
 
 import { FullSearchBar } from '@/components/public/FullSearchBar'
 import { FullCategorySection } from '@/components/public/FullCategorySection'
 import { FullProductCard } from '@/components/public/FullProductCard'
+import { FullSustentabilidad } from '@/components/public/FullSustentabilidad'
+import { useSearchStore } from '@/stores/search'
 
 import type { Producto, Categoria } from '@/lib/supabase/types'
 
@@ -26,7 +28,6 @@ export default function FullClient({
 }: FullClientProps) {
   const [searchResults, setSearchResults] = useState<Producto[] | null>(null)
   const [isSearching, setIsSearching] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
 
   const handleScrollToStart = () => {
     const el = document.getElementById('hamburguesas')
@@ -34,6 +35,43 @@ export default function FullClient({
   }
 
   const [scrollScrolled, setScrollScrolled] = useState(false)
+  const query = useSearchStore((state) => state.query)
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+
+  const allProducts = useMemo(() => [...initialHamburguesas, ...initialCafeteria, ...initialMarcaFull], [initialHamburguesas, initialCafeteria, initialMarcaFull])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query)
+    }, 250)
+    return () => clearTimeout(timer)
+  }, [query])
+
+  useEffect(() => {
+    const q = debouncedQuery.trim()
+    if (q.length > 0) {
+      setIsSearching(true)
+      const targetQuery = q.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+      const filtrados = allProducts.filter(p => {
+        const nombreNorm = p.nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+        const descNorm = p.descripcion ? p.descripcion.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : ''
+        return nombreNorm.includes(targetQuery) || descNorm.includes(targetQuery)
+      })
+      setSearchResults(filtrados)
+      setTimeout(() => {
+        const el = document.getElementById('search-results')
+        if (el) {
+          const yOffset = -80 // height of header + padding
+          const y = el.getBoundingClientRect().top + window.scrollY + yOffset
+          window.scrollTo({ top: y, behavior: 'smooth' })
+        }
+      }, 150)
+    } else {
+      setIsSearching(false)
+      setSearchResults(null)
+    }
+  }, [debouncedQuery, allProducts])
+
   useEffect(() => {
     const onScroll = () => {
       setScrollScrolled(window.scrollY > 120)
@@ -45,8 +83,6 @@ export default function FullClient({
   const catHamb = initialCategorias.find(c => c.slug === 'hamburguesas') || { id: '1', nombre: 'hamburguesas', slug: 'hamburguesas', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 1, created_at: '' } as Categoria
   const catCaf = initialCategorias.find(c => c.slug === 'cafeteria') || { id: '2', nombre: 'cafetería', slug: 'cafeteria', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 2, created_at: '' } as Categoria
   const catFull = initialCategorias.find(c => c.slug === 'marca_full') || { id: '3', nombre: 'productos exclusivos full', slug: 'marca_full', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 3, created_at: '' } as Categoria
-
-  const allProducts = [...initialHamburguesas, ...initialCafeteria, ...initialMarcaFull]
 
   return (
     <main className="bg-black text-white relative">
@@ -61,25 +97,22 @@ export default function FullClient({
         }}
       >
         {/* FONDO RDP7 */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 bg-black">
           <picture>
-            <source media="(max-width: 768px)" srcSet="/assets/ypf imagenes/RDP7-mobile.webp" />
+            <source media="(max-width: 768px)" srcSet="/assets/ypf%20imagenes/RDP7-mobile.webp" />
             <img 
-              src="/assets/ypf imagenes/RDP7.webp" 
+              src="/assets/ypf%20imagenes/RDP7.webp" 
               alt="RDP7 YPF FULL"
-              className="w-full h-full object-cover object-center opacity-80"
+              className="w-full h-full object-cover object-center opacity-100"
             />
           </picture>
-          {/* Overlay sutil para oscurecer la imagen y que resalte el logo */}
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
         </div>
 
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="relative z-10 flex flex-col items-center drop-shadow-2xl"
+          className="relative z-10 hidden md:flex flex-col items-center drop-shadow-2xl"
         >
           <div className="relative w-[280px] h-[120px] md:w-[450px] md:h-[180px]">
             <Image
@@ -106,96 +139,180 @@ export default function FullClient({
         )}
       </section>
 
-      {/* 2. SEARCH BAR STICKY */}
-      <FullSearchBar 
-        productos={allProducts} 
-        onFilter={(resultados, query) => {
-          setIsSearching(query.length > 0)
-          setSearchResults(query.length > 0 ? resultados : null)
-          setSearchQuery(query)
-        }} 
-      />
+      {/* 2. CATEGORY PILLS (formerly SearchBar) */}
+      <FullSearchBar />
 
-      {/* 3A. RESULTADOS DE BÚSQUEDA */}
-      {isSearching && searchResults ? (
-        <section 
-          className="min-h-screen py-[60px]"
-          style={{ background: 'var(--bg-base)' }}
-        >
-          <div className="mx-auto" style={{ maxWidth: 'var(--page-max, 1280px)', padding: '0 var(--page-pad-x, 24px)' }}>
-            <h2 className="text-[22px] font-bold text-white">
-              Resultados para &apos;{searchQuery}&apos;
-            </h2>
-            <p className="text-[14px] text-white/50 mt-1 mb-8">
-              {searchResults.length} {searchResults.length === 1 ? 'producto encontrado' : 'productos encontrados'}
-            </p>
+      {/* 3A. RESULTADOS DE BÚSQUEDA Y SECCIONES */}
+      <AnimatePresence mode="wait">
+        {isSearching && searchResults ? (
+          <motion.section 
+            id="search-results"
+            key="search-results"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="min-h-screen py-[60px]"
+            style={{ background: 'var(--bg-base)' }}
+          >
+            <div className="mx-auto" style={{ maxWidth: 'var(--page-max, 1280px)', padding: '0 var(--page-pad-x, 24px)' }}>
+              <h2 className="text-[22px] font-bold text-white">
+                Resultados para &apos;{debouncedQuery}&apos;
+              </h2>
+              <p className="text-[14px] text-white/50 mt-1 mb-8">
+                {searchResults.length} {searchResults.length === 1 ? 'producto encontrado' : 'productos encontrados'}
+              </p>
 
-            {searchResults.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 lg:gap-8">
-                {searchResults.map((producto, index) => (
-                  <FullProductCard key={producto.id} producto={producto} index={index} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10 mt-8">
-                <p className="text-white/60">No encontramos &apos;{searchQuery}&apos; en nuestro menú.</p>
-              </div>
-            )}
-          </div>
-        </section>
-      ) : (
-        /* 3B. SECCIONES NORMALES */
-        <>
-          <FullCategorySection
-            id="hamburguesas"
-            categoria={catHamb}
-            productos={initialHamburguesas}
-            imagenFondo="/assets/ypf imagenes/back-4.webp"
-            colorOverlay="rgba(0,0,0,0.45)"
-          />
-          <FullCategorySection
-            id="cafeteria"
-            categoria={catCaf}
-            productos={initialCafeteria}
-            imagenFondo="/assets/ypf imagenes/back-2.webp"
-            colorOverlay="rgba(20,10,5,0.55)"
-          />
-          <FullCategorySection
-            id="productos-full"
-            categoria={catFull}
-            productos={initialMarcaFull}
-            imagenFondo="/assets/ypf imagenes/back-5.webp"
-            colorOverlay="rgba(0,5,20,0.55)"
-          />
-        </>
-      )}
+              {searchResults.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 lg:gap-8">
+                  {searchResults.map((producto, index) => (
+                    <FullProductCard key={producto.id} producto={producto} index={index} layout="grid" />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10 mt-8">
+                  <p className="text-white/60">No encontramos &apos;{debouncedQuery}&apos; en nuestro menú.</p>
+                </div>
+              )}
+            </div>
+          </motion.section>
+        ) : (
+          /* 3B. SECCIONES NORMALES */
+          <motion.div
+            key="normal-sections"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <FullCategorySection
+              id="hamburguesas"
+              categoria={catHamb}
+              productos={initialHamburguesas}
+              colorFondo="#1A0E00"
+              imagenBack="/assets/ypf imagenes/back-4.webp"
+              mandalaPosition="bottom-right"
+            />
+            <FullCategorySection
+              id="cafeteria"
+              categoria={catCaf}
+              productos={initialCafeteria}
+              colorFondo="#0D0800"
+              imagenBack="/assets/ypf imagenes/back-2.webp"
+              mandalaPosition="top-left"
+              sectionBgImage="/assets/ypf imagenes/bg.svg"
+            />
+            <FullCategorySection
+              id="productos-full"
+              categoria={catFull}
+              productos={initialMarcaFull}
+              colorFondo="#060810"
+              imagenBack="/assets/ypf imagenes/back-5.webp"
+              mandalaPosition="top-right"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* 4. SECCIÓN INSTAGRAM */}
+      {/* 4. SECCIÓN INSTAGRAM — @YPF.ELPUENTE */}
       <section className="bg-black py-[80px] border-t border-white/5">
         <div className="mx-auto" style={{ maxWidth: 'var(--page-max, 1280px)', padding: '0 var(--page-pad-x, 24px)' }}>
-          <div className="mb-10 text-center">
-            <span className="text-[11px] tracking-[0.2em] text-white/35 uppercase block mb-2">
-              Seguinos
-            </span>
-            <h2 
-              className="font-extrabold text-white leading-tight"
-              style={{ fontSize: 'clamp(24px, 4vw, 40px)' }}
+          <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
+            {/* QR Code */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.6 }}
+              className="flex-shrink-0"
             >
-              Seguinos en Instagram
-            </h2>
-            <p className="text-white/50 mt-2 mb-6">Enterate de todas las promociones</p>
-            <a 
-              href="https://instagram.com/ypffull" 
-              target="_blank" 
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+              <a
+                href="https://instagram.com/ypf.elpuente"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block relative group"
+              >
+                <div
+                  style={{
+                    width: 'clamp(200px, 30vw, 280px)',
+                    height: 'clamp(200px, 30vw, 280px)',
+                    transition: 'transform 0.3s, filter 0.3s',
+                  }}
+                  className="group-hover:scale-105"
+                >
+                  <Image
+                    src="/assets/instagram/QR-YPFinstagram.png"
+                    alt="QR Instagram @YPF.ELPUENTE"
+                    width={280}
+                    height={280}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </a>
+            </motion.div>
+
+            {/* Text content */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              className="text-center md:text-left"
             >
-              <Instagram size={20} />
-              <span className="font-semibold tracking-wide">@ypffull</span>
-            </a>
+              <p
+                style={{
+                  fontFamily: 'var(--font-caveat)',
+                  fontSize: 'clamp(18px, 2.5vw, 24px)',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.4)',
+                  marginBottom: 8,
+                }}
+              >
+                Seguinos
+              </p>
+              <h2
+                className="font-black text-white leading-tight"
+                style={{ fontSize: 'clamp(28px, 5vw, 48px)', letterSpacing: '-0.02em' }}
+              >
+                Seguinos en Instagram
+              </h2>
+              <p className="text-white/50 mt-3 mb-6" style={{ fontSize: 'clamp(14px, 1.6vw, 18px)' }}>
+                Enterate de todas las promociones, novedades y el día a día de YPF El Puente.
+              </p>
+              <a
+                href="https://instagram.com/ypf.elpuente"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 transition-colors group/link"
+                style={{ textDecoration: 'none' }}
+              >
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Instagram size={22} color="white" />
+                </div>
+                <span className="text-white/70 group-hover/link:text-white font-bold text-lg tracking-wide transition-colors">
+                  @YPF.ELPUENTE
+                </span>
+              </a>
+
+              <p className="text-white/20 text-xs mt-6">
+                Escaneá el código QR con tu celular para seguirnos
+              </p>
+            </motion.div>
           </div>
 
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-1 w-full">
+          {/* Instagram grid (fotos) */}
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-1 w-full mt-12">
             {[1, 2, 3, 4, 5, 6].map((num) => (
               <InstagramImage key={num} num={num} />
             ))}
@@ -203,7 +320,10 @@ export default function FullClient({
         </div>
       </section>
 
-      {/* 5. FOOTER SIMPLE */}
+      {/* 5. SUSTENTABILIDAD + MAPA */}
+      <FullSustentabilidad />
+
+      {/* 6. FOOTER SIMPLE */}
       <footer className="bg-black border-t border-white/5 py-[32px]">
         <div className="mx-auto flex flex-col items-center justify-center gap-6" style={{ maxWidth: 'var(--page-max, 1280px)', padding: '0 var(--page-pad-x, 24px)' }}>
           <Image
@@ -232,7 +352,7 @@ function InstagramImage({ num }: { num: number }) {
   if (error) {
     return (
       <a
-        href="https://instagram.com/ypffull"
+        href="https://instagram.com/ypf.elpuente"
         target="_blank"
         rel="noreferrer"
         className="relative aspect-square overflow-hidden group block"

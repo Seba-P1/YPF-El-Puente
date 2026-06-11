@@ -101,9 +101,8 @@ export function CartSidebar() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed top-0 right-0 bottom-0 z-50 flex flex-col"
+            className="fixed top-0 right-0 bottom-0 w-full md:w-[420px] z-50 flex flex-col"
             style={{
-              width: 'min(420px, 100vw)',
               background: '#0A0A0F',
               borderLeft: '1px solid rgba(255,255,255,0.07)',
             }}

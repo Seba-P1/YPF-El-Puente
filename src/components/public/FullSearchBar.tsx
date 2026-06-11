@@ -3,20 +3,13 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Search, X } from 'lucide-react'
 import { motion } from 'framer-motion'
-import type { Producto } from '@/lib/supabase/types'
+import { useSearchStore } from '@/stores/search'
 
-interface FullSearchBarProps {
-  productos: Producto[]
-  onFilter: (filtrados: Producto[], query: string) => void
-}
-
-export function FullSearchBar({ productos, onFilter }: FullSearchBarProps) {
-  const [query, setQuery] = useState('')
+export function FullSearchBar() {
   const [activePill, setActivePill] = useState('todos')
+  const [showSearch, setShowSearch] = useState(false)
+  const query = useSearchStore((state) => state.query)
   
-  // Ref para el timeout del debounce
-  const debounceRef = useRef<NodeJS.Timeout | null>(null)
-
   // Intersection Observer para actualizar el pill activo basado en scroll
   useEffect(() => {
     if (query.length > 0) return // No espiar secciones si estamos buscando
@@ -40,6 +33,12 @@ export function FullSearchBar({ productos, onFilter }: FullSearchBarProps) {
       if (el) observer.observe(el)
     })
     
+    // Observer para la barra superior flotante
+    const handleScroll = () => {
+      setShowSearch(window.scrollY > 300)
+    }
+    window.addEventListener('scroll', handleScroll)
+    
     // Un observer para el "top"
     const topObserver = new IntersectionObserver(
       ([entry]) => {
@@ -56,41 +55,14 @@ export function FullSearchBar({ productos, onFilter }: FullSearchBarProps) {
     return () => {
       observer.disconnect()
       topObserver.disconnect()
+      window.removeEventListener('scroll', handleScroll)
     }
   }, [query])
 
-  // Lógica de búsqueda con debounce
-  useEffect(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current)
-    }
-
-    debounceRef.current = setTimeout(() => {
-      const searchTerm = query.toLowerCase().trim()
-      
-      if (searchTerm === '') {
-        onFilter(productos, '')
-      } else {
-        const filtrados = productos.filter(p => 
-          p.nombre.toLowerCase().includes(searchTerm) || 
-          (p.descripcion && p.descripcion.toLowerCase().includes(searchTerm))
-        )
-        onFilter(filtrados, searchTerm)
-      }
-    }, 200)
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-    }
-  }, [query, productos, onFilter])
-
-  const handleClear = () => {
-    setQuery('')
-  }
-
   const handlePillClick = (id: string) => {
+    const setQuery = useSearchStore.getState().setQuery
     if (query.length > 0) {
-      handleClear() // Si estábamos buscando, limpiamos para poder ver las secciones
+      setQuery('') // Si estábamos buscando, limpiamos para poder ver las secciones
     }
     
     setActivePill(id)
@@ -114,57 +86,19 @@ export function FullSearchBar({ productos, onFilter }: FullSearchBarProps) {
 
   return (
     <div 
-      className="sticky z-40 w-full"
+      className={`fixed z-40 w-full transition-all duration-500 ease-in-out ${showSearch ? 'translate-y-0 opacity-100' : '-translate-y-[150%] opacity-0'}`}
       style={{
         top: '68px',
-        background: 'rgba(0,0,0,0.85)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
-        padding: '12px var(--page-pad-x, 24px)'
+        background: 'transparent',
+        borderBottom: 'none',
+        padding: '12px var(--page-pad-x, 24px)',
+        pointerEvents: 'none' // Evita que la franja invisible bloquee clics
       }}
     >
       <div 
         className="mx-auto flex flex-col md:flex-row gap-4 items-center"
-        style={{ maxWidth: 'var(--page-max, 1280px)' }}
+        style={{ maxWidth: 'var(--page-max, 1280px)', pointerEvents: 'auto' }}
       >
-        {/* BUSCADOR */}
-        <div className="relative flex-shrink-0 w-full md:w-[260px]">
-          <Search 
-            size={16} 
-            className="absolute left-3 top-1/2 -translate-y-1/2" 
-            style={{ color: 'rgba(255,255,255,0.4)' }}
-          />
-          <input
-            type="text"
-            placeholder="Buscar producto..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full pl-9 pr-8 py-2 text-sm text-white placeholder-white/35 rounded-full outline-none transition-all duration-200"
-            style={{
-              background: 'rgba(255,255,255,0.07)',
-              border: '1px solid rgba(255,255,255,0.1)'
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(0,112,192,0.6)'
-              e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
-              e.currentTarget.style.background = 'rgba(255,255,255,0.07)'
-            }}
-          />
-          {query.length > 0 && (
-            <button 
-              onClick={handleClear}
-              className="absolute right-3 top-1/2 -translate-y-1/2"
-              aria-label="Limpiar búsqueda"
-            >
-              <X size={16} style={{ color: 'rgba(255,255,255,0.6)' }} />
-            </button>
-          )}
-        </div>
-
         {/* PILLS DE CATEGORÍA */}
         <div className="flex gap-2 overflow-x-auto w-full flex-grow hide-scrollbar">
           {pills.map((pill) => {
@@ -175,7 +109,8 @@ export function FullSearchBar({ productos, onFilter }: FullSearchBarProps) {
                 onClick={() => handlePillClick(pill.id)}
                 className="relative px-4 py-1.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-200"
                 style={!isActive ? {
-                  background: 'rgba(255,255,255,0.06)',
+                  background: 'rgba(0,0,0,0.5)',
+                  backdropFilter: 'blur(10px)',
                   border: '1px solid rgba(255,255,255,0.1)',
                   color: 'rgba(255,255,255,0.6)'
                 } : {

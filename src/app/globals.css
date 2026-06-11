@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 :root {
+  /* Fuentes */
+  --font-caveat: 'Caveat', cursive;
+
   /* Fondos */
   --bg-base:        #06080F;
   --bg-elevated:    #0D1120;
