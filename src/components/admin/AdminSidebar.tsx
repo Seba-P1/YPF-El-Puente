@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { usePathname, useRouter } from 'next/navigation'
+import { useState } from 'react'
 import {
   LayoutDashboard,
   Package,
@@ -12,14 +12,14 @@ import {
   Settings,
   ExternalLink,
   LogOut,
-  Menu,
-  X,
+  User,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
 interface AdminSidebarProps {
   userEmail: string
+  className?: string
 }
 
 const NAV_LINKS = [
@@ -30,11 +30,11 @@ const NAV_LINKS = [
   { href: '/admin/configuracion', icon: Settings, label: 'Configuración' },
 ]
 
-export function AdminSidebar({ userEmail }: AdminSidebarProps) {
+export function AdminSidebar({ userEmail, className = '' }: AdminSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
-  const [isOpen, setIsOpen] = useState(false)
+  const [imgError, setImgError] = useState(false)
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -42,98 +42,136 @@ export function AdminSidebar({ userEmail }: AdminSidebarProps) {
     router.push('/login')
   }
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-100 flex flex-col items-center justify-center">
-        <div className="w-24 h-10 relative mb-4">
-          <Image
-            src="/assets/logo/logo-white-wide.png"
-            alt="YPF El Puente"
-            fill
-            className="object-contain filter invert"
-            priority
-          />
+  return (
+    <aside
+      className={`flex flex-col w-[224px] flex-shrink-0 h-screen overflow-y-auto overflow-x-hidden ${className}`}
+      style={{
+        background: '#0F172A',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+      }}
+    >
+      {/* HEADER */}
+      <div
+        className="flex flex-col px-4 pt-5 pb-4"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+      >
+        <div className="w-20 h-7 relative mb-2">
+          {!imgError ? (
+            <Image
+              src="/assets/logo/logo-white.svg"
+              alt="YPF"
+              fill
+              className="object-contain"
+              onError={() => setImgError(true)}
+              priority
+            />
+          ) : (
+            <span className="text-white font-black text-base">YPF</span>
+          )}
         </div>
-        <span className="text-xs font-bold tracking-widest text-[#005A9C] uppercase">
-          Admin Panel
-        </span>
-        <span className="text-xs text-gray-400 mt-1 truncate w-full text-center" title={userEmail}>
-          {userEmail}
+        <span
+          className="text-[11px] font-bold tracking-[0.08em] uppercase"
+          style={{ color: 'rgba(255,255,255,0.35)' }}
+        >
+          El Puente Admin
         </span>
       </div>
 
-      {/* Nav Links */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      {/* NAVEGACIÓN */}
+      <nav className="flex-1 px-2 py-3">
+        <span
+          className="block text-[10px] font-bold tracking-[0.12em] uppercase px-2 pb-1 pt-2"
+          style={{ color: 'rgba(255,255,255,0.25)' }}
+        >
+          Menú
+        </span>
+
         {NAV_LINKS.map((link) => {
           const isActive = pathname === link.href
           return (
             <Link
               key={link.href}
               href={link.href}
-              onClick={() => setIsOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${
-                isActive
-                  ? 'bg-[#005A9C] text-white shadow-md'
-                  : link.highlight
-                  ? 'bg-blue-50 text-[#005A9C] hover:bg-blue-100'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
+              className="flex items-center gap-[10px] px-[10px] py-2 rounded-lg mb-[2px] text-[13px] font-medium transition-all duration-150"
+              style={{
+                background: isActive
+                  ? 'rgba(0,90,156,0.9)'
+                  : link.highlight && !isActive
+                    ? 'rgba(255,209,0,0.08)'
+                    : 'transparent',
+                color: isActive ? 'white' : 'rgba(255,255,255,0.55)',
+                fontWeight: isActive ? 600 : 500,
+                borderLeft: link.highlight && !isActive ? '2px solid #FFD100' : '2px solid transparent',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.07)'
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.85)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.background = link.highlight ? 'rgba(255,209,0,0.08)' : 'transparent'
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.55)'
+                }
+              }}
             >
-              <link.icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} />
+              <link.icon
+                size={16}
+                className="flex-shrink-0"
+                style={{ color: isActive ? 'white' : 'rgba(255,255,255,0.4)' }}
+              />
               {link.label}
+              {link.highlight && !isActive && (
+                <span className="ml-auto text-[10px] font-bold text-[#FFD100]">⚡</span>
+              )}
             </Link>
           )
         })}
       </nav>
 
-      {/* Footer Actions */}
-      <div className="p-4 border-t border-gray-100 space-y-2">
+      {/* SEPARADOR */}
+      <div className="mx-2" style={{ height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+
+      {/* SECCIÓN INFERIOR */}
+      <div className="px-2 py-2">
         <Link
           href="/"
           target="_blank"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-[10px] px-[10px] py-2 rounded-lg text-[12px] transition-all duration-150"
+          style={{ color: 'rgba(255,255,255,0.4)' }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}
         >
-          <ExternalLink className="w-5 h-5" />
+          <ExternalLink size={16} className="flex-shrink-0" />
           Ver sitio web
         </Link>
         <button
           onClick={handleSignOut}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-red-600 hover:bg-red-50 transition-colors"
+          className="w-full flex items-center gap-[10px] px-[10px] py-2 rounded-lg text-[13px] font-medium transition-all duration-150"
+          style={{ color: 'rgba(239,68,68,0.7)' }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'rgb(239,68,68)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(239,68,68,0.7)'}
         >
-          <LogOut className="w-5 h-5" />
-          Cerrar Sesión
+          <LogOut size={16} className="flex-shrink-0" />
+          Cerrar sesión
         </button>
       </div>
-    </div>
-  )
 
-  return (
-    <>
-      {/* Mobile Toggle Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 right-4 z-50 p-2 bg-white rounded-lg shadow-md border border-gray-200 text-gray-700"
+      {/* EMAIL USUARIO */}
+      <div
+        className="flex items-center gap-2 px-[10px] py-3 mt-auto"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
       >
-        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-      </button>
-
-      {/* Mobile Overlay */}
-      {isOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
-      {/* Sidebar Desktop & Mobile */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 w-72 lg:w-64 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <SidebarContent />
-      </aside>
-    </>
+        <User size={14} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+        <span
+          className="text-[11px] truncate"
+          style={{ color: 'rgba(255,255,255,0.3)' }}
+          title={userEmail}
+        >
+          {userEmail}
+        </span>
+      </div>
+    </aside>
   )
 }

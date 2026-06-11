@@ -143,7 +143,7 @@ export function FullProductCard({ producto, index }: FullProductCardProps) {
 
         {producto.precio && producto.precio > 0 ? (
           <div className="text-[15px] font-extrabold text-[#FFD100] mt-1">
-            ${formatearPrecioARS(producto.precio)}
+            {formatearPrecioARS(producto.precio)}
           </div>
         ) : (
           <div className="text-[13px] font-semibold text-white/20 mt-1">

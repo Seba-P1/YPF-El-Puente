@@ -49,6 +49,21 @@ export async function updateProductoBadge(
   }
 }
 
+export async function updateProductoPrecio(
+  id: string,
+  precio: number
+): Promise<void> {
+  const supabase = (await createClient()) as any
+  const { error } = await supabase
+    .from('productos')
+    .update({ precio, updated_at: new Date().toISOString() })
+    .eq('id', id)
+
+  if (error) {
+    throw new Error(`Error updating precio: ${error.message}`)
+  }
+}
+
 export async function updateProductoImagen(
   id: string,
   imagenUrl: string,

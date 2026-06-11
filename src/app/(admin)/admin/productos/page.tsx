@@ -9,14 +9,23 @@ export default async function AdminProductosPage() {
   const productos = await getAllProductos()
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight">
-          Gestión de Productos
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0F172A' }}>
+          Productos
         </h1>
-        <p className="text-gray-500 mt-1">
-          Administrá la visibilidad, imágenes y etiquetas destacadas del menú.
-        </p>
+        <span
+          style={{
+            backgroundColor: '#EFF6FF',
+            color: '#005A9C',
+            fontSize: 12,
+            borderRadius: 9999,
+            padding: '3px 10px',
+            fontWeight: 600,
+          }}
+        >
+          {productos.length} productos
+        </span>
       </div>
 
       <ProductTable productos={productos} />

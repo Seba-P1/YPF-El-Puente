@@ -5,25 +5,30 @@ export function calculateTotal(items: CartItem[]): number {
   return items.reduce((sum, item) => sum + item.subtotal, 0)
 }
 
-export function generateWhatsAppURL(items: CartItem[], config: WhatsAppConfig): string {
-  if (!items || items.length === 0) {
-    return ''
-  }
+export function generateWhatsAppURL(
+  items: CartItem[],
+  config: WhatsAppConfig,
+  nombreCliente: string
+): string {
+  if (items.length === 0) return ''
 
-  let mensaje = `${config.header}\n${config.separator}`
+  const total = items.reduce((acc, item) => acc + item.subtotal, 0)
 
-  items.forEach(({ producto, cantidad, subtotal }) => {
-    const precioFmt = formatearPrecioARS(producto.precio)
-    const subtotalFmt = formatearPrecioARS(subtotal)
-    mensaje += `• ${cantidad}x ${producto.nombre}  (${precioFmt} c/u)  →  ${subtotalFmt}\n`
-  })
+  const lineasProductos = items
+    .map(
+      (item) =>
+        `• ${item.cantidad}× ${item.producto.nombre}  (${formatearPrecioARS(item.producto.precio)} c/u)  →  ${formatearPrecioARS(item.subtotal)}`
+    )
+    .join('\n')
 
-  const totalFmt = formatearPrecioARS(calculateTotal(items))
-  
-  mensaje += `${config.separator}💰 *Total Estimado:* ${totalFmt}\n${config.footer}`
+  const mensaje = `¡Hola! Soy *${nombreCliente}* y quiero hacer el siguiente pedido:
+${config.separator}
+${lineasProductos}
+${config.separator}
+💰 *Total estimado:* ${formatearPrecioARS(total)}
+${config.footer}`
 
   const mensajeCodificado = encodeURIComponent(mensaje)
-  
   return `https://wa.me/${config.numero}?text=${mensajeCodificado}`
 }
 

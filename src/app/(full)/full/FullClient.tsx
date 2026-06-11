@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ChevronDown, Instagram } from 'lucide-react'
@@ -197,21 +197,7 @@ export default function FullClient({
 
           <div className="grid grid-cols-3 md:grid-cols-6 gap-1 w-full">
             {[1, 2, 3, 4, 5, 6].map((num) => (
-              <a 
-                key={num}
-                href="https://instagram.com/ypffull" 
-                target="_blank" 
-                rel="noreferrer"
-                className="relative aspect-square overflow-hidden group block"
-              >
-                <Image
-                  src={`/assets/instagram/ig-${num}.webp`}
-                  alt={`Instagram FULL ${num}`}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
-              </a>
+              <InstagramImage key={num} num={num} />
             ))}
           </div>
         </div>
@@ -233,5 +219,52 @@ export default function FullClient({
         </div>
       </footer>
     </main>
+  )
+}
+
+const IG_COLORS = ['#1a1a2e', '#16213e', '#0f3460', '#e94560', '#533483', '#3b82f6']
+
+function InstagramImage({ num }: { num: number }) {
+  const [error, setError] = useState(false)
+
+  const handleError = useCallback(() => setError(true), [])
+
+  if (error) {
+    return (
+      <a
+        href="https://instagram.com/ypffull"
+        target="_blank"
+        rel="noreferrer"
+        className="relative aspect-square overflow-hidden group block"
+      >
+        <div
+          className="w-full h-full flex items-center justify-center"
+          style={{ backgroundColor: IG_COLORS[num - 1] ?? '#333' }}
+        >
+          <div className="text-center">
+            <div className="text-white/60 text-3xl font-bold">FULL</div>
+            <div className="text-white/30 text-xs mt-1">@{num}</div>
+          </div>
+        </div>
+      </a>
+    )
+  }
+
+  return (
+    <a
+      href="https://instagram.com/ypffull"
+      target="_blank"
+      rel="noreferrer"
+      className="relative aspect-square overflow-hidden group block"
+    >
+      <Image
+        src={`/assets/instagram/ig-${num}.webp`}
+        alt={`Instagram FULL ${num}`}
+        fill
+        className="object-cover transition-transform duration-500 group-hover:scale-105"
+        onError={handleError}
+      />
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
+    </a>
   )
 }

@@ -1,9 +1,19 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import { Search, ImageOff, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react'
-import { updateProductoDisponible, updateProductoBadge } from '@/lib/supabase/actions'
+import {
+  Search,
+  ImageOff,
+  Pencil,
+  Loader2,
+  ImagePlus,
+} from 'lucide-react'
+import {
+  updateProductoDisponible,
+  updateProductoBadge,
+  updateProductoPrecio,
+} from '@/lib/supabase/actions'
 import { formatearPrecioARS } from '@/lib/excel/parser'
 import type { Producto } from '@/types'
 import { toast } from 'sonner'
@@ -13,290 +23,457 @@ interface ProductTableProps {
   productos: Producto[]
 }
 
-const ITEMS_PER_PAGE = 20
+const ITEMS_POR_PAGINA = 20
+
+const CATEGORY_LABELS: Record<string, string> = {
+  hamburguesas: 'Hamburguesas',
+  cafeteria: 'Cafetería',
+  marca_full: 'Exclusivos Full',
+}
+
+const CATEGORY_STYLES: Record<string, { bg: string; color: string; border: string }> = {
+  hamburguesas: { bg: '#FFF7ED', color: '#C2410C', border: '#FED7AA' },
+  cafeteria: { bg: '#FFFBEB', color: '#B45309', border: '#FDE68A' },
+  marca_full: { bg: '#EFF6FF', color: '#1D4ED8', border: '#BFDBFE' },
+}
+
+const BADGE_STYLES: Record<string, { bg: string; color: string }> = {
+  NUEVA: { bg: '#FEF08A', color: '#000000' },
+  RECOMENDADO: { bg: '#3B82F6', color: '#FFFFFF' },
+  PROMO: { bg: '#EF4444', color: '#FFFFFF' },
+}
 
 export function ProductTable({ productos: initialProductos }: ProductTableProps) {
   const [productos, setProductos] = useState(initialProductos)
-  const [search, setSearch] = useState('')
-  const [filterCat, setFilterCat] = useState('all')
-  const [filterState, setFilterState] = useState('all')
-  const [page, setPage] = useState(1)
-  
-  // Image Uploader Modal State
-  const [uploaderOpen, setUploaderOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<{ id: string; nombre: string; imagen: string | null } | null>(null)
+  const [filtroNombre, setFiltroNombre] = useState('')
+  const [filtroCategoria, setFiltroCategoria] = useState<
+    'all' | 'hamburguesas' | 'cafeteria' | 'marca_full'
+  >('all')
+  const [filtroEstado, setFiltroEstado] = useState<
+    'all' | 'active' | 'inactive' | 'noprice'
+  >('all')
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [editandoPrecio, setEditandoPrecio] = useState<{
+    id: string
+    valor: string
+  } | null>(null)
+  const [guardandoPrecioId, setGuardandoPrecioId] = useState<string | null>(null)
+  const [imageUploadModal, setImageUploadModal] = useState<{
+    productoId: string
+    nombre: string
+    imagenActual: string | null
+  } | null>(null)
 
-  // Derived state: categories
-  const categories = useMemo(() => {
-    const cats = new Set(productos.map((p) => p.categoria_slug))
-    return Array.from(cats).sort()
-  }, [productos])
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  // Filtering
+  useEffect(() => {
+    if (editandoPrecio?.id) {
+      inputRef.current?.select()
+    }
+  }, [editandoPrecio?.id])
+
   const filteredProducts = useMemo(() => {
     return productos.filter((p) => {
-      // Search filter (name or PLU)
-      const matchesSearch = 
-        p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-        p.codigo_plu.toLowerCase().includes(search.toLowerCase())
-      
-      // Category filter
-      const matchesCat = filterCat === 'all' || p.categoria_slug === filterCat
-      
-      // State filter
-      const matchesState = 
-        filterState === 'all' ||
-        (filterState === 'active' && p.disponible) ||
-        (filterState === 'inactive' && !p.disponible) ||
-        (filterState === 'noprice' && (!p.precio || p.precio === 0))
-
+      const matchesSearch =
+        p.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) ||
+        p.codigo_plu.toLowerCase().includes(filtroNombre.toLowerCase())
+      const matchesCat =
+        filtroCategoria === 'all' || p.categoria_slug === filtroCategoria
+      const matchesState =
+        filtroEstado === 'all' ||
+        (filtroEstado === 'active' && p.disponible) ||
+        (filtroEstado === 'inactive' && !p.disponible) ||
+        (filtroEstado === 'noprice' && (!p.precio || p.precio === 0))
       return matchesSearch && matchesCat && matchesState
     })
-  }, [productos, search, filterCat, filterState])
+  }, [productos, filtroNombre, filtroCategoria, filtroEstado])
 
-  // Pagination
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_POR_PAGINA)
   const paginatedProducts = filteredProducts.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
+    (paginaActual - 1) * ITEMS_POR_PAGINA,
+    paginaActual * ITEMS_POR_PAGINA
   )
 
-  // Handlers
-  const handleToggleDisponible = async (id: string, currentValue: boolean) => {
-    try {
-      // Optimistic update
-      setProductos(prev => prev.map(p => p.id === id ? { ...p, disponible: !currentValue } : p))
-      
-      await updateProductoDisponible(id, !currentValue)
-      toast.success(`Producto ${!currentValue ? 'activado' : 'desactivado'}`)
-    } catch (error) {
-      // Revert on error
-      setProductos(prev => prev.map(p => p.id === id ? { ...p, disponible: currentValue } : p))
-      toast.error('Error al actualizar disponibilidad')
-    }
-  }
+  const handleGuardarPrecio = useCallback(
+    async (id: string, valorString: string) => {
+      const precio = parseFloat(valorString.replace(',', '.'))
+      if (isNaN(precio) || precio <= 0) {
+        toast.error('Precio inválido — ingresá un número mayor a 0')
+        setEditandoPrecio(null)
+        return
+      }
+      setGuardandoPrecioId(id)
+      try {
+        await updateProductoPrecio(id, precio)
+        setProductos((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, precio } : p))
+        )
+        toast.success(`Precio actualizado: ${formatearPrecioARS(precio)}`)
+        setEditandoPrecio(null)
+      } catch {
+        toast.error('Error al actualizar el precio')
+      } finally {
+        setGuardandoPrecioId(null)
+      }
+    },
+    []
+  )
 
-  const handleBadgeChange = async (id: string, badge: string) => {
+  const handleToggleDisponible = useCallback(
+    async (id: string, currentValue: boolean) => {
+      setProductos((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, disponible: !currentValue } : p))
+      )
+      try {
+        await updateProductoDisponible(id, !currentValue)
+        toast.success(`Producto ${!currentValue ? 'activado' : 'desactivado'}`)
+      } catch {
+        setProductos((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, disponible: currentValue } : p))
+        )
+        toast.error('Error al actualizar disponibilidad')
+      }
+    },
+    []
+  )
+
+  const handleBadgeChange = useCallback(async (id: string, badge: string) => {
+    const newBadge = badge === 'none' ? null : badge
+    setProductos((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, badge: newBadge } : p))
+    )
     try {
-      const newBadge = badge === 'none' ? null : badge
-      setProductos(prev => prev.map(p => p.id === id ? { ...p, badge: newBadge } : p))
       await updateProductoBadge(id, newBadge)
       toast.success('Etiqueta actualizada')
-    } catch (error) {
+    } catch {
       toast.error('Error al actualizar etiqueta')
     }
-  }
+  }, [])
 
-  const handleOpenUploader = (producto: Producto) => {
-    setSelectedProduct({
-      id: producto.id,
-      nombre: producto.nombre,
-      imagen: producto.imagen_url
-    })
-    setUploaderOpen(true)
-  }
-
-  const handleUploadSuccess = (imagenUrl: string, imagenPath: string) => {
-    if (selectedProduct) {
-      setProductos(prev => prev.map(p => 
-        p.id === selectedProduct.id 
-          ? { ...p, imagen_url: imagenUrl, imagen_path: imagenPath } 
-          : p
-      ))
-    }
-  }
+  const handleImageUploadSuccess = useCallback(
+    (imagenUrl: string, imagenPath: string) => {
+      if (imageUploadModal) {
+        setProductos((prev) =>
+          prev.map((p) =>
+            p.id === imageUploadModal.productoId
+              ? { ...p, imagen_url: imagenUrl, imagen_path: imagenPath }
+              : p
+          )
+        )
+      }
+      setImageUploadModal(null)
+    },
+    [imageUploadModal]
+  )
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-      {/* TOOLBAR */}
-      <div className="p-6 border-b border-gray-100 space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between bg-gray-50/50">
-        
-        {/* Search */}
-        <div className="relative w-full sm:max-w-xs">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-gray-400" />
+    <div>
+      <div
+        className="flex flex-wrap items-center gap-2.5 mb-4 bg-white border border-[#E2E8F0] p-3.5"
+        style={{ borderRadius: 10 }}
+      >
+        <div className="relative w-[240px] max-sm:w-full">
+          <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex text-[#94A3B8]">
+            <Search size={12} />
           </div>
           <input
             type="text"
             placeholder="Buscar por nombre o PLU..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#005A9C] focus:border-transparent outline-none text-sm transition-all"
+            value={filtroNombre}
+            onChange={(e) => {
+              setFiltroNombre(e.target.value)
+              setPaginaActual(1)
+            }}
+            className="w-full h-9 text-[13px] border border-[#E2E8F0] rounded-lg pl-7 pr-2.5 outline-none focus:border-[#005A9C]"
           />
         </div>
 
-        {/* Filters */}
-        <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-          <select
-            value={filterCat}
-            onChange={(e) => { setFilterCat(e.target.value); setPage(1); }}
-            className="bg-white border border-gray-200 text-gray-700 text-sm rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#005A9C] min-w-[140px]"
-          >
-            <option value="all">Todas las categorías</option>
-            {categories.map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+        <select
+          value={filtroCategoria}
+          onChange={(e) => {
+            setFiltroCategoria(e.target.value as any)
+            setPaginaActual(1)
+          }}
+          className="w-[160px] h-9 text-[13px] border border-[#E2E8F0] rounded-lg px-2.5 outline-none bg-white text-[#334155]"
+        >
+          <option value="all">Todas</option>
+          <option value="hamburguesas">Hamburguesas</option>
+          <option value="cafeteria">Cafetería</option>
+          <option value="marca_full">Exclusivos Full</option>
+        </select>
 
-          <select
-            value={filterState}
-            onChange={(e) => { setFilterState(e.target.value); setPage(1); }}
-            className="bg-white border border-gray-200 text-gray-700 text-sm rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#005A9C]"
-          >
-            <option value="all">Todos los estados</option>
-            <option value="active">Solo Activos</option>
-            <option value="inactive">Solo Inactivos</option>
-            <option value="noprice">Sin precio</option>
-          </select>
+        <select
+          value={filtroEstado}
+          onChange={(e) => {
+            setFiltroEstado(e.target.value as any)
+            setPaginaActual(1)
+          }}
+          className="w-[140px] h-9 text-[13px] border border-[#E2E8F0] rounded-lg px-2.5 outline-none bg-white text-[#334155]"
+        >
+          <option value="all">Todos</option>
+          <option value="active">Activos</option>
+          <option value="inactive">Inactivos</option>
+          <option value="noprice">Sin precio</option>
+        </select>
+
+        <div className="ml-auto text-xs text-[#64748B]">
+          Mostrando {filteredProducts.length} de {productos.length}
         </div>
       </div>
 
-      <div className="px-6 py-3 border-b border-gray-100 bg-white flex justify-between items-center text-sm">
-        <span className="text-gray-500">
-          Mostrando <span className="font-bold text-gray-900">{filteredProducts.length}</span> productos
-        </span>
-      </div>
+      <div className="bg-white border border-[#E2E8F0] overflow-hidden" style={{ borderRadius: 10 }}>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-[#F8FAFC] border-b-2 border-[#E2E8F0]">
+                <Th className="w-[60px]">Imagen</Th>
+                <Th>Producto</Th>
+                <Th className="w-[120px]">Categoría</Th>
+                <Th className="w-[140px]">Precio</Th>
+                <Th className="w-[80px]">Estado</Th>
+                <Th className="w-[100px]">Badge</Th>
+                <Th className="w-[90px] text-right">Acciones</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedProducts.length > 0 ? (
+                paginatedProducts.map((p) => (
+                  <tr
+                    key={p.id}
+                    className="border-b border-[#E2E8F0] transition-colors duration-150 hover:bg-[#F8FAFC]"
+                    style={{ opacity: p.disponible ? 1 : 0.6 }}
+                  >
+                    <Td>
+                      <div className="w-11 h-11 rounded-lg border border-[#E2E8F0] overflow-hidden relative flex items-center justify-center bg-[#F1F5F9]">
+                        {p.imagen_url ? (
+                          <Image src={p.imagen_url} alt={p.nombre} fill className="object-cover" sizes="44px" />
+                        ) : (
+                          <ImageOff size={16} color="#94A3B8" />
+                        )}
+                      </div>
+                    </Td>
 
-      {/* TABLE */}
-      <div className="overflow-x-auto w-full">
-        <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
-            <tr>
-              <th className="px-6 py-4 rounded-tl-lg">Imagen</th>
-              <th className="px-6 py-4">Producto & PLU</th>
-              <th className="px-6 py-4">Categoría</th>
-              <th className="px-6 py-4">Precio</th>
-              <th className="px-6 py-4">Visible</th>
-              <th className="px-6 py-4">Etiqueta</th>
-              <th className="px-6 py-4 text-right rounded-tr-lg">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {paginatedProducts.length > 0 ? (
-              paginatedProducts.map((p) => (
-                <tr key={p.id} className={`hover:bg-gray-50/50 transition-colors ${!p.disponible ? 'opacity-60' : ''}`}>
-                  
-                  {/* Image */}
-                  <td className="px-6 py-3">
-                    <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden relative flex items-center justify-center">
-                      {p.imagen_url ? (
-                        <Image src={p.imagen_url} alt={p.nombre} fill className="object-contain p-1" sizes="48px" />
-                      ) : (
-                        <ImageOff className="w-5 h-5 text-gray-300" />
-                      )}
-                    </div>
-                  </td>
+                    <Td>
+                      <div className="font-semibold text-[#0F172A] max-w-[220px] truncate" title={p.nombre}>
+                        {p.nombre}
+                      </div>
+                      <div className="text-[11px] text-[#94A3B8] font-mono mt-0.5">{p.codigo_plu}</div>
+                    </Td>
 
-                  {/* Name & PLU */}
-                  <td className="px-6 py-3">
-                    <p className="font-bold text-gray-900 leading-tight max-w-[200px] truncate" title={p.nombre}>{p.nombre}</p>
-                    <p className="text-xs text-gray-500 font-mono mt-0.5">{p.codigo_plu}</p>
-                  </td>
-
-                  {/* Category */}
-                  <td className="px-6 py-3">
-                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-md">
-                      {p.categoria_slug}
-                    </span>
-                  </td>
-
-                  {/* Price */}
-                  <td className="px-6 py-3">
-                    {!p.precio || p.precio === 0 ? (
-                      <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold uppercase tracking-wider rounded-md">
-                        Sin Precio
+                    <Td>
+                      <span
+                        className="inline-block text-[11px] font-semibold px-2 py-0.5"
+                        style={{
+                          borderRadius: 9999,
+                          backgroundColor: CATEGORY_STYLES[p.categoria_slug]?.bg ?? '#F1F5F9',
+                          color: CATEGORY_STYLES[p.categoria_slug]?.color ?? '#475569',
+                          border: `1px solid ${CATEGORY_STYLES[p.categoria_slug]?.border ?? '#E2E8F0'}`,
+                        }}
+                      >
+                        {CATEGORY_LABELS[p.categoria_slug] ?? p.categoria_slug}
                       </span>
-                    ) : (
-                      <span className="font-black text-[#005A9C]">{formatearPrecioARS(p.precio)}</span>
-                    )}
-                  </td>
+                    </Td>
 
-                  {/* Toggle Visible */}
-                  <td className="px-6 py-3">
-                    <button
-                      onClick={() => handleToggleDisponible(p.id, p.disponible)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#005A9C] focus:ring-offset-2 ${
-                        p.disponible ? 'bg-green-500' : 'bg-gray-200'
-                      }`}
-                    >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        p.disponible ? 'translate-x-6' : 'translate-x-1'
-                      }`} />
-                    </button>
-                  </td>
+                    <Td>
+                      <div
+                        className="inline-flex items-center gap-1.5 cursor-text group"
+                        onClick={() => {
+                          if (guardandoPrecioId !== p.id && editandoPrecio?.id !== p.id) {
+                            setEditandoPrecio({
+                              id: p.id,
+                              valor: p.precio && p.precio > 0 ? String(p.precio) : '',
+                            })
+                          }
+                        }}
+                      >
+                        {editandoPrecio?.id === p.id ? (
+                          <>
+                            <input
+                              ref={inputRef}
+                              type="text"
+                              value={editandoPrecio.valor}
+                              onChange={(e) => {
+                                const val = e.target.value
+                                if (/^[\d.,]*$/.test(val)) {
+                                  setEditandoPrecio((prev) =>
+                                    prev ? { ...prev, valor: val } : prev
+                                  )
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleGuardarPrecio(p.id, editandoPrecio.valor)
+                                } else if (e.key === 'Escape') {
+                                  setEditandoPrecio(null)
+                                }
+                              }}
+                              onBlur={() => {
+                                if (guardandoPrecioId !== p.id) {
+                                  handleGuardarPrecio(p.id, editandoPrecio.valor)
+                                }
+                              }}
+                              disabled={guardandoPrecioId === p.id}
+                              autoFocus
+                              className="text-[13px] font-semibold text-[#005A9C] border-none border-b-2 border-[#005A9C] bg-transparent outline-none w-[100px] py-0.5 px-1"
+                            />
+                            {guardandoPrecioId === p.id && (
+                              <Loader2 size={12} className="animate-spin text-[#005A9C]" />
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {!p.precio || p.precio === 0 ? (
+                              <span
+                                className="text-[11px] font-semibold px-2 py-0.5"
+                                style={{
+                                  borderRadius: 9999,
+                                  backgroundColor: '#FFF7ED',
+                                  color: '#C2410C',
+                                  border: '1px solid #FED7AA',
+                                }}
+                              >
+                                Sin precio
+                              </span>
+                            ) : (
+                              <span className="text-[13px] font-semibold text-[#005A9C]">
+                                {formatearPrecioARS(p.precio)}
+                              </span>
+                            )}
+                            {guardandoPrecioId === p.id ? (
+                              <Loader2 size={12} className="animate-spin text-[#005A9C]" />
+                            ) : (
+                              <Pencil size={12} color="#94A3B8" className="opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </Td>
 
-                  {/* Badge */}
-                  <td className="px-6 py-3">
-                    <select
-                      value={p.badge || 'none'}
-                      onChange={(e) => handleBadgeChange(p.id, e.target.value)}
-                      className="bg-white border border-gray-200 text-xs font-semibold text-gray-700 rounded-lg px-2 py-1.5 outline-none focus:border-[#005A9C]"
-                    >
-                      <option value="none">Sin etiqueta</option>
-                      <option value="NUEVA">NUEVA</option>
-                      <option value="PROMO">PROMO</option>
-                      <option value="RECOMENDADO">RECOMENDADO</option>
-                    </select>
-                  </td>
+                    <Td>
+                      <button
+                        onClick={() => handleToggleDisponible(p.id, p.disponible)}
+                        className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 border-none cursor-pointer outline-none"
+                        style={{ backgroundColor: p.disponible ? '#22C55E' : '#CBD5E1' }}
+                      >
+                        <span
+                          className="inline-block h-4 w-4 rounded-full bg-white transition-transform duration-200 shadow-sm"
+                          style={{ transform: p.disponible ? 'translateX(26px)' : 'translateX(2px)' }}
+                        />
+                      </button>
+                    </Td>
 
-                  {/* Actions */}
-                  <td className="px-6 py-3 text-right">
-                    <button
-                      onClick={() => handleOpenUploader(p)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#005A9C] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
-                    >
-                      <ImageIcon className="w-3.5 h-3.5" />
-                      Imagen
-                    </button>
+                    <Td>
+                      <select
+                        value={p.badge || 'none'}
+                        onChange={(e) => handleBadgeChange(p.id, e.target.value)}
+                        className="text-[11px] font-semibold rounded-lg border border-[#E2E8F0] px-2 py-1 outline-none cursor-pointer max-w-[100px]"
+                        style={{
+                          backgroundColor: p.badge ? BADGE_STYLES[p.badge]?.bg ?? '#FFFFFF' : '#FFFFFF',
+                          color: p.badge ? BADGE_STYLES[p.badge]?.color ?? '#334155' : '#94A3B8',
+                        }}
+                      >
+                        <option value="none" style={{ color: '#94A3B8' }}>&mdash;</option>
+                        <option value="NUEVA" style={{ backgroundColor: '#FEF08A', color: '#000000' }}>NUEVA</option>
+                        <option value="RECOMENDADO" style={{ backgroundColor: '#3B82F6', color: '#FFFFFF' }}>RECOMENDADO</option>
+                        <option value="PROMO" style={{ backgroundColor: '#EF4444', color: '#FFFFFF' }}>PROMO</option>
+                      </select>
+                    </Td>
+
+                    <Td className="text-right">
+                      <button
+                        onClick={() =>
+                          setImageUploadModal({
+                            productoId: p.id,
+                            nombre: p.nombre,
+                            imagenActual: p.imagen_url,
+                          })
+                        }
+                        className="inline-flex items-center gap-1 bg-white border border-[#E2E8F0] rounded-lg px-2.5 py-1.5 text-xs text-[#475569] cursor-pointer transition-colors duration-150 hover:border-[#005A9C] hover:text-[#005A9C]"
+                      >
+                        <ImagePlus size={14} />
+                        Imagen
+                      </button>
+                    </Td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-[13px] text-[#94A3B8]">
+                    No se encontraron productos que coincidan con la búsqueda.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                  No se encontraron productos que coincidan con la búsqueda.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="flex justify-between items-center px-4 py-3 border-t border-[#E2E8F0]">
+            <span className="text-xs text-[#64748B]">
+              Página {paginaActual} de {totalPages}
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPaginaActual((p) => Math.max(1, p - 1))}
+                disabled={paginaActual === 1}
+                className="h-8 px-3 rounded-lg text-xs border border-[#E2E8F0] bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ color: paginaActual === 1 ? '#CBD5E1' : '#475569' }}
+              >
+                Anterior
+              </button>
+              <button
+                onClick={() => setPaginaActual((p) => Math.min(totalPages, p + 1))}
+                disabled={paginaActual === totalPages}
+                className="h-8 px-3 rounded-lg text-xs border border-[#E2E8F0] bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ color: paginaActual === totalPages ? '#CBD5E1' : '#475569' }}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* PAGINATION */}
-      {totalPages > 1 && (
-        <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
-          <p className="text-sm text-gray-500">
-            Página <span className="font-bold text-gray-900">{page}</span> de <span className="font-bold text-gray-900">{totalPages}</span>
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="p-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="p-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-colors"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Image Uploader Modal */}
-      {uploaderOpen && selectedProduct && (
+      {imageUploadModal && (
         <ImageUploader
-          productoId={selectedProduct.id}
-          productoNombre={selectedProduct.nombre}
-          imagenActual={selectedProduct.imagen}
-          onUploadSuccess={handleUploadSuccess}
-          onClose={() => setUploaderOpen(false)}
+          productoId={imageUploadModal.productoId}
+          productoNombre={imageUploadModal.nombre}
+          imagenActual={imageUploadModal.imagenActual}
+          onUploadSuccess={handleImageUploadSuccess}
+          onClose={() => setImageUploadModal(null)}
         />
       )}
     </div>
+  )
+}
+
+function Th({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <th
+      className={`text-[11px] font-bold text-[#64748B] uppercase tracking-wider px-3.5 py-2.5 text-left whitespace-nowrap ${className ?? ''}`}
+      style={{ letterSpacing: '0.06em' }}
+    >
+      {children}
+    </th>
+  )
+}
+
+function Td({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <td className={`px-3.5 py-2.5 text-[13px] text-[#334155] ${className ?? ''}`}>
+      {children}
+    </td>
   )
 }
