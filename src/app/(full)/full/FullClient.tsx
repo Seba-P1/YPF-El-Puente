@@ -9,6 +9,7 @@ import { FullSearchBar } from '@/components/public/FullSearchBar'
 import { FullCategorySection } from '@/components/public/FullCategorySection'
 import { FullProductCard } from '@/components/public/FullProductCard'
 import { FullSustentabilidad } from '@/components/public/FullSustentabilidad'
+import { FullMundialSection } from '@/components/public/FullMundialSection'
 import { useSearchStore } from '@/stores/search'
 
 import type { Producto, Categoria } from '@/lib/supabase/types'
@@ -185,6 +186,7 @@ export default function FullClient({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
+            <FullMundialSection />
             <FullCategorySection
               id="hamburguesas"
               categoria={catHamb}
@@ -327,11 +329,18 @@ export default function FullClient({
       <footer className="bg-black border-t border-white/5 py-[32px]">
         <div className="mx-auto flex flex-col items-center justify-center gap-6" style={{ maxWidth: 'var(--page-max, 1280px)', padding: '0 var(--page-pad-x, 24px)' }}>
           <Image
-            src="/assets/logo/logo-white-wide.png"
-            alt="YPF FULL"
+            src="/assets/ypf imagenes/logo-modoclaro.png"
+            alt="YPF El Puente"
             width={160}
             height={48}
-            className="opacity-50"
+            className="opacity-50 dark:hidden"
+          />
+          <Image
+            src="/assets/ypf imagenes/logo-modooscuro.png"
+            alt="YPF El Puente"
+            width={160}
+            height={48}
+            className="opacity-50 hidden dark:block"
           />
           <p className="text-[12px] text-white/25">
             © YPF El Puente — Río Colorado, Patagonia Argentina

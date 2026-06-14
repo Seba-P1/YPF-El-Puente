@@ -101,7 +101,7 @@ export function ImageUploader({
       const publicUrl = publicUrlData.publicUrl
 
       // 5. Update product record in DB
-      await updateProductoImagen(productoId, publicUrl, fileName)
+      await updateProductoImagen({ id: productoId, imagenUrl: publicUrl, imagenPath: fileName })
 
       // 6. Success handling
       toast.success('Imagen actualizada correctamente')

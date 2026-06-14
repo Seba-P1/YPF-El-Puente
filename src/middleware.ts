@@ -44,6 +44,16 @@ export async function middleware(request: NextRequest) {
       loginUrl.searchParams.set('redirectTo', pathname)
       return NextResponse.redirect(loginUrl)
     }
+
+    // Role check for admin
+    if (user.app_metadata?.role !== 'admin') {
+      const unauthorizedUrl = request.nextUrl.clone()
+      unauthorizedUrl.pathname = '/'
+      // Set an error cookie for the client to display a toast
+      supabaseResponse = NextResponse.redirect(unauthorizedUrl)
+      supabaseResponse.cookies.set('admin_error', 'No tienes permisos de administrador', { path: '/' })
+      return supabaseResponse
+    }
   }
 
   // If already logged in and visiting /login, redirect to /admin

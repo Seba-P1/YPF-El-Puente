@@ -88,14 +88,24 @@ export function FullNavbar() {
           className="flex-shrink-0"
         >
           {!imgError ? (
-            <Image
-              src="/assets/logo/logo-white.svg"
-              alt="YPF FULL"
-              width={100}
-              height={32}
-              className="h-8 w-auto"
-              onError={() => setImgError(true)}
-            />
+            <>
+              <Image
+                src="/assets/ypf imagenes/full-logomodoclaro.png"
+                alt="YPF FULL"
+                width={120}
+                height={38}
+                className="h-10 w-auto dark:hidden"
+                onError={() => setImgError(true)}
+              />
+              <Image
+                src="/assets/ypf imagenes/full-logomodooscuro.png"
+                alt="YPF FULL"
+                width={120}
+                height={38}
+                className="h-10 w-auto hidden dark:block"
+                onError={() => setImgError(true)}
+              />
+            </>
           ) : (
             <span className="text-white font-black text-lg">YPF FULL</span>
           )}

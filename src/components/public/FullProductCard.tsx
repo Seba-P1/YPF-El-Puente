@@ -77,48 +77,33 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
       hover: { opacity: 1 }
     }
 
+  const isCarousel = layout === 'carousel'
+
   return (
     <motion.div
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '50px' }}
       variants={containerVariants}
-      whileHover={isDesktop ? 'hover' : undefined}
-      animate="rest"
-      className="flex flex-col items-center relative snap-center"
-      style={{
-        flexShrink: 0,
-        background: 'transparent',
-        border: 'none',
-        borderRadius: 0,
-        boxShadow: 'none',
-      }}
+      className={`relative flex flex-col items-center justify-end snap-center group pt-[120px] pb-4 ${
+        isCarousel ? 'flex-shrink-0 w-[270px] md:w-[290px]' : 'w-full'
+      }`}
     >
-      {/* 1. CONTENEDOR DE LA IMAGEN */}
-      <motion.div
-        variants={imageHoverVars}
-        className={layout === 'grid'
-          ? "relative flex items-center justify-center w-full aspect-[4/3]"
-          : "relative flex items-center justify-center w-[85vw] max-w-[430px] aspect-[4/3] md:w-[470px] lg:w-[530px]"
-        }
-        style={{ background: 'transparent' }}
-      >
+      {/* 1. PRODUCT IMAGE (Outside the card, overlapping) */}
+      <div className="absolute top-0 flex items-center justify-center w-[240px] h-[240px] z-10 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-2 pointer-events-none">
         {!imgError ? (
           <Image
             src={producto.imagen_url || `/assets/placeholder.png`}
             alt={producto.nombre}
             fill
-            sizes="(max-width: 768px) 90vw, (max-width: 1024px) 470px, 530px"
+            sizes="(max-width: 768px) 90vw, 300px"
             priority={index < 4}
-            className="object-contain"
-            style={{
-              filter: 'drop-shadow(0px 30px 60px rgba(0,0,0,0.75))'
-            }}
+            className="object-contain drop-shadow-2xl"
             onError={() => setImgError(true)}
           />
         ) : (
           <div className="flex items-center justify-center w-full h-full rounded-2xl border border-white/10 bg-white/5">
-            <span className="text-white text-sm font-semibold text-center px-4">
+            <span className="text-white text-xs font-semibold text-center px-4">
               {producto.nombre}
             </span>
           </div>
@@ -126,60 +111,38 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
 
         {/* BADGE */}
         {producto.badge && (
-          <div className="absolute top-2 right-2 bg-[#FFD100] text-black text-[10px] font-extrabold px-2 py-1 rounded-md uppercase tracking-wider z-10">
+          <div className="absolute top-0 right-0 bg-[#FFD100] text-black text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider z-20 shadow-sm">
             {producto.badge}
-          </div>
-        )}
-      </motion.div>
-
-      {/* 2. INFORMACIÓN DEBAJO DE LA IMAGEN */}
-      <div className={layout === 'grid'
-        ? "pt-[14px] text-center w-full flex flex-col items-center"
-        : "pt-[14px] text-center w-[85vw] max-w-[430px] md:w-[470px] lg:w-[530px] flex flex-col items-center"
-      }>
-        <h3
-          className="text-[13px] lg:text-[14px] font-bold text-white/90 text-center w-full"
-          style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden'
-          }}
-        >
-          {producto.nombre}
-        </h3>
-
-        {producto.precio && producto.precio > 0 ? (
-          <div className="text-[15px] font-extrabold text-[#FFD100] mt-1">
-            {formatearPrecioARS(producto.precio)}
-          </div>
-        ) : (
-          <div className="text-[13px] font-semibold text-white/20 mt-1">
-            ···
           </div>
         )}
       </div>
 
-      {/* 3. BOTÓN AGREGAR */}
-      <motion.button
-        variants={buttonHoverVars}
-        whileTap={{ scale: 0.95 }}
-        onClick={handleAdd}
-        className={`mt-[10px] h-[34px] px-[18px] rounded-full text-[12px] font-bold text-white transition-colors duration-200 ${!isDesktop ? 'flex' : ''
-          }`}
-        style={{
-          background: 'rgba(0,90,156,0.85)',
-          border: '1px solid rgba(0,112,192,0.5)'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = '#0070C0'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(0,90,156,0.85)'
-        }}
-      >
-        + Agregar
-      </motion.button>
+      {/* 2. GLASS PRODUCT INFO CARD */}
+      <div className="w-full flex flex-col items-center justify-between bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/10 transition-all duration-300 group-hover:bg-white/10 group-hover:border-white/20 pt-[100px] mt-[20px] min-h-[200px] relative z-0">
+        <div className="text-center w-full flex flex-col items-center flex-grow">
+          <h3 className="text-[13px] lg:text-[14px] font-bold text-white/90 text-center line-clamp-2 min-h-[36px] flex items-center justify-center px-1">
+            {producto.nombre}
+          </h3>
+
+          {producto.precio && producto.precio > 0 ? (
+            <div className="text-[15px] font-black text-[#FFD100] mt-1.5 bg-[#FFD100]/10 px-2.5 py-0.5 rounded-full">
+              {formatearPrecioARS(producto.precio)}
+            </div>
+          ) : (
+            <div className="text-[13px] font-semibold text-white/20 mt-1.5">
+              ···
+            </div>
+          )}
+        </div>
+
+        {/* 3. ADD TO CART BUTTON */}
+        <button
+          onClick={handleAdd}
+          className="mt-4 w-full h-[36px] rounded-xl text-[11px] font-bold text-white bg-white/10 hover:bg-[#0070C0] border border-white/10 hover:border-transparent transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          + Agregar
+        </button>
+      </div>
     </motion.div>
   )
 }

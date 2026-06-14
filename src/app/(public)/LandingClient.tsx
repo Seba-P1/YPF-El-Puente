@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   Flame,
   Droplets,
@@ -976,48 +977,43 @@ function FooterSection() {
         style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px' }}
       >
         {/* Column 1 — Brand */}
-        <div className="flex flex-col items-center md:items-start">
-          <div className="flex items-center gap-2">
-            <div
+        <div className="flex flex-col items-center md:items-start gap-4">
+          <div className="relative">
+            <Image
+              src="/assets/ypf imagenes/logo-modoclaro.png"
+              alt="YPF El Puente"
+              width={140}
+              height={42}
+              className="h-9 w-auto object-contain dark:hidden"
+            />
+            <Image
+              src="/assets/ypf imagenes/logo-modooscuro.png"
+              alt="YPF El Puente"
+              width={140}
+              height={42}
+              className="h-9 w-auto object-contain hidden dark:block"
+            />
+          </div>
+          <div className="flex flex-col items-center md:items-start">
+            <span
               style={{
-                width: 32,
-                height: 32,
-                background: '#005A9C',
-                borderRadius: 6,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: 900,
-                fontStyle: 'italic',
-                fontSize: 16,
+                fontSize: 14,
+                fontWeight: 700,
+                color: 'var(--text-primary)',
               }}
             >
-              Y
-            </div>
-            <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>
-              EL PUENTE
+              YPF El Puente
+            </span>
+            <span
+              style={{
+                fontSize: 13,
+                color: 'var(--text-muted)',
+                marginTop: 4,
+              }}
+            >
+              Río Colorado · Río Negro, Argentina
             </span>
           </div>
-          <span
-            style={{
-              fontSize: 14,
-              fontWeight: 700,
-              color: 'var(--text-primary)',
-              marginTop: 8,
-            }}
-          >
-            YPF El Puente
-          </span>
-          <span
-            style={{
-              fontSize: 13,
-              color: 'var(--text-muted)',
-              marginTop: 4,
-            }}
-          >
-            Río Colorado · Río Negro, Argentina
-          </span>
         </div>
 
         {/* Column 2 — Navigation */}

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { Montserrat, Caveat } from 'next/font/google'
+import '@fontsource-variable/inter'
+import '@fontsource-variable/jetbrains-mono'
 import './globals.css'
 
 const montserrat = Montserrat({
@@ -46,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`${montserrat.variable} ${caveat.variable} h-full antialiased`}>
+    <html lang="es" className={`${montserrat.variable} ${caveat.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col font-[family-name:var(--font-montserrat)]">
         {children}
       </body>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ShoppingCart } from 'lucide-react'
@@ -36,33 +37,30 @@ export function Navbar() {
       className="fixed top-0 left-0 right-0 z-50"
       style={{
         height: '68px',
-        background: scrolled ? 'rgba(6,8,15,0.85)' : 'transparent',
+        background: scrolled ? 'var(--navbar-bg)' : 'transparent',
         backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
         WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
+        borderBottom: scrolled ? '1px solid var(--nav-border)' : '1px solid transparent',
         transition: 'background 0.4s ease, backdrop-filter 0.4s ease, border-color 0.4s ease',
       }}
     >
       <div className="h-full max-w-[1200px] mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div
-            className="flex items-center justify-center rounded-lg font-black italic text-white text-lg"
-            style={{
-              width: 36,
-              height: 36,
-              background: '#005A9C',
-              transition: 'transform 0.2s ease',
-            }}
-          >
-            <span className="group-hover:scale-110 transition-transform">Y</span>
-          </div>
-          <span
-            className="font-bold tracking-tight"
-            style={{ fontSize: 16, color: '#F8FAFC' }}
-          >
-            EL PUENTE
-          </span>
+          <Image
+            src="/assets/ypf imagenes/logo-modoclaro.png"
+            alt="YPF El Puente"
+            width={160}
+            height={48}
+            className="h-10 w-auto dark:hidden transition-transform group-hover:scale-105"
+          />
+          <Image
+            src="/assets/ypf imagenes/logo-modooscuro.png"
+            alt="YPF El Puente"
+            width={160}
+            height={48}
+            className="h-10 w-auto hidden dark:block transition-transform group-hover:scale-105"
+          />
         </Link>
 
         {/* Desktop Navigation */}
@@ -74,8 +72,8 @@ export function Navbar() {
               style={{
                 fontSize: 14,
                 fontWeight: 500,
-                letterSpacing: '0.01em',
-                color: isActive(link) ? '#F8FAFC' : 'rgba(248,250,252,0.6)',
+                  letterSpacing: '0.01em',
+                  color: isActive(link) ? 'var(--nav-text)' : 'var(--nav-text-muted)',
                 textDecoration: 'none',
                 transition: 'color 0.2s ease',
                 position: 'relative',
@@ -106,22 +104,22 @@ export function Navbar() {
           onClick={openCart}
           className="flex items-center gap-2 cursor-pointer"
           style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            background: 'var(--btn-secondary-bg)',
+            border: '1px solid var(--btn-secondary-border)',
             borderRadius: 999,
             padding: '8px 16px',
             transition: 'background 0.2s ease, border-color 0.2s ease',
-            color: 'rgba(248,250,252,0.85)',
+            color: 'var(--nav-text)',
             fontSize: 14,
             fontWeight: 500,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'
+            e.currentTarget.style.background = 'var(--btn-secondary-hover-bg)'
+            e.currentTarget.style.borderColor = 'var(--btn-secondary-hover-border)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
+            e.currentTarget.style.background = 'var(--btn-secondary-bg)'
+            e.currentTarget.style.borderColor = 'var(--btn-secondary-border)'
           }}
           aria-label="Abrir carrito"
         >

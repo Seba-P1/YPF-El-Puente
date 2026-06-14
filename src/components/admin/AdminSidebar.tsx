@@ -46,14 +46,14 @@ export function AdminSidebar({ userEmail, className = '' }: AdminSidebarProps) {
     <aside
       className={`flex flex-col w-[224px] flex-shrink-0 h-screen overflow-y-auto overflow-x-hidden ${className}`}
       style={{
-        background: '#0F172A',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--admin-drawer-bg)',
+        borderRight: '1px solid var(--admin-drawer-border)',
       }}
     >
       {/* HEADER */}
       <div
         className="flex flex-col px-4 pt-5 pb-4"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ borderBottom: '1px solid var(--admin-drawer-border)' }}
       >
         <div className="w-20 h-7 relative mb-2">
           {!imgError ? (
@@ -66,12 +66,12 @@ export function AdminSidebar({ userEmail, className = '' }: AdminSidebarProps) {
               priority
             />
           ) : (
-            <span className="text-white font-black text-base">YPF</span>
+            <span style={{ color: 'var(--nav-text)', fontWeight: 900, fontSize: 16 }}>YPF</span>
           )}
         </div>
         <span
           className="text-[11px] font-bold tracking-[0.08em] uppercase"
-          style={{ color: 'rgba(255,255,255,0.35)' }}
+          style={{ color: 'var(--nav-text-muted)' }}
         >
           El Puente Admin
         </span>
@@ -81,7 +81,7 @@ export function AdminSidebar({ userEmail, className = '' }: AdminSidebarProps) {
       <nav className="flex-1 px-2 py-3">
         <span
           className="block text-[10px] font-bold tracking-[0.12em] uppercase px-2 pb-1 pt-2"
-          style={{ color: 'rgba(255,255,255,0.25)' }}
+          style={{ color: 'var(--nav-text-muted)' }}
         >
           Menú
         </span>
@@ -95,35 +95,35 @@ export function AdminSidebar({ userEmail, className = '' }: AdminSidebarProps) {
               className="flex items-center gap-[10px] px-[10px] py-2 rounded-lg mb-[2px] text-[13px] font-medium transition-all duration-150"
               style={{
                 background: isActive
-                  ? 'rgba(0,90,156,0.9)'
+                  ? 'var(--ypf-blue)'
                   : link.highlight && !isActive
-                    ? 'rgba(255,209,0,0.08)'
+                    ? 'var(--ypf-yellow-dim)'
                     : 'transparent',
-                color: isActive ? 'white' : 'rgba(255,255,255,0.55)',
+                color: isActive ? '#FFFFFF' : 'var(--nav-text-muted)',
                 fontWeight: isActive ? 600 : 500,
-                borderLeft: link.highlight && !isActive ? '2px solid #FFD100' : '2px solid transparent',
+                borderLeft: link.highlight && !isActive ? '2px solid var(--ypf-yellow)' : '2px solid transparent',
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.07)'
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.85)'
+                  e.currentTarget.style.background = 'var(--bg-card-hover)'
+                  e.currentTarget.style.color = 'var(--nav-text)'
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = link.highlight ? 'rgba(255,209,0,0.08)' : 'transparent'
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.55)'
+                  e.currentTarget.style.background = link.highlight ? 'var(--ypf-yellow-dim)' : 'transparent'
+                  e.currentTarget.style.color = 'var(--nav-text-muted)'
                 }
               }}
             >
               <link.icon
                 size={16}
                 className="flex-shrink-0"
-                style={{ color: isActive ? 'white' : 'rgba(255,255,255,0.4)' }}
+                style={{ color: isActive ? '#FFFFFF' : 'var(--nav-text-muted)' }}
               />
               {link.label}
               {link.highlight && !isActive && (
-                <span className="ml-auto text-[10px] font-bold text-[#FFD100]">⚡</span>
+                <span className="ml-auto text-[10px] font-bold" style={{ color: 'var(--ypf-yellow)' }}>⚡</span>
               )}
             </Link>
           )
@@ -131,7 +131,7 @@ export function AdminSidebar({ userEmail, className = '' }: AdminSidebarProps) {
       </nav>
 
       {/* SEPARADOR */}
-      <div className="mx-2" style={{ height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+      <div className="mx-2" style={{ height: '1px', background: 'var(--admin-drawer-border)' }} />
 
       {/* SECCIÓN INFERIOR */}
       <div className="px-2 py-2">
@@ -139,9 +139,9 @@ export function AdminSidebar({ userEmail, className = '' }: AdminSidebarProps) {
           href="/"
           target="_blank"
           className="flex items-center gap-[10px] px-[10px] py-2 rounded-lg text-[12px] transition-all duration-150"
-          style={{ color: 'rgba(255,255,255,0.4)' }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}
+          style={{ color: 'var(--nav-text-muted)' }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--nav-text)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--nav-text-muted)'}
         >
           <ExternalLink size={16} className="flex-shrink-0" />
           Ver sitio web
@@ -161,12 +161,12 @@ export function AdminSidebar({ userEmail, className = '' }: AdminSidebarProps) {
       {/* EMAIL USUARIO */}
       <div
         className="flex items-center gap-2 px-[10px] py-3 mt-auto"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ borderTop: '1px solid var(--admin-drawer-border)' }}
       >
-        <User size={14} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+        <User size={14} style={{ color: 'var(--nav-text-muted)', flexShrink: 0 }} />
         <span
           className="text-[11px] truncate"
-          style={{ color: 'rgba(255,255,255,0.3)' }}
+          style={{ color: 'var(--nav-text-muted)' }}
           title={userEmail}
         >
           {userEmail}

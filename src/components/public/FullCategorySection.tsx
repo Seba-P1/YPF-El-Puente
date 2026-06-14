@@ -103,93 +103,19 @@ export function FullCategorySection({
         }}
       />
 
-      {/* SECTION HEADER */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-100px' }}
-        transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          paddingTop: 80,
-          paddingLeft: 'clamp(24px, 5vw, 80px)',
-          paddingRight: 'clamp(24px, 5vw, 80px)',
-          paddingBottom: 40,
-        }}
-      >
-        {/* 1. SECTION TAG — Caveat (script) font */}
-        <p
-          style={{
-            fontFamily: 'var(--font-caveat)',
-            fontSize: 'clamp(18px, 2.5vw, 26px)',
-            fontWeight: 600,
-            color: 'rgba(255,255,255,0.55)',
-            marginBottom: 8,
-            letterSpacing: '0.02em',
-          }}
-        >
-          {categoria?.nombre?.toLowerCase() ?? id}
-        </p>
-
-        {/* 2. MAIN TITLE — Montserrat Black */}
-        <h2
-          style={{
-            fontFamily: 'var(--font-montserrat)',
-            fontSize: 'clamp(36px, 7vw, 80px)',
-            fontWeight: 900,
-            color: 'white',
-            lineHeight: 1.0,
-            letterSpacing: '-0.03em',
-            maxWidth: 700,
-            marginBottom: 12,
-          }}
-        >
-          {categoria?.descripcion || categoria?.nombre}
-        </h2>
-
-        {/* 3. SUBTITLE */}
-        {categoria?.subtitulo && (
-          <p
-            style={{
-              fontSize: 'clamp(14px, 1.8vw, 20px)',
-              color: 'rgba(255,255,255,0.6)',
-              marginBottom: 20,
-            }}
-          >
-            {categoria.subtitulo}
-          </p>
-        )}
-
-        {/* 4. SCROLL INDICATOR */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            color: 'rgba(255,255,255,0.35)',
-            fontSize: 13,
-            letterSpacing: '0.05em',
-          }}
-        >
-          <span>Scrolleá para ver más</span>
-          <span style={{ fontSize: 16 }}>→</span>
-        </div>
-      </motion.div>
-
       {/* PRODUCTS ROW WRAPPER */}
       <div className="relative w-full group">
         {/* SCROLL BUTTONS (Desktop only) */}
         <button
           onClick={() => scroll('left')}
-          className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-black/40 hover:bg-black/80 rounded-full items-center justify-center text-white backdrop-blur-md border border-white/10 transition-all opacity-0 group-hover:opacity-100 shadow-xl"
+          className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-black/40 hover:bg-black/80 rounded-full items-center justify-center text-white backdrop-blur-md border border-white/10 transition-all opacity-0 group-hover:opacity-100 shadow-xl cursor-pointer"
           aria-label="Scroll left"
         >
           <ChevronLeft size={24} />
         </button>
         <button
           onClick={() => scroll('right')}
-          className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-black/40 hover:bg-black/80 rounded-full items-center justify-center text-white backdrop-blur-md border border-white/10 transition-all opacity-0 group-hover:opacity-100 shadow-xl"
+          className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-black/40 hover:bg-black/80 rounded-full items-center justify-center text-white backdrop-blur-md border border-white/10 transition-all opacity-0 group-hover:opacity-100 shadow-xl cursor-pointer"
           aria-label="Scroll right"
         >
           <ChevronRight size={24} />
@@ -198,31 +124,57 @@ export function FullCategorySection({
         {/* PRODUCTS SCROLL CONTAINER */}
         <div
           ref={scrollContainerRef}
-          className="hide-scrollbar scroll-smooth snap-x snap-mandatory"
+          className="hide-scrollbar scroll-smooth snap-x snap-mandatory flex flex-row overflow-x-auto overflow-y-visible"
           style={{
             position: 'relative',
             zIndex: 1,
-            display: 'flex',
-            flexDirection: 'row',
-            overflowX: 'auto',
-            overflowY: 'visible',
             gap: 'clamp(16px, 2vw, 32px)',
-          paddingLeft: 'clamp(24px, 5vw, 80px)',
-          paddingRight: 'clamp(24px, 5vw, 80px)',
-          paddingBottom: 60,
-          paddingTop: 20,
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          WebkitOverflowScrolling: 'touch',
-        }}
-      >
-        {productos.map((producto, i) => (
-          <FullProductCard
-            key={producto.id}
-            producto={producto}
-            index={i}
-          />
-        ))}
+            paddingLeft: 'clamp(24px, 5vw, 80px)',
+            paddingRight: 'clamp(24px, 5vw, 80px)',
+            paddingBottom: 60,
+            paddingTop: 20,
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          {/* 1. TEXT BLOCK CARD */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="flex-shrink-0 w-[85vw] max-w-[340px] md:max-w-[400px] flex flex-col justify-center snap-center mr-6 md:mr-12"
+          >
+            {/* Tag */}
+            <p className="font-[family-name:var(--font-caveat)] text-xl md:text-2xl text-white/55 mb-2 tracking-wide">
+              {categoria?.nombre?.toLowerCase() ?? id}
+            </p>
+            {/* Title */}
+            <h2 className="font-[family-name:var(--font-montserrat)] font-black text-4xl md:text-6xl text-white leading-none mb-3 tracking-tight">
+              {categoria?.descripcion || categoria?.nombre}
+            </h2>
+            {/* Subtitle */}
+            {categoria?.subtitulo && (
+              <p className="font-[family-name:var(--font-montserrat)] text-sm md:text-base text-white/60 mb-6 leading-relaxed">
+                {categoria.subtitulo}
+              </p>
+            )}
+            {/* Indicator */}
+            <div className="flex items-center gap-2 text-white/35 text-xs font-bold tracking-wider uppercase">
+              <span>Scrolleá para ver más</span>
+              <span>→</span>
+            </div>
+          </motion.div>
+
+          {/* 2. PRODUCT CARDS */}
+          {productos.map((producto, i) => (
+            <FullProductCard
+              key={producto.id}
+              producto={producto}
+              index={i}
+            />
+          ))}
         </div>
       </div>
     </motion.section>

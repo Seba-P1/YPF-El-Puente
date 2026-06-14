@@ -3,8 +3,12 @@
 import { useState, useEffect } from 'react'
 import { Fuel, Save, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { updateCombustiblePrecio, updateCombustibleDisponible } from '@/lib/supabase/actions'
 import type { Combustible } from '@/types'
 import { toast } from 'sonner'
+import { GlassCard } from '@/components/admin/ui/glass-card'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 
 export default function AdminCombustiblesPage() {
   const [combustibles, setCombustibles] = useState<Combustible[]>([])
@@ -50,22 +54,19 @@ export default function AdminCombustiblesPage() {
 
     setSavingId(combustible.id)
 
-    const { error } = await supabase
-      .from('combustibles')
-      .update({ precio: newPrice })
-      .eq('id', combustible.id)
-
-    if (error) {
-      toast.error('Error al actualizar el precio')
-      console.error(error)
-    } else {
+    try {
+      const res = await updateCombustiblePrecio({ id: combustible.id, precio: newPrice })
+      if (!res.ok) throw new Error(res.error)
+      
       setCombustibles((prev) =>
         prev.map((c) => (c.id === combustible.id ? { ...c, precio: newPrice } : c))
       )
       toast.success(`Precio de ${combustible.nombre} actualizado`)
+    } catch (error: any) {
+      toast.error(error.message || 'Error al actualizar el precio')
+    } finally {
+      setSavingId(null)
     }
-
-    setSavingId(null)
   }
 
   const handleToggleDisponible = async (combustible: Combustible) => {
@@ -76,26 +77,23 @@ export default function AdminCombustiblesPage() {
       prev.map((c) => (c.id === combustible.id ? { ...c, disponible: newValue } : c))
     )
 
-    const { error } = await supabase
-      .from('combustibles')
-      .update({ disponible: newValue })
-      .eq('id', combustible.id)
-
-    if (error) {
+    try {
+      const res = await updateCombustibleDisponible({ id: combustible.id, disponible: newValue })
+      if (!res.ok) throw new Error(res.error)
+      toast.success(`${combustible.nombre} ${newValue ? 'activado' : 'desactivado'}`)
+    } catch (error: any) {
       // Revert
       setCombustibles((prev) =>
         prev.map((c) => (c.id === combustible.id ? { ...c, disponible: !newValue } : c))
       )
-      toast.error('Error al actualizar disponibilidad')
-    } else {
-      toast.success(`${combustible.nombre} ${newValue ? 'activado' : 'desactivado'}`)
+      toast.error(error.message || 'Error al actualizar disponibilidad')
     }
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
@@ -103,34 +101,34 @@ export default function AdminCombustiblesPage() {
   return (
     <div className="space-y-8 max-w-4xl">
       <div>
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-          <Fuel className="w-8 h-8 text-[#005A9C]" />
+        <h1 className="text-3xl font-black tracking-tight flex items-center gap-3 text-foreground">
+          <Fuel className="w-8 h-8 text-primary" />
           Combustibles
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="mt-1 text-muted-foreground">
           Actualizá los precios de los combustibles manualmente.
         </p>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-100">
+      <GlassCard className="overflow-hidden">
         {combustibles.map((combustible) => (
           <div
             key={combustible.id}
-            className={`p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 transition-opacity ${
-              !combustible.disponible ? 'opacity-50' : ''
+            className={`p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 transition-opacity border-b last:border-b-0 hover:bg-muted/30 ${
+              !combustible.disponible ? 'opacity-50 grayscale-[0.3]' : ''
             }`}
           >
             {/* Color strip + Name */}
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <div
-                className="w-4 h-14 rounded-full shrink-0"
+                className="w-4 h-14 rounded-full shrink-0 shadow-sm"
                 style={{ backgroundColor: combustible.color_hex }}
               />
               <div className="min-w-0">
-                <h3 className="font-bold text-gray-900 text-lg leading-tight">
+                <h3 className="font-bold text-lg leading-tight text-foreground">
                   {combustible.nombre}
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground font-medium">
                   {combustible.octanaje || 'Combustible'}
                 </p>
               </div>
@@ -139,7 +137,7 @@ export default function AdminCombustiblesPage() {
             {/* Price Input + Save */}
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-40">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">
                   $
                 </span>
                 <input
@@ -153,49 +151,47 @@ export default function AdminCombustiblesPage() {
                       [combustible.id]: e.target.value,
                     }))
                   }
-                  className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-bold text-gray-900 text-lg outline-none focus:ring-2 focus:ring-[#005A9C] focus:border-transparent transition-all"
+                  className="w-full pl-8 pr-4 py-3 rounded-xl font-bold text-lg outline-none transition-all bg-muted/50 border focus:border-primary focus:ring-1 focus:ring-primary text-foreground"
                   disabled={savingId === combustible.id}
                 />
               </div>
 
-              <button
+              <Button
                 onClick={() => handleSavePrice(combustible)}
                 disabled={savingId === combustible.id}
-                className="px-4 py-3 bg-[#005A9C] text-white rounded-xl font-bold hover:bg-[#004a80] transition-colors disabled:opacity-50 flex items-center gap-2 shrink-0"
+                size="lg"
+                className="rounded-xl font-bold px-6 h-12"
               >
                 {savingId === combustible.id ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <Save className="w-5 h-5" />
                 )}
-                <span className="hidden sm:inline">Guardar</span>
-              </button>
+                <span className="hidden sm:inline ml-2">Guardar</span>
+              </Button>
             </div>
 
             {/* Toggle */}
-            <button
-              onClick={() => handleToggleDisponible(combustible)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#005A9C] focus:ring-offset-2 shrink-0 ${
-                combustible.disponible ? 'bg-green-500' : 'bg-gray-200'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  combustible.disponible ? 'translate-x-6' : 'translate-x-1'
-                }`}
+            <div className="flex items-center gap-2 shrink-0">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${combustible.disponible ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
+                {combustible.disponible ? 'Activo' : 'Desactivado'}
+              </span>
+              <Switch
+                checked={combustible.disponible}
+                onCheckedChange={() => handleToggleDisponible(combustible)}
               />
-            </button>
+            </div>
           </div>
         ))}
 
         {combustibles.length === 0 && (
-          <div className="p-12 text-center text-gray-500">
+          <div className="p-12 text-center text-muted-foreground">
             No hay combustibles registrados en la base de datos.
           </div>
         )}
-      </div>
+      </GlassCard>
 
-      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 text-sm text-blue-800 font-medium leading-relaxed">
+      <div className="rounded-2xl p-6 text-sm font-medium leading-relaxed bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-400">
         <strong>Nota:</strong> Los precios de combustibles se actualizan exclusivamente desde
         este panel. No se modifican con la carga de archivos Excel de YPF Central.
       </div>

@@ -4,6 +4,9 @@ import { useState, useEffect, useMemo } from 'react'
 import { Settings, Save, Loader2, MessageSquare } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { GlassCard } from '@/components/admin/ui/glass-card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface ConfigFields {
   whatsapp_number: string
@@ -118,7 +121,7 @@ export default function AdminConfiguracionPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
@@ -126,19 +129,19 @@ export default function AdminConfiguracionPage() {
   return (
     <div className="space-y-8 max-w-4xl">
       <div>
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-          <Settings className="w-8 h-8 text-[#005A9C]" />
+        <h1 className="text-3xl font-black tracking-tight flex items-center gap-3 text-foreground">
+          <Settings className="w-8 h-8 text-primary" />
           Configuración
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="mt-1 text-muted-foreground">
           Ajustá los datos generales de la tienda y el mensaje de WhatsApp.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Form */}
-        <div className="lg:col-span-3 bg-white rounded-3xl shadow-sm border border-gray-100 p-8 space-y-6">
-          <h2 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-4">
+        <GlassCard className="lg:col-span-3 p-8 space-y-6">
+          <h2 className="text-lg font-bold pb-4 border-b text-foreground">
             Datos Generales
           </h2>
 
@@ -171,8 +174,8 @@ export default function AdminConfiguracionPage() {
             placeholder="https://www.instagram.com/ypffull/"
           />
 
-          <div className="pt-4 border-t border-gray-100">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
+          <div className="pt-4 border-t">
+            <h2 className="text-lg font-bold mb-4 text-foreground">
               Mensaje de WhatsApp
             </h2>
 
@@ -199,10 +202,11 @@ export default function AdminConfiguracionPage() {
           </div>
 
           <div className="pt-4">
-            <button
+            <Button
               onClick={handleSave}
               disabled={saving || !hasChanges}
-              className="w-full py-4 bg-[#005A9C] text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-[#004a80] transition-all disabled:opacity-50 disabled:hover:bg-[#005A9C]"
+              className="w-full h-14 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              size="lg"
             >
               {saving ? (
                 <>
@@ -215,30 +219,30 @@ export default function AdminConfiguracionPage() {
                   Guardar Cambios
                 </>
               )}
-            </button>
+            </Button>
             {!hasChanges && (
-              <p className="text-center text-sm text-gray-400 mt-3 font-medium">
+              <p className="text-center text-sm mt-3 font-medium text-muted-foreground">
                 No hay cambios pendientes.
               </p>
             )}
           </div>
-        </div>
+        </GlassCard>
 
         {/* WhatsApp Preview */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sticky top-24">
+          <GlassCard className="p-6 sticky top-24">
             <div className="flex items-center gap-2 mb-4">
-              <MessageSquare className="w-5 h-5 text-[#25D366]" />
-              <h3 className="font-bold text-gray-900">Preview del Mensaje</h3>
+              <MessageSquare className="w-5 h-5 text-green-500" />
+              <h3 className="font-bold text-foreground">Preview del Mensaje</h3>
             </div>
 
-            <div className="bg-[#E5DDD5] rounded-2xl p-4 relative">
+            <div className="rounded-2xl p-4 relative bg-[#E5DDD5] dark:bg-[#0b141a]">
               {/* Chat bubble */}
-              <div className="bg-[#DCF8C6] rounded-xl p-4 shadow-sm max-w-full relative">
-                <pre className="whitespace-pre-wrap text-sm text-gray-800 font-sans leading-relaxed break-words">
+              <div className="rounded-xl p-4 shadow-sm max-w-full relative bg-[#DCF8C6] dark:bg-[#005c4b]">
+                <pre className="whitespace-pre-wrap text-sm font-sans leading-relaxed break-words text-[#1F2937] dark:text-[#e9edef]">
                   {previewMessage}
                 </pre>
-                <span className="text-[10px] text-gray-500 float-right mt-1">
+                <span className="text-[10px] float-right mt-1 text-[#6B7280] dark:text-[#8696a0]">
                   {new Date().toLocaleTimeString('es-AR', {
                     hour: '2-digit',
                     minute: '2-digit',
@@ -247,10 +251,10 @@ export default function AdminConfiguracionPage() {
               </div>
             </div>
 
-            <p className="text-xs text-gray-400 mt-3 text-center">
+            <p className="text-xs mt-3 text-center text-muted-foreground">
               Los productos y el total son de ejemplo.
             </p>
-          </div>
+          </GlassCard>
         </div>
       </div>
     </div>
@@ -271,15 +275,15 @@ function FieldGroup({
   placeholder?: string
 }) {
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-bold text-gray-700">{label}</label>
-      {hint && <p className="text-xs text-gray-400">{hint}</p>}
-      <input
+    <div className="space-y-2 mb-4">
+      <label className="text-sm font-bold text-foreground">{label}</label>
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      <Input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#005A9C] focus:border-transparent outline-none transition-all text-gray-900"
+        className="w-full px-4 py-3 h-12 rounded-xl outline-none transition-all bg-muted/50 border focus-visible:ring-1 text-foreground"
       />
     </div>
   )

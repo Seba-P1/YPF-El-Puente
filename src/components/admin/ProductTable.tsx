@@ -18,6 +18,20 @@ import { formatearPrecioARS } from '@/lib/excel/parser'
 import type { Producto } from '@/types'
 import { toast } from 'sonner'
 import { ImageUploader } from './ImageUploader'
+import { GlassCard } from '@/components/admin/ui/glass-card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface ProductTableProps {
   productos: Producto[]
@@ -25,22 +39,16 @@ interface ProductTableProps {
 
 const ITEMS_POR_PAGINA = 20
 
+const CATEGORY_STYLES: Record<string, { bg: string; text: string }> = {
+  hamburguesas: { bg: 'bg-orange-500/10 dark:bg-orange-500/20', text: 'text-orange-600 dark:text-orange-400' },
+  cafeteria: { bg: 'bg-amber-500/10 dark:bg-amber-500/20', text: 'text-amber-600 dark:text-amber-400' },
+  marca_full: { bg: 'bg-blue-500/10 dark:bg-blue-500/20', text: 'text-blue-600 dark:text-blue-400' },
+}
+
 const CATEGORY_LABELS: Record<string, string> = {
   hamburguesas: 'Hamburguesas',
   cafeteria: 'Cafetería',
   marca_full: 'Exclusivos Full',
-}
-
-const CATEGORY_STYLES: Record<string, { bg: string; color: string; border: string }> = {
-  hamburguesas: { bg: '#FFF7ED', color: '#C2410C', border: '#FED7AA' },
-  cafeteria: { bg: '#FFFBEB', color: '#B45309', border: '#FDE68A' },
-  marca_full: { bg: '#EFF6FF', color: '#1D4ED8', border: '#BFDBFE' },
-}
-
-const BADGE_STYLES: Record<string, { bg: string; color: string }> = {
-  NUEVA: { bg: '#FEF08A', color: '#000000' },
-  RECOMENDADO: { bg: '#3B82F6', color: '#FFFFFF' },
-  PROMO: { bg: '#EF4444', color: '#FFFFFF' },
 }
 
 export function ProductTable({ productos: initialProductos }: ProductTableProps) {
@@ -104,14 +112,16 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
       }
       setGuardandoPrecioId(id)
       try {
-        await updateProductoPrecio(id, precio)
+        const res = await updateProductoPrecio({ id, precio })
+        if (!res.ok) throw new Error(res.error)
+
         setProductos((prev) =>
           prev.map((p) => (p.id === id ? { ...p, precio } : p))
         )
         toast.success(`Precio actualizado: ${formatearPrecioARS(precio)}`)
         setEditandoPrecio(null)
-      } catch {
-        toast.error('Error al actualizar el precio')
+      } catch (error: any) {
+        toast.error(error.message || 'Error al actualizar el precio')
       } finally {
         setGuardandoPrecioId(null)
       }
@@ -121,17 +131,20 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
 
   const handleToggleDisponible = useCallback(
     async (id: string, currentValue: boolean) => {
+      // Optimistic update
       setProductos((prev) =>
         prev.map((p) => (p.id === id ? { ...p, disponible: !currentValue } : p))
       )
       try {
-        await updateProductoDisponible(id, !currentValue)
+        const res = await updateProductoDisponible({ id, disponible: !currentValue })
+        if (!res.ok) throw new Error(res.error)
         toast.success(`Producto ${!currentValue ? 'activado' : 'desactivado'}`)
-      } catch {
+      } catch (error: any) {
+        // Revert on error
         setProductos((prev) =>
           prev.map((p) => (p.id === id ? { ...p, disponible: currentValue } : p))
         )
-        toast.error('Error al actualizar disponibilidad')
+        toast.error(error.message || 'Error al actualizar disponibilidad')
       }
     },
     []
@@ -143,10 +156,11 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
       prev.map((p) => (p.id === id ? { ...p, badge: newBadge } : p))
     )
     try {
-      await updateProductoBadge(id, newBadge)
+      const res = await updateProductoBadge({ id, badge: newBadge })
+      if (!res.ok) throw new Error(res.error)
       toast.success('Etiqueta actualizada')
-    } catch {
-      toast.error('Error al actualizar etiqueta')
+    } catch (error: any) {
+      toast.error(error.message || 'Error al actualizar etiqueta')
     }
   }, [])
 
@@ -167,24 +181,18 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
   )
 
   return (
-    <div>
-      <div
-        className="flex flex-wrap items-center gap-2.5 mb-4 bg-white border border-[#E2E8F0] p-3.5"
-        style={{ borderRadius: 10 }}
-      >
-        <div className="relative w-[240px] max-sm:w-full">
-          <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex text-[#94A3B8]">
-            <Search size={12} />
-          </div>
-          <input
-            type="text"
+    <div className="space-y-4">
+      <GlassCard className="p-4 flex flex-wrap items-center gap-4">
+        <div className="relative w-[280px] max-sm:w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
             placeholder="Buscar por nombre o PLU..."
             value={filtroNombre}
             onChange={(e) => {
               setFiltroNombre(e.target.value)
               setPaginaActual(1)
             }}
-            className="w-full h-9 text-[13px] border border-[#E2E8F0] rounded-lg pl-7 pr-2.5 outline-none focus:border-[#005A9C]"
+            className="pl-9 h-9"
           />
         </div>
 
@@ -194,12 +202,12 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
             setFiltroCategoria(e.target.value as any)
             setPaginaActual(1)
           }}
-          className="w-[160px] h-9 text-[13px] border border-[#E2E8F0] rounded-lg px-2.5 outline-none bg-white text-[#334155]"
+          className="h-9 w-[180px] text-sm rounded-md border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
-          <option value="all">Todas</option>
-          <option value="hamburguesas">Hamburguesas</option>
-          <option value="cafeteria">Cafetería</option>
-          <option value="marca_full">Exclusivos Full</option>
+          <option value="all" className="bg-background">Todas las categorías</option>
+          <option value="hamburguesas" className="bg-background">Hamburguesas</option>
+          <option value="cafeteria" className="bg-background">Cafetería</option>
+          <option value="marca_full" className="bg-background">Exclusivos Full</option>
         </select>
 
         <select
@@ -208,231 +216,227 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
             setFiltroEstado(e.target.value as any)
             setPaginaActual(1)
           }}
-          className="w-[140px] h-9 text-[13px] border border-[#E2E8F0] rounded-lg px-2.5 outline-none bg-white text-[#334155]"
+          className="h-9 w-[160px] text-sm rounded-md border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
-          <option value="all">Todos</option>
-          <option value="active">Activos</option>
-          <option value="inactive">Inactivos</option>
-          <option value="noprice">Sin precio</option>
+          <option value="all" className="bg-background">Cualquier estado</option>
+          <option value="active" className="bg-background">Activos</option>
+          <option value="inactive" className="bg-background">Inactivos</option>
+          <option value="noprice" className="bg-background">Sin precio</option>
         </select>
 
-        <div className="ml-auto text-xs text-[#64748B]">
+        <div className="ml-auto text-sm text-muted-foreground">
           Mostrando {filteredProducts.length} de {productos.length}
         </div>
-      </div>
+      </GlassCard>
 
-      <div className="bg-white border border-[#E2E8F0] overflow-hidden" style={{ borderRadius: 10 }}>
+      <GlassCard className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-[#F8FAFC] border-b-2 border-[#E2E8F0]">
-                <Th className="w-[60px]">Imagen</Th>
-                <Th>Producto</Th>
-                <Th className="w-[120px]">Categoría</Th>
-                <Th className="w-[140px]">Precio</Th>
-                <Th className="w-[80px]">Estado</Th>
-                <Th className="w-[100px]">Badge</Th>
-                <Th className="w-[90px] text-right">Acciones</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedProducts.length > 0 ? (
-                paginatedProducts.map((p) => (
-                  <tr
-                    key={p.id}
-                    className="border-b border-[#E2E8F0] transition-colors duration-150 hover:bg-[#F8FAFC]"
-                    style={{ opacity: p.disponible ? 1 : 0.6 }}
-                  >
-                    <Td>
-                      <div className="w-11 h-11 rounded-lg border border-[#E2E8F0] overflow-hidden relative flex items-center justify-center bg-[#F1F5F9]">
-                        {p.imagen_url ? (
-                          <Image src={p.imagen_url} alt={p.nombre} fill className="object-cover" sizes="44px" />
-                        ) : (
-                          <ImageOff size={16} color="#94A3B8" />
-                        )}
-                      </div>
-                    </Td>
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-[70px]">Imagen</TableHead>
+                <TableHead>Producto</TableHead>
+                <TableHead className="w-[150px]">Categoría</TableHead>
+                <TableHead className="w-[140px]">Precio</TableHead>
+                <TableHead className="w-[100px]">Estado</TableHead>
+                <TableHead className="w-[140px]">Etiqueta</TableHead>
+                <TableHead className="w-[100px] text-right">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <AnimatePresence mode="popLayout">
+                {paginatedProducts.length > 0 ? (
+                  paginatedProducts.map((p) => (
+                    <motion.tr
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: p.disponible ? 1 : 0.6, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      key={p.id}
+                      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                    >
+                      <TableCell>
+                        <div className="w-12 h-12 rounded-md overflow-hidden relative flex items-center justify-center border bg-muted">
+                          {p.imagen_url ? (
+                            <Image src={p.imagen_url} alt={p.nombre} fill className="object-cover" sizes="48px" />
+                          ) : (
+                            <ImageOff className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
+                      </TableCell>
 
-                    <Td>
-                      <div className="font-semibold text-[#0F172A] max-w-[220px] truncate" title={p.nombre}>
-                        {p.nombre}
-                      </div>
-                      <div className="text-[11px] text-[#94A3B8] font-mono mt-0.5">{p.codigo_plu}</div>
-                    </Td>
+                      <TableCell>
+                        <div className="font-medium max-w-[250px] truncate" title={p.nombre}>
+                          {p.nombre}
+                        </div>
+                        <div className="text-xs font-mono text-muted-foreground mt-1">
+                          {p.codigo_plu}
+                        </div>
+                      </TableCell>
 
-                    <Td>
-                      <span
-                        className="inline-block text-[11px] font-semibold px-2 py-0.5"
-                        style={{
-                          borderRadius: 9999,
-                          backgroundColor: CATEGORY_STYLES[p.categoria_slug]?.bg ?? '#F1F5F9',
-                          color: CATEGORY_STYLES[p.categoria_slug]?.color ?? '#475569',
-                          border: `1px solid ${CATEGORY_STYLES[p.categoria_slug]?.border ?? '#E2E8F0'}`,
-                        }}
-                      >
-                        {CATEGORY_LABELS[p.categoria_slug] ?? p.categoria_slug}
-                      </span>
-                    </Td>
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          className={`${CATEGORY_STYLES[p.categoria_slug]?.bg} ${CATEGORY_STYLES[p.categoria_slug]?.text} border-none font-medium`}
+                        >
+                          {CATEGORY_LABELS[p.categoria_slug] ?? p.categoria_slug}
+                        </Badge>
+                      </TableCell>
 
-                    <Td>
-                      <div
-                        className="inline-flex items-center gap-1.5 cursor-text group"
-                        onClick={() => {
-                          if (guardandoPrecioId !== p.id && editandoPrecio?.id !== p.id) {
-                            setEditandoPrecio({
-                              id: p.id,
-                              valor: p.precio && p.precio > 0 ? String(p.precio) : '',
+                      <TableCell>
+                        <div
+                          className="inline-flex items-center gap-2 cursor-text group min-h-[32px]"
+                          onClick={() => {
+                            if (guardandoPrecioId !== p.id && editandoPrecio?.id !== p.id) {
+                              setEditandoPrecio({
+                                id: p.id,
+                                valor: p.precio && p.precio > 0 ? String(p.precio) : '',
+                              })
+                            }
+                          }}
+                        >
+                          {editandoPrecio?.id === p.id ? (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                ref={inputRef}
+                                type="text"
+                                value={editandoPrecio.valor}
+                                onChange={(e) => {
+                                  const val = e.target.value
+                                  if (/^[\d.,]*$/.test(val)) {
+                                    setEditandoPrecio((prev) =>
+                                      prev ? { ...prev, valor: val } : prev
+                                    )
+                                  }
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    handleGuardarPrecio(p.id, editandoPrecio.valor)
+                                  } else if (e.key === 'Escape') {
+                                    setEditandoPrecio(null)
+                                  }
+                                }}
+                                onBlur={() => {
+                                  if (guardandoPrecioId !== p.id) {
+                                    handleGuardarPrecio(p.id, editandoPrecio.valor)
+                                  }
+                                }}
+                                disabled={guardandoPrecioId === p.id}
+                                autoFocus
+                                className="w-24 h-8 text-sm font-medium focus-visible:ring-1"
+                              />
+                              {guardandoPrecioId === p.id && (
+                                <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                              )}
+                            </div>
+                          ) : (
+                            <>
+                              {!p.precio || p.precio === 0 ? (
+                                <Badge variant="destructive" className="bg-destructive/10 text-destructive hover:bg-destructive/20 border-none">
+                                  Sin precio
+                                </Badge>
+                              ) : (
+                                <span className="text-sm font-semibold text-primary">
+                                  {formatearPrecioARS(p.precio)}
+                                </span>
+                              )}
+                              {guardandoPrecioId === p.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                              ) : (
+                                <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${p.disponible ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
+                            {p.disponible ? 'Activo' : 'Desactivado'}
+                          </span>
+                          <Switch
+                            checked={p.disponible}
+                            onCheckedChange={() => handleToggleDisponible(p.id, p.disponible)}
+                          />
+                        </div>
+                      </TableCell>
+
+                      <TableCell>
+                        <select
+                          value={p.badge || 'none'}
+                          onChange={(e) => handleBadgeChange(p.id, e.target.value)}
+                          className={`text-xs font-semibold rounded-md px-2 py-1 outline-none cursor-pointer border shadow-sm ${
+                            p.badge === 'NUEVA' ? 'bg-yellow-200 text-yellow-900 border-yellow-300' :
+                            p.badge === 'RECOMENDADO' ? 'bg-blue-500 text-white border-blue-600' :
+                            p.badge === 'PROMO' ? 'bg-red-500 text-white border-red-600' :
+                            'bg-transparent border-input text-muted-foreground'
+                          }`}
+                        >
+                          <option value="none" className="bg-background text-foreground">&mdash;</option>
+                          <option value="NUEVA" className="bg-background text-foreground">NUEVA</option>
+                          <option value="RECOMENDADO" className="bg-background text-foreground">RECOMENDADO</option>
+                          <option value="PROMO" className="bg-background text-foreground">PROMO</option>
+                        </select>
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setImageUploadModal({
+                              productoId: p.id,
+                              nombre: p.nombre,
+                              imagenActual: p.imagen_url,
                             })
                           }
-                        }}
-                      >
-                        {editandoPrecio?.id === p.id ? (
-                          <>
-                            <input
-                              ref={inputRef}
-                              type="text"
-                              value={editandoPrecio.valor}
-                              onChange={(e) => {
-                                const val = e.target.value
-                                if (/^[\d.,]*$/.test(val)) {
-                                  setEditandoPrecio((prev) =>
-                                    prev ? { ...prev, valor: val } : prev
-                                  )
-                                }
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  handleGuardarPrecio(p.id, editandoPrecio.valor)
-                                } else if (e.key === 'Escape') {
-                                  setEditandoPrecio(null)
-                                }
-                              }}
-                              onBlur={() => {
-                                if (guardandoPrecioId !== p.id) {
-                                  handleGuardarPrecio(p.id, editandoPrecio.valor)
-                                }
-                              }}
-                              disabled={guardandoPrecioId === p.id}
-                              autoFocus
-                              className="text-[13px] font-semibold text-[#005A9C] border-none border-b-2 border-[#005A9C] bg-transparent outline-none w-[100px] py-0.5 px-1"
-                            />
-                            {guardandoPrecioId === p.id && (
-                              <Loader2 size={12} className="animate-spin text-[#005A9C]" />
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            {!p.precio || p.precio === 0 ? (
-                              <span
-                                className="text-[11px] font-semibold px-2 py-0.5"
-                                style={{
-                                  borderRadius: 9999,
-                                  backgroundColor: '#FFF7ED',
-                                  color: '#C2410C',
-                                  border: '1px solid #FED7AA',
-                                }}
-                              >
-                                Sin precio
-                              </span>
-                            ) : (
-                              <span className="text-[13px] font-semibold text-[#005A9C]">
-                                {formatearPrecioARS(p.precio)}
-                              </span>
-                            )}
-                            {guardandoPrecioId === p.id ? (
-                              <Loader2 size={12} className="animate-spin text-[#005A9C]" />
-                            ) : (
-                              <Pencil size={12} color="#94A3B8" className="opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </Td>
-
-                    <Td>
-                      <button
-                        onClick={() => handleToggleDisponible(p.id, p.disponible)}
-                        className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 border-none cursor-pointer outline-none"
-                        style={{ backgroundColor: p.disponible ? '#22C55E' : '#CBD5E1' }}
-                      >
-                        <span
-                          className="inline-block h-4 w-4 rounded-full bg-white transition-transform duration-200 shadow-sm"
-                          style={{ transform: p.disponible ? 'translateX(26px)' : 'translateX(2px)' }}
-                        />
-                      </button>
-                    </Td>
-
-                    <Td>
-                      <select
-                        value={p.badge || 'none'}
-                        onChange={(e) => handleBadgeChange(p.id, e.target.value)}
-                        className="text-[11px] font-semibold rounded-lg border border-[#E2E8F0] px-2 py-1 outline-none cursor-pointer max-w-[100px]"
-                        style={{
-                          backgroundColor: p.badge ? BADGE_STYLES[p.badge]?.bg ?? '#FFFFFF' : '#FFFFFF',
-                          color: p.badge ? BADGE_STYLES[p.badge]?.color ?? '#334155' : '#94A3B8',
-                        }}
-                      >
-                        <option value="none" style={{ color: '#94A3B8' }}>&mdash;</option>
-                        <option value="NUEVA" style={{ backgroundColor: '#FEF08A', color: '#000000' }}>NUEVA</option>
-                        <option value="RECOMENDADO" style={{ backgroundColor: '#3B82F6', color: '#FFFFFF' }}>RECOMENDADO</option>
-                        <option value="PROMO" style={{ backgroundColor: '#EF4444', color: '#FFFFFF' }}>PROMO</option>
-                      </select>
-                    </Td>
-
-                    <Td className="text-right">
-                      <button
-                        onClick={() =>
-                          setImageUploadModal({
-                            productoId: p.id,
-                            nombre: p.nombre,
-                            imagenActual: p.imagen_url,
-                          })
-                        }
-                        className="inline-flex items-center gap-1 bg-white border border-[#E2E8F0] rounded-lg px-2.5 py-1.5 text-xs text-[#475569] cursor-pointer transition-colors duration-150 hover:border-[#005A9C] hover:text-[#005A9C]"
-                      >
-                        <ImagePlus size={14} />
-                        Imagen
-                      </button>
-                    </Td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-[13px] text-[#94A3B8]">
-                    No se encontraron productos que coincidan con la búsqueda.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                          className="h-8 text-xs"
+                        >
+                          <ImagePlus className="mr-1 h-3 w-3" />
+                          Foto
+                        </Button>
+                      </TableCell>
+                    </motion.tr>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                      No se encontraron productos.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </AnimatePresence>
+            </TableBody>
+          </Table>
         </div>
 
         {totalPages > 1 && (
-          <div className="flex justify-between items-center px-4 py-3 border-t border-[#E2E8F0]">
-            <span className="text-xs text-[#64748B]">
+          <div className="flex items-center justify-between px-4 py-3 border-t">
+            <span className="text-xs text-muted-foreground">
               Página {paginaActual} de {totalPages}
             </span>
             <div className="flex gap-2">
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setPaginaActual((p) => Math.max(1, p - 1))}
                 disabled={paginaActual === 1}
-                className="h-8 px-3 rounded-lg text-xs border border-[#E2E8F0] bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ color: paginaActual === 1 ? '#CBD5E1' : '#475569' }}
               >
                 Anterior
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setPaginaActual((p) => Math.min(totalPages, p + 1))}
                 disabled={paginaActual === totalPages}
-                className="h-8 px-3 rounded-lg text-xs border border-[#E2E8F0] bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ color: paginaActual === totalPages ? '#CBD5E1' : '#475569' }}
               >
                 Siguiente
-              </button>
+              </Button>
             </div>
           </div>
         )}
-      </div>
+      </GlassCard>
 
       {imageUploadModal && (
         <ImageUploader
@@ -444,36 +448,5 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
         />
       )}
     </div>
-  )
-}
-
-function Th({
-  children,
-  className,
-}: {
-  children: React.ReactNode
-  className?: string
-}) {
-  return (
-    <th
-      className={`text-[11px] font-bold text-[#64748B] uppercase tracking-wider px-3.5 py-2.5 text-left whitespace-nowrap ${className ?? ''}`}
-      style={{ letterSpacing: '0.06em' }}
-    >
-      {children}
-    </th>
-  )
-}
-
-function Td({
-  children,
-  className,
-}: {
-  children: React.ReactNode
-  className?: string
-}) {
-  return (
-    <td className={`px-3.5 py-2.5 text-[13px] text-[#334155] ${className ?? ''}`}>
-      {children}
-    </td>
   )
 }

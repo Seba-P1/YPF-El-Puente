@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 interface AdminHeaderProps {
     userEmail: string
@@ -46,20 +47,25 @@ export function AdminHeader({ userEmail, className = '' }: AdminHeaderProps) {
 
     return (
         <div className={className}>
-            {/* BARRA FIJA */}
-            <header
-                className="flex items-center justify-between px-4 h-14 flex-shrink-0"
+            {/* BARRA FLOTANTE TRANSPARENTE */}
+            <div
+                className="flex items-center justify-between px-4 py-2"
                 style={{
-                    background: '#0F172A',
-                    borderBottom: '1px solid rgba(255,255,255,0.08)',
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    left: 0,
+                    zIndex: 30,
+                    pointerEvents: 'none',
                 }}
             >
-                <button onClick={() => setIsOpen(true)}>
-                    <Menu size={20} className="text-white" />
+                <button onClick={() => setIsOpen(true)} className="lg:hidden" style={{ pointerEvents: 'auto' }}>
+                    <Menu size={20} style={{ color: 'var(--nav-text)' }} />
                 </button>
-                <span className="text-white text-[14px] font-bold">YPF El Puente</span>
-                <User size={18} style={{ color: 'rgba(255,255,255,0.5)' }} />
-            </header>
+                <div style={{ pointerEvents: 'auto', marginLeft: 'auto' }}>
+                    <ThemeToggle />
+                </div>
+            </div>
 
             {/* DRAWER */}
             <AnimatePresence>
@@ -78,7 +84,7 @@ export function AdminHeader({ userEmail, className = '' }: AdminHeaderProps) {
                         {/* PANEL */}
                         <motion.div
                             className="fixed top-0 left-0 bottom-0 z-50 w-64 flex flex-col overflow-y-auto"
-                            style={{ background: '#0F172A' }}
+                            style={{ background: 'var(--admin-drawer-bg)' }}
                             initial={{ x: '-100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '-100%' }}
@@ -87,11 +93,11 @@ export function AdminHeader({ userEmail, className = '' }: AdminHeaderProps) {
                             {/* HEADER DEL PANEL */}
                             <div
                                 className="flex items-center justify-between px-4 h-14 flex-shrink-0"
-                                style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+                                style={{ borderBottom: '1px solid var(--admin-drawer-border)' }}
                             >
-                                <span className="text-white text-[14px] font-bold">YPF El Puente</span>
+                                <span style={{ color: 'var(--nav-text)', fontSize: 14, fontWeight: 700 }}>YPF El Puente</span>
                                 <button onClick={() => setIsOpen(false)}>
-                                    <X size={20} className="text-white/60" />
+                                    <X size={20} style={{ color: 'var(--nav-text-muted)' }} />
                                 </button>
                             </div>
 
@@ -114,11 +120,11 @@ export function AdminHeader({ userEmail, className = '' }: AdminHeaderProps) {
                                             className="flex items-center gap-[10px] px-[10px] py-2 rounded-lg mb-[2px] text-[13px] font-medium transition-all duration-150"
                                             style={{
                                                 background: isActive
-                                                    ? 'rgba(0,90,156,0.9)'
+                                                    ? 'var(--ypf-blue)'
                                                     : link.highlight && !isActive
-                                                        ? 'rgba(255,209,0,0.08)'
+                                                        ? 'var(--ypf-yellow-dim)'
                                                         : 'transparent',
-                                                color: isActive ? 'white' : 'rgba(255,255,255,0.55)',
+                                                color: isActive ? '#FFFFFF' : 'var(--nav-text-muted)',
                                                 fontWeight: isActive ? 600 : 500,
                                                 borderLeft: link.highlight && !isActive
                                                     ? '2px solid #FFD100'
@@ -128,7 +134,7 @@ export function AdminHeader({ userEmail, className = '' }: AdminHeaderProps) {
                                             <link.icon
                                                 size={16}
                                                 className="flex-shrink-0"
-                                                style={{ color: isActive ? 'white' : 'rgba(255,255,255,0.4)' }}
+                                                style={{ color: isActive ? '#FFFFFF' : 'var(--nav-text-muted)' }}
                                             />
                                             {link.label}
                                             {link.highlight && !isActive && (
@@ -140,7 +146,7 @@ export function AdminHeader({ userEmail, className = '' }: AdminHeaderProps) {
                             </nav>
 
                             {/* SEPARADOR */}
-                            <div className="mx-2" style={{ height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+                            <div className="mx-2" style={{ height: '1px', background: 'var(--admin-drawer-border)' }} />
 
                             {/* SECCIÓN INFERIOR */}
                             <div className="px-2 py-2">
@@ -149,7 +155,7 @@ export function AdminHeader({ userEmail, className = '' }: AdminHeaderProps) {
                                     target="_blank"
                                     onClick={() => setIsOpen(false)}
                                     className="flex items-center gap-[10px] px-[10px] py-2 rounded-lg text-[12px] transition-all duration-150"
-                                    style={{ color: 'rgba(255,255,255,0.4)' }}
+                                    style={{ color: 'var(--nav-text-muted)' }}
                                 >
                                     <ExternalLink size={16} className="flex-shrink-0" />
                                     Ver sitio web
@@ -167,12 +173,12 @@ export function AdminHeader({ userEmail, className = '' }: AdminHeaderProps) {
                             {/* EMAIL */}
                             <div
                                 className="flex items-center gap-2 px-[10px] py-3"
-                                style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+                                style={{ borderTop: '1px solid var(--admin-drawer-border)' }}
                             >
-                                <User size={14} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+                                <User size={14} style={{ color: 'var(--nav-text-muted)', flexShrink: 0 }} />
                                 <span
                                     className="text-[11px] truncate"
-                                    style={{ color: 'rgba(255,255,255,0.3)' }}
+                                    style={{ color: 'var(--nav-text-muted)' }}
                                     title={userEmail}
                                 >
                                     {userEmail}

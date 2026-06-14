@@ -1,3 +1,4 @@
+import { ThemeProvider } from '@/components/theme-provider'
 import { Navbar } from '@/components/public/Navbar'
 import { CartSidebar } from '@/components/public/CartSidebar'
 import { MobileBottomBar } from '@/components/public/MobileBottomBar'
@@ -9,6 +10,7 @@ export default function PublicLayout({
   children: React.ReactNode
 }) {
   return (
+    <ThemeProvider attribute="class" forcedTheme="dark">
     <div className="relative min-h-screen flex flex-col">
       <Navbar />
       
@@ -24,5 +26,6 @@ export default function PublicLayout({
       <CartSidebar />
       <Toaster position="bottom-center" />
     </div>
+    </ThemeProvider>
   )
 }

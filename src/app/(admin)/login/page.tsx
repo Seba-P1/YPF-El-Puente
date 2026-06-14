@@ -54,9 +54,9 @@ function LoginForm() {
 
   return (
     <div className="flex flex-col items-center w-full max-w-md">
-      <div className="w-32 h-16 relative mb-8 invert">
+      <div className="w-40 h-12 relative mb-8">
         <Image
-          src="/assets/logo/logo-white-wide.png"
+          src="/assets/ypf imagenes/logo-modooscuro.png"
           alt="YPF El Puente"
           fill
           className="object-contain"

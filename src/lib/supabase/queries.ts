@@ -1,3 +1,4 @@
+import 'server-only'
 import { createClient as createServerSupabaseClient } from './server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import type { Database } from './types'
@@ -176,6 +177,29 @@ export async function getUploadsHistorial(
 
   if (error)
     throw new Error(`Error fetching uploads historial: ${error.message}`)
+  return data ?? []
+}
+
+export async function getAllCategorias(): Promise<Categoria[]> {
+  const supabase = await createServerSupabaseClient()
+  const { data, error } = await supabase
+    .from('categorias')
+    .select('*')
+    .order('orden', { ascending: true })
+
+  if (error) throw new Error(`Error fetching all categorias: ${error.message}`)
+  return data ?? []
+}
+
+export async function getAuditLogs(limit: number = 50): Promise<any[]> {
+  const supabase = await createServerSupabaseClient()
+  const { data, error } = await supabase
+    .from('audit_log')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) throw new Error(`Error fetching audit logs: ${error.message}`)
   return data ?? []
 }
 

@@ -1,0 +1,12 @@
+stack:
+  language: typescript
+  framework: nextjs@16
+  ui: tailwind@4 + shadcn/ui
+  orm: drizzle
+  db: postgres@17
+  auth: better-auth
+testing:
+  strict_tdd: false
+  runner: none
+  layers: []
+  coverage: unknown
