@@ -3,7 +3,7 @@
 import React, { useRef } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCartStore } from '@/stores/cart'
 import { toast } from 'sonner'
 import { formatearPrecioARS } from '@/lib/excel/parser'
@@ -126,7 +126,7 @@ export function FullMundialSection() {
   }
 
   return (
-    <section className="relative bg-[#F4F9FC] py-16 md:py-24 overflow-hidden border-y border-[#005A9C]/10 min-h-[100vh] flex flex-col justify-center">
+    <section className="relative bg-[#F4F9FC] overflow-hidden border-y border-[#005A9C]/10 min-h-[100svh] py-[clamp(56px,7svh,96px)] md:py-[clamp(72px,8svh,120px)] flex flex-col justify-center">
       {/* Background doodles on desktop */}
       <div 
         className="absolute inset-0 right-0 w-full lg:w-1/2 opacity-30 lg:opacity-80 pointer-events-none z-0 bg-no-repeat bg-right bg-cover ml-auto"
@@ -135,7 +135,7 @@ export function FullMundialSection() {
         }}
       />
 
-      <div className="relative w-full group z-10">
+      <div className="relative w-full flex-1 min-h-0 group z-10 flex items-center">
         {/* SCROLL BUTTONS (Desktop only) */}
         <button
           onClick={() => scroll('left')}
@@ -155,13 +155,15 @@ export function FullMundialSection() {
         {/* PRODUCTS SCROLL CONTAINER */}
         <div
           ref={scrollRef}
-          className="hide-scrollbar scroll-smooth snap-x snap-mandatory flex flex-row overflow-x-auto overflow-y-visible"
+          className="hide-scrollbar scroll-smooth snap-x snap-mandatory flex flex-row items-stretch overflow-x-auto overflow-y-visible"
           style={{
             position: 'relative',
             zIndex: 1,
             gap: 'clamp(16px, 2vw, 32px)',
             paddingLeft: 'clamp(24px, 5vw, 80px)',
             paddingRight: 'clamp(24px, 5vw, 80px)',
+            paddingTop: 'clamp(24px, 4svh, 56px)',
+            paddingBottom: 'clamp(24px, 4svh, 56px)',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             WebkitOverflowScrolling: 'touch',
@@ -173,7 +175,7 @@ export function FullMundialSection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="flex-shrink-0 w-[85vw] max-w-[340px] md:max-w-[400px] flex flex-col justify-center snap-center mr-6 md:mr-12"
+            className="flex-shrink-0 w-[85vw] max-w-[340px] md:w-[clamp(400px,24vw,520px)] md:max-w-none flex flex-col justify-center snap-center mr-6 md:mr-12"
           >
             {/* Tag */}
             <span className="font-[family-name:var(--font-caveat)] text-2xl md:text-3xl text-[#0096EB] font-bold tracking-wide mb-2">
@@ -203,22 +205,22 @@ export function FullMundialSection() {
           {MUNDIAL_PRODUCTS.map((producto) => (
             <div
               key={producto.id}
-              className="relative flex-shrink-0 w-[270px] md:w-[290px] snap-center flex flex-col items-center justify-end group pt-[120px] pb-4"
+              className="relative flex-shrink-0 w-[270px] md:w-[clamp(320px,18vw,400px)] snap-center flex flex-col items-center justify-end group pt-[175px] md:pt-[clamp(190px,15vw,260px)] pb-4"
             >
               {/* Product Image (Outside the card, overlapping) */}
-              <div className="absolute top-0 w-[240px] h-[240px] flex items-center justify-center z-10 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-2 pointer-events-none">
+              <div className="absolute top-0 w-[min(92vw,468px)] h-[min(68vw,350px)] md:w-[clamp(468px,24.7vw,546px)] md:h-[clamp(330px,18vw,410px)] flex items-center justify-center z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
                 <Image
                   src={producto.imagen_url || '/assets/placeholder.png'}
                   alt={producto.nombre}
                   fill
-                  sizes="300px"
+                  sizes="(max-width: 768px) 92vw, 546px"
                   className="object-contain drop-shadow-2xl"
                   priority
                 />
               </div>
 
               {/* Glass Product Info Card */}
-              <div className="w-full flex flex-col items-center bg-white/20 backdrop-blur-md border border-[#005A9C]/10 rounded-3xl p-5 shadow-xl shadow-[#005A9C]/5 transition-all duration-300 group-hover:bg-white/40 group-hover:border-[#005A9C]/20 pt-[100px] mt-[20px] min-h-[250px] relative z-0">
+              <div className="w-full flex flex-col items-center bg-white/20 backdrop-blur-md border border-[#005A9C]/10 rounded-3xl p-5 shadow-xl shadow-[#005A9C]/5 transition-all duration-300 group-hover:bg-white/40 group-hover:border-[#005A9C]/20 pt-[68px] md:pt-[clamp(72px,5vw,104px)] mt-[20px] min-h-[230px] md:min-h-[clamp(230px,14vw,280px)] relative z-0">
                 <h3 className="font-[family-name:var(--font-montserrat)] text-[13px] lg:text-[14px] font-bold text-[#005A9C] text-center line-clamp-2 min-h-[36px] flex items-center justify-center px-1">
                   {producto.nombre}
                 </h3>

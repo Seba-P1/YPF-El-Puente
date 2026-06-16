@@ -112,7 +112,7 @@ export function FullNavbar() {
         </Link>
 
         {/* LINKS DE SECCIÓN (Desktop) */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-8">
           {[
             { id: 'hamburguesas', label: 'Hamburguesas' },
             { id: 'cafeteria', label: 'Cafetería' },
