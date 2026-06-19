@@ -2,17 +2,23 @@
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import {
   Search,
   ImageOff,
   Pencil,
   Loader2,
   ImagePlus,
+  MoreVertical,
+  Copy,
+  Trash2,
 } from 'lucide-react'
 import {
   updateProductoDisponible,
   updateProductoBadge,
   updateProductoPrecio,
+  duplicateProducto,
+  deleteProducto,
 } from '@/lib/supabase/actions'
 import { formatearPrecioARS } from '@/lib/excel/parser'
 import type { Producto } from '@/types'
@@ -31,6 +37,22 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface ProductTableProps {
@@ -71,6 +93,9 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
     nombre: string
     imagenActual: string | null
   } | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<Producto | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -179,6 +204,45 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
     },
     [imageUploadModal]
   )
+
+  const handleDuplicate = useCallback(
+    async (producto: Producto) => {
+      setDuplicatingId(producto.id)
+      try {
+        const res = await duplicateProducto({ id: producto.id })
+        if (!res.ok) throw new Error(res.error)
+        setProductos((prev) => [res.data as Producto, ...prev])
+        toast.success(`"${producto.nombre}" duplicado`, {
+          description: 'Se creó una copia desactivada. Editala para publicarla.',
+        })
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : 'Error al duplicar el producto'
+        )
+      } finally {
+        setDuplicatingId(null)
+      }
+    },
+    []
+  )
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!confirmDelete) return
+    setDeleting(true)
+    try {
+      const res = await deleteProducto({ id: confirmDelete.id })
+      if (!res.ok) throw new Error(res.error)
+      setProductos((prev) => prev.filter((p) => p.id !== confirmDelete.id))
+      toast.success(`"${confirmDelete.nombre}" eliminado`)
+      setConfirmDelete(null)
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Error al eliminar el producto'
+      )
+    } finally {
+      setDeleting(false)
+    }
+  }, [confirmDelete])
 
   return (
     <div className="space-y-4">
@@ -381,21 +445,53 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
                       </TableCell>
 
                       <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            setImageUploadModal({
-                              productoId: p.id,
-                              nombre: p.nombre,
-                              imagenActual: p.imagen_url,
-                            })
-                          }
-                          className="h-8 text-xs"
-                        >
-                          <ImagePlus className="mr-1 h-3 w-3" />
-                          Foto
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label={`Acciones de ${p.nombre}`}
+                            >
+                              {duplicatingId === p.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <MoreVertical className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/productos/${p.id}`}>
+                                <Pencil />
+                                Editar
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleDuplicate(p)}>
+                              <Copy />
+                              Duplicar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={() =>
+                                setImageUploadModal({
+                                  productoId: p.id,
+                                  nombre: p.nombre,
+                                  imagenActual: p.imagen_url,
+                                })
+                              }
+                            >
+                              <ImagePlus />
+                              Cambiar foto
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onSelect={() => setConfirmDelete(p)}
+                            >
+                              <Trash2 />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </motion.tr>
                   ))
@@ -447,6 +543,42 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
           onClose={() => setImageUploadModal(null)}
         />
       )}
+
+      <Dialog
+        open={confirmDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setConfirmDelete(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar producto</DialogTitle>
+            <DialogDescription>
+              ¿Seguro que querés eliminar{' '}
+              <span className="font-semibold text-foreground">
+                {confirmDelete?.nombre}
+              </span>
+              ? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" type="button" disabled={deleting}>
+                Cancelar
+              </Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              type="button"
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+            >
+              {deleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

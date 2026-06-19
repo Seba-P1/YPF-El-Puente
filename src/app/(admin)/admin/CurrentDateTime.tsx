@@ -21,7 +21,7 @@ export function CurrentDateTime() {
     if (!fecha) return null
 
     return (
-        <p className="text-[12px] mt-1 capitalize" style={{ color: '#94A3B8' }}>
+        <p className="text-[12px] font-medium capitalize text-muted-foreground">
             {fecha} hs
         </p>
     )

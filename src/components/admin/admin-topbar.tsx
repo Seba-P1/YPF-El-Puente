@@ -22,10 +22,10 @@ export function AdminTopbar() {
   })
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background/80 backdrop-blur-md px-4 shadow-sm">
+    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-transparent backdrop-blur-sm px-4">
       <div className="flex items-center gap-2">
         <SidebarTrigger className="-ml-1" />
-        <div className="hidden sm:flex items-center space-x-2 ml-4 border-l pl-4">
+        <div className="hidden sm:flex items-center space-x-2 ml-4 border-l border-border pl-4">
           {breadcrumbs}
         </div>
       </div>

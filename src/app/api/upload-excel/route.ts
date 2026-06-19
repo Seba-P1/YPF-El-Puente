@@ -33,6 +33,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // PASO 1b — Verificar rol admin (el body usa service-role y bypassa RLS,
+    // así que la autorización debe ser explícita acá, no solo autenticación).
+    if (user.app_metadata?.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'Sin permisos de administrador' },
+        { status: 403 }
+      )
+    }
+
     // PASO 2 — Parsear body
     const body = await request.json()
     const { rows, filename } = body
@@ -41,6 +50,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'El array de filas está vacío o no es válido.' },
         { status: 400 }
+      )
+    }
+
+    const MAX_ROWS = 5000
+    if (rows.length > MAX_ROWS) {
+      return NextResponse.json(
+        { error: `Demasiadas filas (máximo ${MAX_ROWS}).` },
+        { status: 413 }
       )
     }
 

@@ -36,6 +36,18 @@ export async function getProductosByCategoria(
   return data ?? []
 }
 
+export async function getProductoById(id: string): Promise<Producto | null> {
+  const supabase = await createServerSupabaseClient()
+  const { data, error } = await supabase
+    .from('productos')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (error) throw new Error(`Error fetching producto: ${error.message}`)
+  return data ?? null
+}
+
 export async function getAllProductos(): Promise<Producto[]> {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase

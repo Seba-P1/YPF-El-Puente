@@ -130,7 +130,7 @@ function HeroSection() {
       {/* Content */}
       <motion.div
         className="relative z-10 flex flex-col items-center text-center px-6"
-        style={{ paddingTop: 68, maxWidth: 800 }}
+        style={{ paddingTop: 68, maxWidth: 'min(860px, 92vw)' }}
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -184,12 +184,12 @@ function HeroSection() {
             YPF
           </span>
           <span
-            className="text-[28px] md:text-[36px]"
             style={{
+              fontSize: 'clamp(32px, 5vw, 64px)',
               fontWeight: 900,
               color: 'white',
               letterSpacing: '-0.02em',
-              lineHeight: 1.1,
+              lineHeight: 1.05,
             }}
           >
             EL PUENTE
@@ -436,9 +436,9 @@ function CombustiblesSection({ combustibles }: { combustibles: Combustible[] }) 
 
       {/* Cards grid */}
       <div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 xl:gap-7"
         style={{
-          maxWidth: 1100,
+          maxWidth: 'min(1280px, 92vw)',
           margin: '0 auto',
           padding: '0 24px',
         }}
@@ -659,7 +659,7 @@ function BoxesSection() {
     >
       <div
         className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16"
-        style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px' }}
+        style={{ maxWidth: 'min(1280px, 92vw)', margin: '0 auto', padding: '0 24px' }}
       >
         {/* Left column — text */}
         <motion.div
@@ -893,7 +893,7 @@ function CTAMenuSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           style={{
-            fontSize: 'clamp(44px, 8vw, 88px)',
+            fontSize: 'clamp(44px, 6vw, 96px)',
             fontWeight: 900,
             color: 'white',
             letterSpacing: '-0.03em',
@@ -974,7 +974,7 @@ function FooterSection() {
     >
       <div
         className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8 text-center md:text-left"
-        style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px' }}
+        style={{ maxWidth: 'min(1280px, 92vw)', margin: '0 auto', padding: '0 24px' }}
       >
         {/* Column 1 — Brand */}
         <div className="flex flex-col items-center md:items-start gap-4">
@@ -1084,7 +1084,7 @@ function FooterSection() {
       {/* Bottom line */}
       <div
         style={{
-          maxWidth: 1100,
+          maxWidth: 'min(1280px, 92vw)',
           margin: '32px auto 0',
           padding: '24px 24px 0',
           borderTop: '1px solid var(--border)',

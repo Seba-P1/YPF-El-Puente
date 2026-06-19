@@ -84,7 +84,10 @@ export function AdminSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => {
-                  const isActive = pathname === item.url || pathname.startsWith(item.url + '/')
+                  const isActive =
+                    item.url === '/admin'
+                      ? pathname === '/admin'
+                      : pathname === item.url || pathname.startsWith(item.url + '/')
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>

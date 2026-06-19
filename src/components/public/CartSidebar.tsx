@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
+import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X, ChevronLeft, ShoppingCart, Minus, Plus, Trash2 } from 'lucide-react'
 import { useCartStore } from '@/stores/cart'
@@ -208,10 +209,12 @@ export function CartSidebar() {
                               }}
                             >
                               {item.producto.imagen_url && (
-                                <img
+                                <Image
                                   src={item.producto.imagen_url}
                                   alt={item.producto.nombre}
-                                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                  fill
+                                  sizes="44px"
+                                  className="object-contain"
                                 />
                               )}
                             </div>

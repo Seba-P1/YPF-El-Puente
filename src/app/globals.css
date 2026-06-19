@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Drive Tailwind's dark: variant from the .dark class (next-themes), not the
+   OS prefers-color-scheme. Without this, dark: utilities follow the operating
+   system instead of the in-app theme toggle. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ── Modo claro (por defecto) ── */
 :root {
   --font-caveat: 'Caveat', cursive;
@@ -9,8 +14,8 @@
   --bg-card:        #FFFFFF;
   --bg-card-hover:  #E2E8F0;
 
-  --border:         rgba(0,0,0,0.06);
-  --border-hover:   rgba(0,0,0,0.1);
+  --border:         rgba(15,23,42,0.08);
+  --border-hover:   rgba(15,23,42,0.14);
   --border-active:  rgba(0,112,192,0.4);
 
   --text-primary:   #0F172A;
@@ -73,6 +78,33 @@
   --color-ypf-dark: #003C6E;
   --color-ypf-gold: #005A9C;
   --color-whatsapp: #25D366;
+
+  /* ── shadcn/ui semantic tokens (light) ── */
+  --card:                  #FFFFFF;
+  --card-foreground:       #0F172A;
+  --popover:               #FFFFFF;
+  --popover-foreground:    #0F172A;
+  --primary:               #005A9C;
+  --primary-foreground:    #FFFFFF;
+  --secondary:             #F1F5F9;
+  --secondary-foreground:  #0F172A;
+  --muted:                 #F1F5F9;
+  --muted-foreground:      #64748B;
+  --accent:                #EFF6FF;
+  --accent-foreground:     #005A9C;
+  --destructive:           #DC2626;
+  --destructive-foreground:#FFFFFF;
+  --input:                 rgba(15,23,42,0.12);
+  --ring:                  #0070C0;
+
+  --sidebar:                       #FFFFFF;
+  --sidebar-foreground:            #0F172A;
+  --sidebar-primary:               #005A9C;
+  --sidebar-primary-foreground:    #FFFFFF;
+  --sidebar-accent:                rgba(15,23,42,0.05);
+  --sidebar-accent-foreground:     #005A9C;
+  --sidebar-border:                rgba(15,23,42,0.08);
+  --sidebar-ring:                  #0070C0;
 }
 
 /* ── Modo oscuro ── */
@@ -82,8 +114,8 @@
   --bg-card:        #111827;
   --bg-card-hover:  #162033;
 
-  --border:         rgba(255,255,255,0.04);
-  --border-hover:   rgba(255,255,255,0.08);
+  --border:         rgba(226,232,240,0.08);
+  --border-hover:   rgba(226,232,240,0.14);
   --border-active:  rgba(0,112,192,0.4);
 
   --text-primary:   #F8FAFC;
@@ -121,6 +153,33 @@
   --background: var(--bg-base);
   --foreground: var(--text-primary);
   --color-ypf-gold: #FFD100;
+
+  /* ── shadcn/ui semantic tokens (dark) ── */
+  --card:                  #111827;
+  --card-foreground:       #F8FAFC;
+  --popover:               #0F172A;
+  --popover-foreground:    #F8FAFC;
+  --primary:               #3B92E0;
+  --primary-foreground:    #06080F;
+  --secondary:             #1E293B;
+  --secondary-foreground:  #F8FAFC;
+  --muted:                 #1E293B;
+  --muted-foreground:      #94A3B8;
+  --accent:                #16233A;
+  --accent-foreground:     #BFD9F2;
+  --destructive:           #F87171;
+  --destructive-foreground:#06080F;
+  --input:                 rgba(226,232,240,0.14);
+  --ring:                  #3B92E0;
+
+  --sidebar:                       #0F172A;
+  --sidebar-foreground:            #F8FAFC;
+  --sidebar-primary:               #3B92E0;
+  --sidebar-primary-foreground:    #06080F;
+  --sidebar-accent:                rgba(255,255,255,0.06);
+  --sidebar-accent-foreground:     #FFFFFF;
+  --sidebar-border:                rgba(226,232,240,0.08);
+  --sidebar-ring:                  #3B92E0;
 }
 
 @theme inline {
@@ -128,6 +187,33 @@
   --color-foreground: var(--foreground);
   --color-border: var(--border);
   --font-sans: var(--font-montserrat);
+
+  /* shadcn/ui semantic colors: generate bg, text and border utilities */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 
   /* YPF Brand (Aurora Glass) */
   --color-ypf-blue: hsl(222 89% 27%);
@@ -162,6 +248,13 @@
 }
 
 @layer base {
+  /* Tailwind v4: borders default to currentColor. Tie every border/divider to
+     the --border token so dividers stay thin and subtle instead of inheriting
+     the (near-white in dark mode) text color. */
+  *, ::before, ::after {
+    border-color: var(--border);
+  }
+
   /* Scrollbar custom */
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }

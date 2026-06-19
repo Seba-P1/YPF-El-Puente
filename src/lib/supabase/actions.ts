@@ -181,6 +181,179 @@ export async function getWhatsAppConfig(): Promise<WhatsAppConfig> {
   }
 }
 
+// ── PRODUCTO CRUD ──
+
+const BADGE_VALUES = ['NUEVA', 'RECOMENDADO', 'PROMO'] as const
+
+const productoFieldsSchema = z.object({
+  codigo_plu: z.string().trim().min(1, 'El código PLU es obligatorio').max(64),
+  nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(200),
+  descripcion: z.string().trim().max(1000).nullable().optional(),
+  categoria_slug: z.string().trim().min(1, 'La categoría es obligatoria').max(64),
+  precio: z.number().nonnegative('El precio no puede ser negativo'),
+  disponible: z.boolean(),
+  destacado: z.boolean(),
+  badge: z.enum(BADGE_VALUES).nullable().optional(),
+  orden: z.number().int().nonnegative(),
+})
+
+const createProductoSchema = productoFieldsSchema.extend({
+  imagen_url: z.string().url().nullable().optional(),
+  imagen_path: z.string().nullable().optional(),
+})
+
+export const createProducto = withAdminAction(
+  createProductoSchema,
+  async (input) => {
+    const supabase = (await createClient()) as any
+    const { data, error } = await supabase
+      .from('productos')
+      .insert({
+        codigo_plu: input.codigo_plu,
+        nombre: input.nombre,
+        descripcion: input.descripcion ?? null,
+        categoria_slug: input.categoria_slug,
+        precio: input.precio,
+        imagen_url: input.imagen_url ?? null,
+        imagen_path: input.imagen_path ?? null,
+        disponible: input.disponible,
+        destacado: input.destacado,
+        badge: input.badge ?? null,
+        orden: input.orden,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      if (error.code === '23505')
+        throw new Error('Ya existe un producto con ese código PLU')
+      throw new Error(`Error al crear el producto: ${error.message}`)
+    }
+
+    revalidatePath('/admin/productos')
+    revalidatePath('/full')
+    return data
+  },
+  { rateLimitKey: 'create-producto', maxPerMinute: 30 }
+)
+
+const updateProductoSchema = productoFieldsSchema.extend({
+  id: z.string().uuid(),
+})
+
+export const updateProducto = withAdminAction(
+  updateProductoSchema,
+  async ({ id, ...input }) => {
+    const supabase = (await createClient()) as any
+    const { data, error } = await supabase
+      .from('productos')
+      .update({
+        codigo_plu: input.codigo_plu,
+        nombre: input.nombre,
+        descripcion: input.descripcion ?? null,
+        categoria_slug: input.categoria_slug,
+        precio: input.precio,
+        disponible: input.disponible,
+        destacado: input.destacado,
+        badge: input.badge ?? null,
+        orden: input.orden,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      if (error.code === '23505')
+        throw new Error('Ya existe un producto con ese código PLU')
+      throw new Error(`Error al actualizar el producto: ${error.message}`)
+    }
+
+    revalidatePath('/admin/productos')
+    revalidatePath('/full')
+    return data
+  },
+  { rateLimitKey: 'update-producto', maxPerMinute: 60 }
+)
+
+const deleteProductoSchema = z.object({ id: z.string().uuid() })
+
+export const deleteProducto = withAdminAction(
+  deleteProductoSchema,
+  async ({ id }) => {
+    const supabase = (await createClient()) as any
+
+    // Capture the storage path before deleting the row (best-effort cleanup).
+    const { data: prod } = await supabase
+      .from('productos')
+      .select('imagen_path')
+      .eq('id', id)
+      .single()
+
+    const { error } = await supabase.from('productos').delete().eq('id', id)
+    if (error) throw new Error(`Error al eliminar el producto: ${error.message}`)
+
+    if (prod?.imagen_path) {
+      try {
+        await supabase.storage.from('productos-imagenes').remove([prod.imagen_path])
+      } catch {
+        // Image cleanup is best-effort; the row is already gone.
+      }
+    }
+
+    revalidatePath('/admin/productos')
+    revalidatePath('/full')
+    return { id }
+  },
+  { rateLimitKey: 'delete-producto', maxPerMinute: 30 }
+)
+
+const duplicateProductoSchema = z.object({ id: z.string().uuid() })
+
+export const duplicateProducto = withAdminAction(
+  duplicateProductoSchema,
+  async ({ id }) => {
+    const supabase = (await createClient()) as any
+
+    const { data: original, error: fetchError } = await supabase
+      .from('productos')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (fetchError || !original)
+      throw new Error('No se encontró el producto a duplicar')
+
+    const suffix = Date.now().toString(36).slice(-4).toUpperCase()
+
+    const { data, error } = await supabase
+      .from('productos')
+      .insert({
+        codigo_plu: `${original.codigo_plu}-COPIA-${suffix}`,
+        nombre: `${original.nombre} (copia)`,
+        descripcion: original.descripcion,
+        categoria_slug: original.categoria_slug,
+        precio: original.precio,
+        // Reuse the public URL but not the storage path: the original keeps
+        // ownership of the file, so deleting the copy won't remove its image.
+        imagen_url: original.imagen_url,
+        imagen_path: null,
+        disponible: false,
+        destacado: false,
+        badge: original.badge,
+        orden: original.orden,
+      })
+      .select()
+      .single()
+
+    if (error) throw new Error(`Error al duplicar el producto: ${error.message}`)
+
+    revalidatePath('/admin/productos')
+    return data
+  },
+  { rateLimitKey: 'duplicate-producto', maxPerMinute: 30 }
+)
+
 const updateCategoriaActivaSchema = z.object({
   id: z.string().uuid(),
   activa: z.boolean(),
