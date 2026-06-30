@@ -7,6 +7,7 @@ import { ShoppingCart, Search, X } from 'lucide-react'
 import { useCartStore } from '@/stores/cart'
 import { useSearchStore } from '@/stores/search'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useFullPageStore } from '@/stores/fullpage'
 
 export function FullNavbar() {
   const [activeSection, setActiveSection] = useState<string>('home')
@@ -18,28 +19,58 @@ export function FullNavbar() {
   const query = useSearchStore((state) => state.query)
   const setQuery = useSearchStore((state) => state.setQuery)
 
+  const isFullPageEnabled = useFullPageStore((state) => state.isEnabled)
+  const currentSection = useFullPageStore((state) => state.currentSection)
+  const goToSectionById = useFullPageStore((state) => state.goToSectionById)
+
+  // Sync active section and navbar scrolled style with fullpage slides on desktop
   useEffect(() => {
+    if (!isFullPageEnabled) return
+
+    // Scrolled state
+    setIsScrolled(currentSection > 0)
+
+    // Map section index to slug
+    if (currentSection === 0) setActiveSection('home')
+    if (currentSection === 2) setActiveSection('hamburguesas')
+    if (currentSection === 3) setActiveSection('cafeteria')
+    if (currentSection === 4) setActiveSection('productos-full')
+    if (currentSection === 6) setActiveSection('sustentabilidad')
+  }, [isFullPageEnabled, currentSection])
+
+  // Normal window scroll handler (mobile / standard layout)
+  useEffect(() => {
+    if (isFullPageEnabled) return
+
     const handleWindowScroll = () => {
       setIsScrolled(window.scrollY > 50)
     }
     handleWindowScroll()
     window.addEventListener('scroll', handleWindowScroll)
     return () => window.removeEventListener('scroll', handleWindowScroll)
-  }, [])
+  }, [isFullPageEnabled])
 
   const handleScroll = useCallback((e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault()
-    if (targetId === 'home') {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (isFullPageEnabled) {
+      goToSectionById(targetId)
     } else {
-      const element = document.getElementById(targetId)
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
+      if (targetId === 'home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        const element = document.getElementById(targetId)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' })
+        }
       }
     }
-  }, [])
+  }, [isFullPageEnabled, goToSectionById])
 
+  // Intersection Observer for normal scroll layout (mobile / standard)
   useEffect(() => {
+    if (isFullPageEnabled) return
+    if (query.length > 0) return
+
     const sections = ['hamburguesas', 'cafeteria', 'productos-full', 'sustentabilidad']
 
     const observer = new IntersectionObserver(
@@ -59,7 +90,7 @@ export function FullNavbar() {
     })
 
     return () => observer.disconnect()
-  }, [])
+  }, [isFullPageEnabled, query])
 
   return (
     <nav
@@ -88,24 +119,14 @@ export function FullNavbar() {
           className="flex-shrink-0"
         >
           {!imgError ? (
-            <>
-              <Image
-                src="/assets/ypf imagenes/full-logomodoclaro.png"
-                alt="YPF FULL"
-                width={120}
-                height={38}
-                className="h-10 w-auto dark:hidden"
-                onError={() => setImgError(true)}
-              />
-              <Image
-                src="/assets/ypf imagenes/full-logomodooscuro.png"
-                alt="YPF FULL"
-                width={120}
-                height={38}
-                className="h-10 w-auto hidden dark:block"
-                onError={() => setImgError(true)}
-              />
-            </>
+            <Image
+              src="/assets/ypf imagenes/full-logomodooscuro.png"
+              alt="YPF FULL"
+              width={120}
+              height={38}
+              className="h-10 w-auto"
+              onError={() => setImgError(true)}
+            />
           ) : (
             <span className="text-white font-black text-lg">YPF FULL</span>
           )}

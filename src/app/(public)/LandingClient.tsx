@@ -104,15 +104,7 @@ function HeroSection() {
 
   return (
     <section
-      className="relative w-full flex flex-col items-center justify-center overflow-hidden"
-      style={{
-        height: '100svh',
-        background: `
-          radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,90,156,0.35) 0%, transparent 70%),
-          radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0,90,156,0.12) 0%, transparent 60%),
-          #06080F
-        `,
-      }}
+      className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-hero-gradient"
     >
       {/* Grid lines overlay */}
       <div

@@ -4,14 +4,32 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Search, X } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useSearchStore } from '@/stores/search'
+import { useFullPageStore } from '@/stores/fullpage'
 
 export function FullSearchBar() {
   const [activePill, setActivePill] = useState('todos')
   const [showSearch, setShowSearch] = useState(false)
   const query = useSearchStore((state) => state.query)
   
-  // Intersection Observer para actualizar el pill activo basado en scroll
+  const isFullPageEnabled = useFullPageStore((state) => state.isEnabled)
+  const currentSection = useFullPageStore((state) => state.currentSection)
+
+  // Sync state with fullpage slide changes on desktop
   useEffect(() => {
+    if (!isFullPageEnabled || query.length > 0) return
+
+    // Show searchbar pills on category slides (indices 2, 3, 4)
+    const isCategorySlide = currentSection >= 2 && currentSection <= 4
+    setShowSearch(isCategorySlide)
+
+    if (currentSection === 2) setActivePill('hamburguesas')
+    if (currentSection === 3) setActivePill('cafeteria')
+    if (currentSection === 4) setActivePill('productos-full')
+  }, [isFullPageEnabled, currentSection, query])
+  
+  // Intersection Observer para actualizar el pill activo basado en scroll (solo en mobile/normal scroll)
+  useEffect(() => {
+    if (isFullPageEnabled) return // Ignorar si el fullpage está activo
     if (query.length > 0) return // No espiar secciones si estamos buscando
     
     const sections = ['hamburguesas', 'cafeteria', 'productos-full']
@@ -19,7 +37,6 @@ export function FullSearchBar() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // Solo si intersecta y estamos bajando, o si estamos muy arriba marcar 'todos'
           if (entry.isIntersecting) {
             setActivePill(entry.target.id)
           }
@@ -57,7 +74,7 @@ export function FullSearchBar() {
       topObserver.disconnect()
       window.removeEventListener('scroll', handleScroll)
     }
-  }, [query])
+  }, [query, isFullPageEnabled])
 
   const handlePillClick = (id: string) => {
     const setQuery = useSearchStore.getState().setQuery
@@ -67,12 +84,16 @@ export function FullSearchBar() {
     
     setActivePill(id)
     
-    if (id === 'todos') {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (isFullPageEnabled) {
+      useFullPageStore.getState().goToSectionById(id)
     } else {
-      const element = document.getElementById(id)
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
+      if (id === 'todos') {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        const element = document.getElementById(id)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' })
+        }
       }
     }
   }

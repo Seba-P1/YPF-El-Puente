@@ -494,3 +494,49 @@ html {
 .dark .search__icon {
   fill: #94a3b8;
 }
+
+/* ── Vertical Scroll Snap (fullPage effect) ──────────────────────────
+   Activates only on desktop viewports (>= 1024px).
+   Disabled when search overlay is active via .search-active on <html>.
+   scroll-padding-top accounts for the fixed navbar (68px).
+   overflow-y: auto is required because the root layout sets h-full on
+   <html>, which prevents the default viewport scroll-snap propagation.
+   ──────────────────────────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  /* Class to lock viewport scroll when fullpage is active */
+  .fullpage-locked {
+    overflow: hidden !important;
+    height: 100svh !important;
+    width: 100vw !important;
+    position: relative !important;
+  }
+
+  .fullpage-locked body {
+    overflow: hidden !important;
+    height: 100svh !important;
+  }
+
+  /* FullPage wrapper that slides */
+  .fullpage-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    will-change: transform;
+  }
+
+  /* Each fullpage section takes exactly 100% of the viewport */
+  .fullpage-section {
+    flex-shrink: 0;
+    width: 100%;
+    height: 100svh;
+  }
+
+  /* Special class for the last section which allows internal scrolling */
+  .fullpage-scrollable {
+    overflow-y: auto !important;
+    height: 100svh !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+

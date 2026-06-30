@@ -45,18 +45,18 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
       whileInView="visible"
       viewport={{ once: true, margin: '50px' }}
       variants={containerVariants}
-      className={`relative flex flex-col items-center justify-end snap-center group pt-[165px] md:pt-[clamp(170px,13vw,230px)] pb-4 ${
-        isCarousel ? 'flex-shrink-0 w-[270px] md:w-[clamp(320px,18vw,380px)]' : 'w-full'
+      className={`relative flex flex-col items-center justify-end snap-center group pt-[175px] md:pt-[clamp(190px,15vw,260px)] pb-4 ${
+        isCarousel ? 'flex-shrink-0 w-[270px] md:w-[clamp(320px,18vw,400px)]' : 'w-full'
       }`}
     >
       {/* 1. PRODUCT IMAGE (Outside the card, overlapping) */}
-      <div className="absolute top-0 flex items-center justify-center w-[min(92vw,468px)] h-[min(62vw,315px)] md:w-[clamp(429px,23.4vw,494px)] md:h-[clamp(260px,14vw,330px)] z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
+      <div className="absolute top-0 flex items-center justify-center w-[min(92vw,468px)] h-[min(68vw,350px)] md:w-[clamp(468px,24.7vw,546px)] md:h-[clamp(330px,18vw,410px)] z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
         {!imgError ? (
           <Image
             src={producto.imagen_url || `/assets/placeholder.png`}
             alt={producto.nombre}
             fill
-            sizes="(max-width: 768px) 92vw, 494px"
+            sizes="(max-width: 768px) 92vw, 546px"
             priority={index < 4}
             className="object-contain drop-shadow-2xl"
             onError={() => setImgError(true)}
@@ -69,16 +69,16 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
           </div>
         )}
 
-        {/* BADGE */}
+        {/* BADGE (Overlapping the image on top at z-20) */}
         {producto.badge && (
-          <div className="absolute top-[clamp(18px,3vw,42px)] right-2 bg-[#FFD100] text-black text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider z-20 shadow-sm">
+          <div className="absolute top-[clamp(50px,5.5vw,85px)] right-4 md:right-8 bg-[#FFD100] text-black text-[9px] font-extrabold px-2.5 py-0.5 rounded-md uppercase tracking-wider z-20 shadow-md pointer-events-auto">
             {producto.badge}
           </div>
         )}
       </div>
 
       {/* 2. GLASS PRODUCT INFO CARD */}
-      <div className="w-full flex flex-col items-center justify-between bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/10 transition-all duration-300 group-hover:bg-white/10 group-hover:border-white/20 pt-[64px] md:pt-[clamp(64px,4.4vw,92px)] mt-[20px] min-h-[180px] md:min-h-[clamp(180px,11vw,220px)] relative z-0">
+      <div className="w-full flex flex-col items-center justify-between bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/10 transition-all duration-300 group-hover:bg-white/10 group-hover:border-white/20 pt-[68px] md:pt-[clamp(72px,5vw,104px)] mt-0 min-h-[230px] md:min-h-[clamp(230px,14vw,280px)] relative z-0">
         <div className="text-center w-full flex flex-col items-center flex-grow">
           <h3 className="text-[13px] lg:text-[14px] font-bold text-white/90 text-center line-clamp-2 min-h-[36px] flex items-center justify-center px-1">
             {producto.nombre}

@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import type { ExcelRow } from '@/types'
 
 const PLU_CANDIDATES = ['PLU', 'CODIGO', 'COD', 'EAN', 'BARCODE', 'ARTICULO']
@@ -47,22 +47,24 @@ export async function parseExcelFile(file: File): Promise<ExcelRow[]> {
   }
 
   const buffer = await file.arrayBuffer()
-  const workbook = XLSX.read(buffer, { type: 'array' })
+  const workbook = new ExcelJS.Workbook()
+  await workbook.xlsx.load(buffer)
 
-  const firstSheetName = workbook.SheetNames[0]
-  if (!firstSheetName) {
+  const worksheet = workbook.worksheets[0]
+  if (!worksheet) {
     throw new Error('El archivo no contiene hojas de cálculo')
   }
 
-  const sheet = workbook.Sheets[firstSheetName]
-  const rawData = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet)
+  // Get headers from the first row
+  const headerRow = worksheet.getRow(1)
+  const headers: string[] = []
+  headerRow.eachCell((cell, colNumber) => {
+    headers[colNumber - 1] = String(cell.value ?? '').trim()
+  })
 
-  if (!rawData || rawData.length === 0) {
-    throw new Error('El archivo no contiene datos')
+  if (headers.length === 0 || headers.every(h => !h)) {
+    throw new Error('El archivo no contiene encabezados válidos')
   }
-
-  // Get headers from the first row's keys
-  const headers = Object.keys(rawData[0])
 
   const pluColumn = detectColumn(headers, PLU_CANDIDATES)
   const priceColumn = detectColumn(headers, PRICE_CANDIDATES, PREFERRED_PRICE)
@@ -81,11 +83,17 @@ export async function parseExcelFile(file: File): Promise<ExcelRow[]> {
     )
   }
 
+  const pluColIndex = headers.indexOf(pluColumn) + 1 // 1-based index
+  const priceColIndex = headers.indexOf(priceColumn) + 1
+
   const rows: ExcelRow[] = []
 
-  for (const row of rawData) {
-    const rawPlu = row[pluColumn]
-    const rawPrice = row[priceColumn]
+  // Iterate data rows starting from row 2
+  worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+    if (rowNumber === 1) return // Skip header row
+
+    const rawPlu = row.getCell(pluColIndex).value
+    const rawPrice = row.getCell(priceColIndex).value
 
     // Clean PLU code: convert to string, remove spaces and dots
     const codigo_plu = String(rawPlu ?? '')
@@ -100,10 +108,10 @@ export async function parseExcelFile(file: File): Promise<ExcelRow[]> {
     )
 
     // Skip invalid rows
-    if (!codigo_plu || isNaN(precio) || precio <= 0) continue
+    if (!codigo_plu || isNaN(precio) || precio <= 0) return
 
     rows.push({ codigo_plu, precio })
-  }
+  })
 
   return rows
 }

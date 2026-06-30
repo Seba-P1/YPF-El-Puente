@@ -126,7 +126,7 @@ export function FullMundialSection() {
   }
 
   return (
-    <section className="relative bg-[#F4F9FC] overflow-hidden border-y border-[#005A9C]/10 min-h-[100svh] py-[clamp(56px,7svh,96px)] md:py-[clamp(72px,8svh,120px)] flex flex-col justify-center">
+    <section id="mundial" className="relative bg-[#F4F9FC] overflow-hidden border-y border-[#005A9C]/10 min-h-[100svh] py-[clamp(56px,7svh,96px)] md:py-[clamp(72px,8svh,120px)] flex flex-col justify-center">
       {/* Background doodles on desktop */}
       <div 
         className="absolute inset-0 right-0 w-full lg:w-1/2 opacity-30 lg:opacity-80 pointer-events-none z-0 bg-no-repeat bg-right bg-cover ml-auto"

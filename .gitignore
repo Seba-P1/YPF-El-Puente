@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Local AI runtime state
+.atl/
+
+# Environment
+.env
+.env.local
+.env.*.local

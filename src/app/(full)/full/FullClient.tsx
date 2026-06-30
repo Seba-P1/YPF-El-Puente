@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Instagram } from 'lucide-react'
@@ -11,6 +11,7 @@ import { FullProductCard } from '@/components/public/FullProductCard'
 import { FullSustentabilidad } from '@/components/public/FullSustentabilidad'
 import { FullMundialSection } from '@/components/public/FullMundialSection'
 import { useSearchStore } from '@/stores/search'
+import { useFullPageStore } from '@/stores/fullpage'
 
 import type { Producto, Categoria } from '@/lib/supabase/types'
 
@@ -29,18 +30,67 @@ export default function FullClient({
 }: FullClientProps) {
   const [searchResults, setSearchResults] = useState<Producto[] | null>(null)
   const [isSearching, setIsSearching] = useState(false)
-
-  const handleScrollToStart = () => {
-    const el = document.getElementById('hamburguesas')
-    if (el) el.scrollIntoView({ behavior: 'smooth' })
-  }
-
   const [scrollScrolled, setScrollScrolled] = useState(false)
+  
   const query = useSearchStore((state) => state.query)
   const [debouncedQuery, setDebouncedQuery] = useState('')
 
+  const { currentSection, setCurrentSection, isEnabled, setEnabled, setSectionIds, goToSectionById } = useFullPageStore()
+
+  // Refs for tracking wheel momentum (filtering trackpad inertia)
+  const scrollEventsRef = useRef<number[]>([])
+  const lastScrollTimeRef = useRef<number>(0)
+  const isTransitioningRef = useRef<boolean>(false)
+
   const allProducts = useMemo(() => [...initialHamburguesas, ...initialCafeteria, ...initialMarcaFull], [initialHamburguesas, initialCafeteria, initialMarcaFull])
 
+  const catHamb = initialCategorias.find(c => c.slug === 'hamburguesas') || { id: '1', nombre: 'hamburguesas', slug: 'hamburguesas', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 1, created_at: '' } as Categoria
+  const catCaf = initialCategorias.find(c => c.slug === 'cafeteria') || { id: '2', nombre: 'cafetería', slug: 'cafeteria', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 2, created_at: '' } as Categoria
+  const catFull = initialCategorias.find(c => c.slug === 'marca_full') || { id: '3', nombre: 'productos exclusivos full', slug: 'marca_full', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 3, created_at: '' } as Categoria
+
+  // Define section IDs for programmatic navigation mapping
+  useEffect(() => {
+    setSectionIds([
+      'home-hero',
+      'mundial',
+      'hamburguesas',
+      'cafeteria',
+      'productos-full',
+      'instagram',
+      'sustentabilidad-section'
+    ])
+  }, [setSectionIds])
+
+  // Handle screen resize to toggle fullpage scroll locking
+  useEffect(() => {
+    const handleResize = () => {
+      const isDesktop = window.innerWidth >= 768
+      setEnabled(isDesktop && !isSearching)
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [isSearching, setEnabled])
+
+  // Toggle CSS class to lock outer window overflow on desktop
+  useEffect(() => {
+    if (isEnabled) {
+      document.documentElement.classList.add('fullpage-locked')
+    } else {
+      document.documentElement.classList.remove('fullpage-locked')
+    }
+    return () => {
+      document.documentElement.classList.remove('fullpage-locked')
+    }
+  }, [isEnabled])
+
+  // Toggle search active status
+  useEffect(() => {
+    document.documentElement.classList.toggle('search-active', isSearching)
+    return () => document.documentElement.classList.remove('search-active')
+  }, [isSearching])
+
+  // Search logic
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query)
@@ -62,7 +112,7 @@ export default function FullClient({
       setTimeout(() => {
         const el = document.getElementById('search-results')
         if (el) {
-          const yOffset = -80 // height of header + padding
+          const yOffset = -80
           const y = el.getBoundingClientRect().top + window.scrollY + yOffset
           window.scrollTo({ top: y, behavior: 'smooth' })
         }
@@ -73,74 +123,415 @@ export default function FullClient({
     }
   }, [debouncedQuery, allProducts])
 
+  // Mobile scroll monitor
   useEffect(() => {
+    if (isEnabled) return
     const onScroll = () => {
       setScrollScrolled(window.scrollY > 120)
     }
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  }, [isEnabled])
 
-  const catHamb = initialCategorias.find(c => c.slug === 'hamburguesas') || { id: '1', nombre: 'hamburguesas', slug: 'hamburguesas', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 1, created_at: '' } as Categoria
-  const catCaf = initialCategorias.find(c => c.slug === 'cafeteria') || { id: '2', nombre: 'cafetería', slug: 'cafeteria', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 2, created_at: '' } as Categoria
-  const catFull = initialCategorias.find(c => c.slug === 'marca_full') || { id: '3', nombre: 'productos exclusivos full', slug: 'marca_full', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 3, created_at: '' } as Categoria
+  const triggerTransition = useCallback((nextSection: number) => {
+    isTransitioningRef.current = true
+    setCurrentSection(nextSection)
+    setScrollScrolled(nextSection > 0)
+    
+    // Smooth transition cooling matching the 700ms sliding animation
+    setTimeout(() => {
+      isTransitioningRef.current = false
+    }, 700)
+  }, [setCurrentSection])
 
+  // Custom keydown handler for sliding transitions on desktop
+  useEffect(() => {
+    if (!isEnabled || isSearching) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isTransitioningRef.current) return
+
+      const direction = 
+        e.key === 'ArrowDown' || e.key === 'PageDown' ? 'down' :
+        e.key === 'ArrowUp' || e.key === 'PageUp' ? 'up' : null
+
+      if (!direction) return
+
+      if (currentSection === 6) {
+        const scrollableContainer = document.getElementById('sustentabilidad-section')
+        if (scrollableContainer) {
+          const scrollTop = scrollableContainer.scrollTop
+          const scrollHeight = scrollableContainer.scrollHeight
+          const clientHeight = scrollableContainer.clientHeight
+
+          if (direction === 'up' && scrollTop <= 0) {
+            e.preventDefault()
+            triggerTransition(5)
+          } else if (direction === 'down' && scrollTop + clientHeight >= scrollHeight) {
+            // End of footer, ignore
+          } else {
+            // Let the container scroll internally
+          }
+        }
+      } else {
+        e.preventDefault()
+        if (direction === 'down') {
+          if (currentSection < 6) triggerTransition(currentSection + 1)
+        } else {
+          if (currentSection > 0) triggerTransition(currentSection - 1)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isEnabled, currentSection, isSearching, triggerTransition])
+
+  // Custom wheel handler with momentum checker to filter trackpad swipes
+  useEffect(() => {
+    if (!isEnabled || isSearching) return
+
+    const onWheel = (e: WheelEvent) => {
+      const deltaY = e.deltaY
+      const absDeltaY = Math.abs(deltaY)
+      const now = Date.now()
+
+      // Reset scroll tracking if scrolling stops for 200ms
+      if (now - lastScrollTimeRef.current > 200) {
+        scrollEventsRef.current = []
+      }
+      lastScrollTimeRef.current = now
+      scrollEventsRef.current.push(absDeltaY)
+      if (scrollEventsRef.current.length > 150) {
+        scrollEventsRef.current.shift()
+      }
+
+      // Ignore inputs if currently moving
+      if (isTransitioningRef.current) {
+        e.preventDefault()
+        return
+      }
+
+      const getAverage = (len: number) => {
+        const list = scrollEventsRef.current
+        const sub = list.slice(Math.max(list.length - len, 0))
+        if (sub.length === 0) return 0
+        return sub.reduce((acc, val) => acc + val, 0) / sub.length
+      }
+
+      const avgFast = getAverage(10)
+      const avgSlow = getAverage(70)
+      const direction = deltaY > 0 ? 'down' : 'up'
+
+      if (currentSection === 6) {
+        const scrollableContainer = document.getElementById('sustentabilidad-section')
+        if (scrollableContainer) {
+          const scrollTop = scrollableContainer.scrollTop
+          const scrollHeight = scrollableContainer.scrollHeight
+          const clientHeight = scrollableContainer.clientHeight
+
+          if (direction === 'up' && scrollTop <= 0) {
+            e.preventDefault()
+            if (avgFast >= avgSlow && absDeltaY > 5) {
+              triggerTransition(5)
+            }
+          } else if (direction === 'down' && scrollTop + clientHeight >= scrollHeight) {
+            // At the bottom of map/footer, block event
+            e.preventDefault()
+          } else {
+            // Let the container scroll natively (do NOT call preventDefault)
+          }
+        }
+      } else {
+        e.preventDefault()
+        if (avgFast >= avgSlow && absDeltaY > 5) {
+          if (direction === 'down') {
+            if (currentSection < 6) triggerTransition(currentSection + 1)
+          } else {
+            if (currentSection > 0) triggerTransition(currentSection - 1)
+          }
+        }
+      }
+    }
+
+    window.addEventListener('wheel', onWheel, { passive: false })
+    return () => window.removeEventListener('wheel', onWheel)
+  }, [isEnabled, currentSection, isSearching, triggerTransition])
+
+  const handleScrollToStart = () => {
+    if (isEnabled) {
+      goToSectionById('hamburguesas')
+    } else {
+      const el = document.getElementById('hamburguesas')
+      if (el) el.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  // Hero section component
+  const renderHeroSection = () => (
+    <section 
+      id="home-hero"
+      className="relative flex flex-col items-center justify-center w-full overflow-hidden"
+      style={{
+        height: '100svh',
+        background: '#000000',
+        paddingTop: 'var(--navbar-h, 68px)'
+      }}
+    >
+      <div className="absolute inset-0 z-0 bg-black">
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/assets/ypf%20imagenes/RDP7-mobile.webp" />
+          <img 
+            src="/assets/ypf%20imagenes/RDP7.webp" 
+            alt="RDP7 YPF FULL"
+            className="w-full h-full object-cover object-center opacity-100"
+          />
+        </picture>
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="relative z-10 hidden md:flex flex-col items-center drop-shadow-2xl"
+      >
+        <div className="relative w-[280px] h-[120px] md:w-[450px] md:h-[180px]">
+          <Image
+            src="/assets/ypf imagenes/RDP7.svg"
+            alt="RDP7 YPF FULL"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+      </motion.div>
+
+      {!scrollScrolled && (
+        <motion.button
+          onClick={handleScrollToStart}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/40 animate-bounce"
+          aria-label="Scroll down"
+        >
+          <ChevronDown size={32} />
+        </motion.button>
+      )}
+    </section>
+  )
+
+  // Instagram section component
+  const renderInstagramSection = () => (
+    <section id="instagram" className="bg-black py-[80px] border-t border-white/5 md:min-h-[100svh] md:py-0 md:flex md:flex-col md:justify-center">
+      <div className="mx-auto" style={{ maxWidth: 'var(--page-max, 1280px)', padding: '0 var(--page-pad-x, 24px)' }}>
+        <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6 }}
+            className="flex-shrink-0"
+          >
+            <a
+              href="https://instagram.com/ypf.elpuente"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block relative group"
+            >
+              <div
+                style={{
+                  width: 'clamp(200px, 30vw, 280px)',
+                  height: 'clamp(200px, 30vw, 280px)',
+                  transition: 'transform 0.3s, filter 0.3s',
+                }}
+                className="group-hover:scale-105"
+              >
+                <Image
+                  src="/assets/instagram/QR-YPFinstagram.png"
+                  alt="QR Instagram @YPF.ELPUENTE"
+                  width={280}
+                  height={280}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </a>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="text-center md:text-left"
+          >
+            <p
+              style={{
+                fontFamily: 'var(--font-caveat)',
+                fontSize: 'clamp(18px, 2.5vw, 24px)',
+                fontWeight: 600,
+                color: 'rgba(255,255,255,0.4)',
+                marginBottom: 8,
+              }}
+            >
+              Seguinos
+            </p>
+            <h2
+              className="font-black text-white leading-tight"
+              style={{ fontSize: 'clamp(28px, 5vw, 48px)', letterSpacing: '-0.02em' }}
+            >
+              Seguinos en Instagram
+            </h2>
+            <p className="text-white/50 mt-3 mb-6" style={{ fontSize: 'clamp(14px, 1.6vw, 18px)' }}>
+              Enterate de todas las promociones, novedades y el día a día de YPF El Puente.
+            </p>
+            <a
+              href="https://instagram.com/ypf.elpuente"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 transition-colors group/link"
+              style={{ textDecoration: 'none' }}
+            >
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Instagram size={22} color="white" />
+              </div>
+              <span className="text-white/70 group-hover/link:text-white font-bold text-lg tracking-wide transition-colors">
+                @YPF.ELPUENTE
+              </span>
+            </a>
+
+            <p className="text-white/20 text-xs mt-6">
+              Escaneá el código QR con tu celular para seguirnos
+            </p>
+          </motion.div>
+        </div>
+
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-1 w-full mt-6 md:mt-[3svh]">
+          {[1, 2, 3, 4, 5, 6].map((num) => (
+            <InstagramImage key={num} num={num} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+
+  // Footer component
+  const renderFooter = () => (
+    <footer className="bg-black border-t border-white/5 py-[32px]">
+      <div className="mx-auto flex flex-col items-center justify-center gap-6" style={{ maxWidth: 'var(--page-max, 1280px)', padding: '0 var(--page-pad-x, 24px)' }}>
+        <Image
+          src="/assets/ypf imagenes/logo-modoclaro.png"
+          alt="YPF El Puente"
+          width={160}
+          height={48}
+          className="opacity-50 dark:hidden"
+        />
+        <Image
+          src="/assets/ypf imagenes/logo-modooscuro.png"
+          alt="YPF El Puente"
+          width={160}
+          height={48}
+          className="opacity-50 hidden dark:block"
+        />
+        <p className="text-[12px] text-white/25">
+          © YPF El Puente — Río Colorado, Patagonia Argentina
+        </p>
+      </div>
+    </footer>
+  )
+
+  // RENDER FULLPAGE DIAPOSITIVAS (DESKTOP)
+  if (isEnabled) {
+    return (
+      <main className="bg-black text-white relative">
+        <FullSearchBar />
+        <div 
+          className="fullpage-wrapper"
+          style={{ 
+            transform: `translate3d(0, -${currentSection * 100}svh, 0)`,
+            transition: 'transform 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+          }}
+        >
+          {/* Slide 0: Hero */}
+          <div className="fullpage-section">
+            {renderHeroSection()}
+          </div>
+          
+          {/* Slide 1: Mundial */}
+          <div className="fullpage-section">
+            <FullMundialSection />
+          </div>
+
+          {/* Slide 2: Hamburguesas */}
+          <div className="fullpage-section">
+            <FullCategorySection
+              id="hamburguesas"
+              categoria={catHamb}
+              productos={initialHamburguesas}
+              colorFondo="#1A0E00"
+              imagenBack="/assets/ypf imagenes/back-4.webp"
+              mandalaPosition="bottom-right"
+            />
+          </div>
+
+          {/* Slide 3: Cafetería */}
+          <div className="fullpage-section">
+            <FullCategorySection
+              id="cafeteria"
+              categoria={catCaf}
+              productos={initialCafeteria}
+              colorFondo="#0D0800"
+              imagenBack="/assets/ypf imagenes/back-2.webp"
+              mandalaPosition="top-left"
+              sectionBgImage="/assets/ypf imagenes/bg.svg"
+            />
+          </div>
+
+          {/* Slide 4: Exclusivos FULL */}
+          <div className="fullpage-section">
+            <FullCategorySection
+              id="productos-full"
+              categoria={catFull}
+              productos={initialMarcaFull}
+              colorFondo="#060810"
+              imagenBack="/assets/ypf imagenes/back-5.webp"
+              mandalaPosition="top-right"
+            />
+          </div>
+
+          {/* Slide 5: Instagram */}
+          <div className="fullpage-section">
+            {renderInstagramSection()}
+          </div>
+
+          {/* Slide 6: Sustentabilidad, Mapa y Footer (Scrollable) */}
+          <div id="sustentabilidad-section" className="fullpage-section fullpage-scrollable">
+            <FullSustentabilidad />
+            {renderFooter()}
+          </div>
+        </div>
+      </main>
+    )
+  }
+
+  // RENDER NORMAL (MOBILE / BUSCANDO)
   return (
     <main className="bg-black text-white relative">
       {/* 1. HERO SECTION */}
-      <section 
-        id="home-hero"
-        className="relative flex flex-col items-center justify-center w-full overflow-hidden"
-        style={{
-          height: '100svh',
-          background: '#000000',
-          paddingTop: 'var(--navbar-h, 68px)'
-        }}
-      >
-        {/* FONDO RDP7 */}
-        <div className="absolute inset-0 z-0 bg-black">
-          <picture>
-            <source media="(max-width: 768px)" srcSet="/assets/ypf%20imagenes/RDP7-mobile.webp" />
-            <img 
-              src="/assets/ypf%20imagenes/RDP7.webp" 
-              alt="RDP7 YPF FULL"
-              className="w-full h-full object-cover object-center opacity-100"
-            />
-          </picture>
-        </div>
+      {renderHeroSection()}
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="relative z-10 hidden md:flex flex-col items-center drop-shadow-2xl"
-        >
-          <div className="relative w-[280px] h-[120px] md:w-[450px] md:h-[180px]">
-            <Image
-              src="/assets/ypf imagenes/RDP7.svg"
-              alt="RDP7 YPF FULL"
-              fill
-              className="object-contain"
-              priority
-            />
-          </div>
-        </motion.div>
-
-        {!scrollScrolled && (
-          <motion.button
-            onClick={handleScrollToStart}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/40 animate-bounce"
-            aria-label="Scroll down"
-          >
-            <ChevronDown size={32} />
-          </motion.button>
-        )}
-      </section>
-
-      {/* 2. CATEGORY PILLS (formerly SearchBar) */}
+      {/* 2. CATEGORY PILLS */}
       <FullSearchBar />
 
       {/* 3A. RESULTADOS DE BÚSQUEDA Y SECCIONES */}
@@ -216,137 +607,14 @@ export default function FullClient({
         )}
       </AnimatePresence>
 
-      {/* 4. SECCIÓN INSTAGRAM — @YPF.ELPUENTE */}
-      <section className="bg-black py-[80px] border-t border-white/5">
-        <div className="mx-auto" style={{ maxWidth: 'var(--page-max, 1280px)', padding: '0 var(--page-pad-x, 24px)' }}>
-          <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
-            {/* QR Code */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.6 }}
-              className="flex-shrink-0"
-            >
-              <a
-                href="https://instagram.com/ypf.elpuente"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block relative group"
-              >
-                <div
-                  style={{
-                    width: 'clamp(200px, 30vw, 280px)',
-                    height: 'clamp(200px, 30vw, 280px)',
-                    transition: 'transform 0.3s, filter 0.3s',
-                  }}
-                  className="group-hover:scale-105"
-                >
-                  <Image
-                    src="/assets/instagram/QR-YPFinstagram.png"
-                    alt="QR Instagram @YPF.ELPUENTE"
-                    width={280}
-                    height={280}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              </a>
-            </motion.div>
-
-            {/* Text content */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.6, delay: 0.15 }}
-              className="text-center md:text-left"
-            >
-              <p
-                style={{
-                  fontFamily: 'var(--font-caveat)',
-                  fontSize: 'clamp(18px, 2.5vw, 24px)',
-                  fontWeight: 600,
-                  color: 'rgba(255,255,255,0.4)',
-                  marginBottom: 8,
-                }}
-              >
-                Seguinos
-              </p>
-              <h2
-                className="font-black text-white leading-tight"
-                style={{ fontSize: 'clamp(28px, 5vw, 48px)', letterSpacing: '-0.02em' }}
-              >
-                Seguinos en Instagram
-              </h2>
-              <p className="text-white/50 mt-3 mb-6" style={{ fontSize: 'clamp(14px, 1.6vw, 18px)' }}>
-                Enterate de todas las promociones, novedades y el día a día de YPF El Puente.
-              </p>
-              <a
-                href="https://instagram.com/ypf.elpuente"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 transition-colors group/link"
-                style={{ textDecoration: 'none' }}
-              >
-                <div
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
-                    background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Instagram size={22} color="white" />
-                </div>
-                <span className="text-white/70 group-hover/link:text-white font-bold text-lg tracking-wide transition-colors">
-                  @YPF.ELPUENTE
-                </span>
-              </a>
-
-              <p className="text-white/20 text-xs mt-6">
-                Escaneá el código QR con tu celular para seguirnos
-              </p>
-            </motion.div>
-          </div>
-
-          {/* Instagram grid (fotos) */}
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-1 w-full mt-12">
-            {[1, 2, 3, 4, 5, 6].map((num) => (
-              <InstagramImage key={num} num={num} />
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 4. SECCIÓN INSTAGRAM */}
+      {renderInstagramSection()}
 
       {/* 5. SUSTENTABILIDAD + MAPA */}
       <FullSustentabilidad />
 
-      {/* 6. FOOTER SIMPLE */}
-      <footer className="bg-black border-t border-white/5 py-[32px]">
-        <div className="mx-auto flex flex-col items-center justify-center gap-6" style={{ maxWidth: 'var(--page-max, 1280px)', padding: '0 var(--page-pad-x, 24px)' }}>
-          <Image
-            src="/assets/ypf imagenes/logo-modoclaro.png"
-            alt="YPF El Puente"
-            width={160}
-            height={48}
-            className="opacity-50 dark:hidden"
-          />
-          <Image
-            src="/assets/ypf imagenes/logo-modooscuro.png"
-            alt="YPF El Puente"
-            width={160}
-            height={48}
-            className="opacity-50 hidden dark:block"
-          />
-          <p className="text-[12px] text-white/25">
-            © YPF El Puente — Río Colorado, Patagonia Argentina
-          </p>
-        </div>
-      </footer>
+      {/* 6. FOOTER */}
+      {renderFooter()}
     </main>
   )
 }
@@ -355,7 +623,6 @@ const IG_COLORS = ['#1a1a2e', '#16213e', '#0f3460', '#e94560', '#533483', '#3b82
 
 function InstagramImage({ num }: { num: number }) {
   const [error, setError] = useState(false)
-
   const handleError = useCallback(() => setError(true), [])
 
   if (error) {

@@ -15,7 +15,7 @@ export function FullSustentabilidad() {
         style={{
           position: 'relative',
           minHeight: '100vh',
-          backgroundColor: '#3b6c4c', // Verde tipo YPF oficial
+          backgroundColor: '#3b6c4c',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -346,6 +346,7 @@ export function FullSustentabilidad() {
             width: '100%',
             height: 'clamp(300px, 40vw, 500px)',
             position: 'relative',
+            marginTop: 16,
           }}
         >
           {/* Dark overlay on the map edges */}
