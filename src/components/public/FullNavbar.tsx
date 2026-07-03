@@ -133,9 +133,9 @@ export function FullNavbar() {
         </Link>
 
         {/* LINKS DE SECCIÓN (Desktop) */}
-        <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-8">
+        <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-6">
           {[
-            { id: 'hamburguesas', label: 'Hamburguesas' },
+            { id: 'comidas-calientes', label: 'Comidas Calientes' },
             { id: 'cafeteria', label: 'Cafetería' },
             { id: 'productos-full', label: 'Marca FULL' },
             { id: 'sustentabilidad', label: 'Sustentabilidad' },
@@ -154,10 +154,24 @@ export function FullNavbar() {
           ))}
         </div>
 
-        <div className="flex items-center justify-end flex-1 ml-auto">
+        <div className="flex items-center justify-end flex-1 ml-auto gap-2">
+          {/* CTA: Ver Menú Completo */}
+          <Link
+            href="/full/menu"
+            className="hidden md:inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[13px] font-bold whitespace-nowrap transition-all duration-200 hover:scale-105"
+            style={{
+              background: 'rgba(255,209,0,0.12)',
+              border: '1px solid rgba(255,209,0,0.35)',
+              color: '#FFD100',
+              textDecoration: 'none',
+            }}
+          >
+            Ver Menú Completo →
+          </Link>
+
           <button
             onClick={() => setIsSearchExpanded(true)}
-            className="flex items-center justify-center bg-transparent border-none cursor-pointer mr-2 md:mr-4"
+            className="flex items-center justify-center bg-transparent border-none cursor-pointer"
             aria-label="Buscar productos"
           >
             <div className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">

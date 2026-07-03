@@ -31,8 +31,11 @@ export default async function AdminPreciosPage() {
         </p>
       </div>
 
-      {/* Main Uploader Feature */}
-      <ExcelUploader />
+      {/* Two uploaders side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ExcelUploader modo="actualizar" />
+        <ExcelUploader modo="catalogo_completo" />
+      </div>
 
       {/* Upload History */}
       <GlassCard className="overflow-hidden">
@@ -49,6 +52,7 @@ export default async function AdminPreciosPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Archivo</TableHead>
+                  <TableHead className="text-center">Modo</TableHead>
                   <TableHead className="text-center">Total Filas</TableHead>
                   <TableHead className="text-center text-blue-600 dark:text-blue-400">Actualizados</TableHead>
                   <TableHead className="text-center text-green-600 dark:text-green-400">Nuevos</TableHead>
@@ -66,6 +70,21 @@ export default async function AdminPreciosPage() {
                           {item.nombre_archivo}
                         </span>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {item.modo === 'actualizar' ? (
+                        <Badge variant="secondary" className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 hover:bg-blue-500/20">
+                          Actualización
+                        </Badge>
+                      ) : item.modo === 'catalogo_completo' ? (
+                        <Badge variant="secondary" className="bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20 hover:bg-orange-500/20">
+                          Catálogo completo
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-muted-foreground">
+                          —
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-center font-semibold text-foreground">
                       {item.total_filas}

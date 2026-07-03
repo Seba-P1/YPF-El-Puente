@@ -31,15 +31,18 @@ export interface CartState {
 
 export interface ExcelRow {
   codigo_plu: string
+  nombre: string
   precio: number
+  categoria_slug: string
+  es_sin_tacc: boolean
 }
 
 export interface UploadResult {
-  success: boolean
   actualizados: number
   nuevos: number
+  omitidos: number
+  sinTacc: number
   errores: number
-  detalles: string[]
 }
 
 export interface WhatsAppConfig {

@@ -1,41 +1,55 @@
 import ExcelJS from 'exceljs'
 import type { ExcelRow } from '@/types'
 
-const PLU_CANDIDATES = ['PLU', 'CODIGO', 'COD', 'EAN', 'BARCODE', 'ARTICULO']
-const PRICE_CANDIDATES = ['PRECIO', 'PRICE', 'VENTA', 'PVP', 'IMPORTE']
-const PREFERRED_PRICE = ['VENTA', 'PVP']
+// ═══════════════════════════════════════════════════════════
+// Category mapping from Excel originals to our database slugs
+// ═══════════════════════════════════════════════════════════
 
-/**
- * Detect a column header that matches one of the candidate keywords.
- * Returns the actual header name or null if no match found.
- */
-function detectColumn(
-  headers: string[],
-  candidates: string[],
-  preferred?: string[]
-): string | null {
-  const normalizedHeaders = headers.map((h) => h.toUpperCase().trim())
+function mapearCategoria(categoriaOriginal: string, nombre: string): string {
+  const cat = categoriaOriginal.toLowerCase().trim()
 
-  // Check preferred candidates first
-  if (preferred) {
-    for (const pref of preferred) {
-      const index = normalizedHeaders.findIndex((h) => h.includes(pref))
-      if (index >= 0) return headers[index]
-    }
+  let slug: string
+  if (cat.includes('cafet')) slug = 'cafeteria'
+  else if (cat.includes('calient')) slug = 'comidas_calientes'
+  else if (cat.includes('fria') || cat.includes('frías') || cat.includes('frias'))
+    slug = 'comidas_frias'
+  else if (cat.includes('panader')) slug = 'panaderia'
+  else slug = 'sin_categoria'
+
+  // Combos are cross-category: if the name starts with "Combo",
+  // it overrides whatever category the Excel had.
+  if (nombre.trim().toLowerCase().startsWith('combo')) {
+    return 'combos'
   }
 
-  // Fall back to any matching candidate
-  for (const candidate of candidates) {
-    const index = normalizedHeaders.findIndex((h) => h.includes(candidate))
-    if (index >= 0) return headers[index]
-  }
-
-  return null
+  return slug
 }
 
+// ═══════════════════════════════════════════════════════════
+// Forward-fill helper for merged-cell rows
+// ═══════════════════════════════════════════════════════════
+
+function forwardFillRow(row: ExcelJS.Row, colCount: number): string[] {
+  const result: string[] = []
+  let ultimo = ''
+  for (let col = 1; col <= colCount; col++) {
+    const valor = String(row.getCell(col).value ?? '').trim()
+    if (valor) ultimo = valor
+    result.push(ultimo)
+  }
+  return result
+}
+
+// ═══════════════════════════════════════════════════════════
+// Main parser — reads the exact structure of the YPF Central file
+// ═══════════════════════════════════════════════════════════
+
 /**
- * Parse an Excel/CSV file from YPF Central and extract PLU code-price pairs.
- * Automatically detects column headers regardless of their exact naming.
+ * Parse the official YPF Central Excel file and extract product data.
+ *
+ * The file has TWO header rows (row 1 = merged group headers, row 2 = column
+ * headers) and data rows starting from row 3. We read the fixed "PRECIO NUEVO /
+ * Premium" column (column K for a Premium-tier station like Río Colorado).
  */
 export async function parseExcelFile(file: File): Promise<ExcelRow[]> {
   // Validate file extension
@@ -55,65 +69,107 @@ export async function parseExcelFile(file: File): Promise<ExcelRow[]> {
     throw new Error('El archivo no contiene hojas de cálculo')
   }
 
-  // Get headers from the first row
-  const headerRow = worksheet.getRow(1)
-  const headers: string[] = []
-  headerRow.eachCell((cell, colNumber) => {
-    headers[colNumber - 1] = String(cell.value ?? '').trim()
+  // ── STEP 1: Reconstruct row 1 with forward-fill for merged cells ──
+  const fila1 = worksheet.getRow(1)
+  const fila2 = worksheet.getRow(2)
+  const colCount = fila2.cellCount
+
+  const grupoPorColumna = forwardFillRow(fila1, colCount)
+
+  const headerPorColumna: string[] = []
+  fila2.eachCell({ includeEmpty: true }, (cell, col) => {
+    headerPorColumna[col - 1] = String(cell.value ?? '').trim()
   })
 
-  if (headers.length === 0 || headers.every(h => !h)) {
-    throw new Error('El archivo no contiene encabezados válidos')
-  }
-
-  const pluColumn = detectColumn(headers, PLU_CANDIDATES)
-  const priceColumn = detectColumn(headers, PRICE_CANDIDATES, PREFERRED_PRICE)
-
-  if (!pluColumn) {
+  // ── STEP 2: Verify fixed columns A, B, C ──
+  if (!headerPorColumna[0]?.toLowerCase().includes('cod')) {
     throw new Error(
-      `No se encontró la columna de código PLU. Headers encontrados: ${headers.join(', ')}. ` +
-        `Se buscó: ${PLU_CANDIDATES.join(', ')}`
+      `La columna A no parece ser "Código" (encontré: "${headerPorColumna[0]}"). ` +
+        `El formato del archivo puede haber cambiado — revisar manualmente.`
+    )
+  }
+  if (!headerPorColumna[1]?.toLowerCase().includes('descrip')) {
+    throw new Error(
+      `La columna B no parece ser "Descripción" (encontré: "${headerPorColumna[1]}"). ` +
+        `El formato del archivo puede haber cambiado — revisar manualmente.`
+    )
+  }
+  if (!headerPorColumna[2]?.toLowerCase().includes('categ')) {
+    throw new Error(
+      `La columna C no parece ser "Categoria" (encontré: "${headerPorColumna[2]}"). ` +
+        `El formato del archivo puede haber cambiado — revisar manualmente.`
     )
   }
 
-  if (!priceColumn) {
+  const COL_CODIGO = 1
+  const COL_DESCRIPCION = 2
+  const COL_CATEGORIA = 3
+
+  // ── STEP 3: Dynamically locate the price column ──
+  // Find the column where group header contains "PRECIO NUEVO" AND
+  // sub-header is exactly "Premium" (case-insensitive).
+  let colPrecio: number | null = null
+  for (let i = 0; i < colCount; i++) {
+    const grupo = grupoPorColumna[i]?.toUpperCase() ?? ''
+    const sub = headerPorColumna[i]?.toLowerCase().trim() ?? ''
+    if (grupo.includes('PRECIO NUEVO') && sub === 'premium') {
+      colPrecio = i + 1 // 1-based for ExcelJS
+      break
+    }
+  }
+
+  if (!colPrecio) {
+    const pares = headerPorColumna
+      .map((h, i) => `[${grupoPorColumna[i]} / ${h}]`)
+      .join(', ')
     throw new Error(
-      `No se encontró la columna de precio. Headers encontrados: ${headers.join(', ')}. ` +
-        `Se buscó: ${PRICE_CANDIDATES.join(', ')}`
+      `No se encontró la columna "PRECIO NUEVO / Premium". ` +
+        `Encabezados detectados: ${pares}. ` +
+        `El formato del archivo puede haber cambiado — revisar manualmente.`
     )
   }
 
-  const pluColIndex = headers.indexOf(pluColumn) + 1 // 1-based index
-  const priceColIndex = headers.indexOf(priceColumn) + 1
+  // ── STEP 4: Iterate data rows from row 3 onward ──
+  const codigosVistos = new Map<string, ExcelRow>()
 
-  const rows: ExcelRow[] = []
-
-  // Iterate data rows starting from row 2
   worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-    if (rowNumber === 1) return // Skip header row
+    if (rowNumber < 3) return
 
-    const rawPlu = row.getCell(pluColIndex).value
-    const rawPrice = row.getCell(priceColIndex).value
+    const rawCodigo = row.getCell(COL_CODIGO).value
+    if (rawCodigo === null || rawCodigo === undefined || rawCodigo === '') return
 
-    // Clean PLU code: convert to string, remove spaces and dots
-    const codigo_plu = String(rawPlu ?? '')
-      .trim()
-      .replace(/[\s.]/g, '')
+    // Code may come as number (1229) — convert without decimals
+    const codigo_plu =
+      typeof rawCodigo === 'number'
+        ? String(Math.trunc(rawCodigo))
+        : String(rawCodigo).trim()
 
-    // Parse price as positive number
-    const precio = parseFloat(
-      String(rawPrice ?? '0')
-        .replace(/[^\d.,\-]/g, '')
-        .replace(',', '.')
-    )
+    if (!codigo_plu) return
 
-    // Skip invalid rows
-    if (!codigo_plu || isNaN(precio) || precio <= 0) return
+    const rawNombre = row.getCell(COL_DESCRIPCION).value
+    const nombre = String(rawNombre ?? '').trim()
+    if (!nombre) return
 
-    rows.push({ codigo_plu, precio })
+    const rawCategoria = row.getCell(COL_CATEGORIA).value
+    const categoriaOriginal = String(rawCategoria ?? '').trim()
+
+    const rawPrecio = row.getCell(colPrecio!).value
+    const precio =
+      typeof rawPrecio === 'number' ? rawPrecio : parseFloat(String(rawPrecio ?? '0'))
+
+    if (isNaN(precio) || precio <= 0) return
+
+    const categoria_slug = mapearCategoria(categoriaOriginal, nombre)
+    const es_sin_tacc = nombre.toUpperCase().includes('SIN TACC')
+
+    const fila: ExcelRow = { codigo_plu, nombre, precio, categoria_slug, es_sin_tacc }
+
+    // Deduplicate: if the code already appeared, keep the last occurrence.
+    // The real YPF file can repeat codes (e.g. code 1820 appears twice).
+    codigosVistos.set(codigo_plu, fila)
   })
 
-  return rows
+  return Array.from(codigosVistos.values())
 }
 
 /**

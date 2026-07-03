@@ -1,7 +1,5 @@
 import 'server-only'
 import { createClient as createServerSupabaseClient } from './server'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
-import type { Database } from './types'
 import type {
   Producto,
   Categoria,
@@ -9,15 +7,6 @@ import type {
   ConfiguracionItem,
   UploadHistorial,
 } from './types'
-import type { ExcelRow, UploadResult } from '@/types'
-
-// Service role client for admin operations that bypass RLS
-function getServiceClient() {
-  return createServiceClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  ) as any
-}
 
 // ── PRODUCTOS ──
 
@@ -60,70 +49,31 @@ export async function getAllProductos(): Promise<Producto[]> {
   return data ?? []
 }
 
-
-
-export async function upsertProductos(
-  rows: ExcelRow[]
-): Promise<UploadResult> {
-  const serviceClient = getServiceClient()
-  const result: UploadResult = {
-    success: true,
-    actualizados: 0,
-    nuevos: 0,
-    errores: 0,
-    detalles: [],
-  }
-
-  // Get existing PLU codes to distinguish new vs updated
-  const plus = rows.map((r) => r.codigo_plu)
-  const { data: existing } = await serviceClient
+export async function getProductosDestacados(): Promise<Producto[]> {
+  const supabase = await createServerSupabaseClient()
+  const { data, error } = await supabase
     .from('productos')
-    .select('codigo_plu')
-    .in('codigo_plu', plus)
+    .select('*')
+    .eq('disponible', true)
+    .eq('destacado', true)
+    .order('orden', { ascending: true })
 
-  const existingPlus = new Set((existing as any[])?.map((e: any) => e.codigo_plu) ?? [])
-
-  // Process in batches of 50
-  const batchSize = 50
-  for (let i = 0; i < rows.length; i += batchSize) {
-    const batch = rows.slice(i, i + batchSize)
-
-    const { error } = await serviceClient.from('productos').upsert(
-      batch.map((row) => ({
-        codigo_plu: row.codigo_plu,
-        precio: row.precio,
-        nombre: existingPlus.has(row.codigo_plu)
-          ? undefined!
-          : `Producto ${row.codigo_plu}`,
-        categoria_slug: existingPlus.has(row.codigo_plu)
-          ? undefined!
-          : 'sin-categoria',
-        disponible: true,
-        destacado: false,
-        orden: 0,
-      })),
-      { onConflict: 'codigo_plu', ignoreDuplicates: false }
-    )
-
-    if (error) {
-      result.errores += batch.length
-      result.detalles.push(`Batch error (rows ${i + 1}-${i + batch.length}): ${error.message}`)
-    } else {
-      batch.forEach((row) => {
-        if (existingPlus.has(row.codigo_plu)) {
-          result.actualizados++
-        } else {
-          result.nuevos++
-        }
-      })
-    }
-  }
-
-  result.success = result.errores === 0
-  return result
+  if (error) throw new Error(`Error fetching productos destacados: ${error.message}`)
+  return data ?? []
 }
 
+export async function getCatalogoCompleto(): Promise<Producto[]> {
+  const supabase = await createServerSupabaseClient()
+  const { data, error } = await supabase
+    .from('productos')
+    .select('*')
+    .eq('disponible', true)
+    .order('categoria_slug', { ascending: true })
+    .order('nombre', { ascending: true })
 
+  if (error) throw new Error(`Error fetching catalogo completo: ${error.message}`)
+  return data ?? []
+}
 
 // ── CATEGORÍAS ──
 
@@ -153,8 +103,6 @@ export async function getCombustibles(): Promise<Combustible[]> {
   return data ?? []
 }
 
-
-
 // ── CONFIGURACIÓN ──
 
 export async function getConfiguracion(): Promise<Record<string, string>> {
@@ -172,8 +120,6 @@ export async function getConfiguracion(): Promise<Record<string, string>> {
   })
   return config
 }
-
-
 
 // ── HISTORIAL ──
 
@@ -214,5 +160,3 @@ export async function getAuditLogs(limit: number = 50): Promise<any[]> {
   if (error) throw new Error(`Error fetching audit logs: ${error.message}`)
   return data ?? []
 }
-
-

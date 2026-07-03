@@ -16,16 +16,12 @@ import { useFullPageStore } from '@/stores/fullpage'
 import type { Producto, Categoria } from '@/lib/supabase/types'
 
 interface FullClientProps {
-  initialHamburguesas: Producto[]
-  initialCafeteria: Producto[]
-  initialMarcaFull: Producto[]
+  initialDestacados: Producto[]
   initialCategorias: Categoria[]
 }
 
 export default function FullClient({
-  initialHamburguesas,
-  initialCafeteria,
-  initialMarcaFull,
+  initialDestacados,
   initialCategorias
 }: FullClientProps) {
   const [searchResults, setSearchResults] = useState<Producto[] | null>(null)
@@ -42,18 +38,31 @@ export default function FullClient({
   const lastScrollTimeRef = useRef<number>(0)
   const isTransitioningRef = useRef<boolean>(false)
 
-  const allProducts = useMemo(() => [...initialHamburguesas, ...initialCafeteria, ...initialMarcaFull], [initialHamburguesas, initialCafeteria, initialMarcaFull])
+  const allProducts = useMemo(() => initialDestacados, [initialDestacados])
 
-  const catHamb = initialCategorias.find(c => c.slug === 'hamburguesas') || { id: '1', nombre: 'hamburguesas', slug: 'hamburguesas', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 1, created_at: '' } as Categoria
-  const catCaf = initialCategorias.find(c => c.slug === 'cafeteria') || { id: '2', nombre: 'cafetería', slug: 'cafeteria', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 2, created_at: '' } as Categoria
-  const catFull = initialCategorias.find(c => c.slug === 'marca_full') || { id: '3', nombre: 'productos exclusivos full', slug: 'marca_full', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 3, created_at: '' } as Categoria
+  // Group featured products by category
+  const productosPorCategoria = useMemo(() => {
+    const map: Record<string, Producto[]> = {}
+    for (const p of initialDestacados) {
+      if (!map[p.categoria_slug]) map[p.categoria_slug] = []
+      map[p.categoria_slug].push(p)
+    }
+    return map
+  }, [initialDestacados])
 
+  const comidasCalientes = productosPorCategoria['comidas_calientes'] ?? []
+  const cafeteriaProducts = productosPorCategoria['cafeteria'] ?? []
+  const marcaFullProducts = productosPorCategoria['marca_full'] ?? []
+
+  const catHamb = initialCategorias.find(c => c.slug === 'comidas_calientes') || { id: '1', nombre: 'Comidas Calientes', slug: 'comidas_calientes', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 1, created_at: '' } as Categoria
+  const catCaf = initialCategorias.find(c => c.slug === 'cafeteria') || { id: '2', nombre: 'Cafetería', slug: 'cafeteria', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 2, created_at: '' } as Categoria
+  const catFull = initialCategorias.find(c => c.slug === 'marca_full') || { id: '3', nombre: 'Marca Full', slug: 'marca_full', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 3, created_at: '' } as Categoria
   // Define section IDs for programmatic navigation mapping
   useEffect(() => {
     setSectionIds([
       'home-hero',
       'mundial',
-      'hamburguesas',
+      'comidas-calientes',
       'cafeteria',
       'productos-full',
       'instagram',
@@ -260,9 +269,9 @@ export default function FullClient({
 
   const handleScrollToStart = () => {
     if (isEnabled) {
-      goToSectionById('hamburguesas')
+      goToSectionById('comidas-calientes')
     } else {
-      const el = document.getElementById('hamburguesas')
+      const el = document.getElementById('comidas-calientes')
       if (el) el.scrollIntoView({ behavior: 'smooth' })
     }
   }
@@ -473,12 +482,12 @@ export default function FullClient({
             <FullMundialSection />
           </div>
 
-          {/* Slide 2: Hamburguesas */}
+          {/* Slide 2: Comidas Calientes */}
           <div className="fullpage-section">
             <FullCategorySection
-              id="hamburguesas"
+              id="comidas-calientes"
               categoria={catHamb}
-              productos={initialHamburguesas}
+              productos={comidasCalientes}
               colorFondo="#1A0E00"
               imagenBack="/assets/ypf imagenes/back-4.webp"
               mandalaPosition="bottom-right"
@@ -490,7 +499,7 @@ export default function FullClient({
             <FullCategorySection
               id="cafeteria"
               categoria={catCaf}
-              productos={initialCafeteria}
+              productos={cafeteriaProducts}
               colorFondo="#0D0800"
               imagenBack="/assets/ypf imagenes/back-2.webp"
               mandalaPosition="top-left"
@@ -503,7 +512,7 @@ export default function FullClient({
             <FullCategorySection
               id="productos-full"
               categoria={catFull}
-              productos={initialMarcaFull}
+              productos={marcaFullProducts}
               colorFondo="#060810"
               imagenBack="/assets/ypf imagenes/back-5.webp"
               mandalaPosition="top-right"
@@ -579,9 +588,9 @@ export default function FullClient({
           >
             <FullMundialSection />
             <FullCategorySection
-              id="hamburguesas"
+              id="comidas-calientes"
               categoria={catHamb}
-              productos={initialHamburguesas}
+              productos={comidasCalientes}
               colorFondo="#1A0E00"
               imagenBack="/assets/ypf imagenes/back-4.webp"
               mandalaPosition="bottom-right"
@@ -589,7 +598,7 @@ export default function FullClient({
             <FullCategorySection
               id="cafeteria"
               categoria={catCaf}
-              productos={initialCafeteria}
+              productos={cafeteriaProducts}
               colorFondo="#0D0800"
               imagenBack="/assets/ypf imagenes/back-2.webp"
               mandalaPosition="top-left"
@@ -598,7 +607,7 @@ export default function FullClient({
             <FullCategorySection
               id="productos-full"
               categoria={catFull}
-              productos={initialMarcaFull}
+              productos={marcaFullProducts}
               colorFondo="#060810"
               imagenBack="/assets/ypf imagenes/back-5.webp"
               mandalaPosition="top-right"

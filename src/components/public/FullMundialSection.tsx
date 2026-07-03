@@ -22,6 +22,7 @@ const MUNDIAL_PRODUCTS: Producto[] = [
     disponible: true,
     destacado: true,
     badge: 'Edición Especial',
+    es_sin_tacc: false,
     orden: 1,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -38,6 +39,7 @@ const MUNDIAL_PRODUCTS: Producto[] = [
     disponible: true,
     destacado: true,
     badge: 'Edición Especial',
+    es_sin_tacc: false,
     orden: 2,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -54,6 +56,7 @@ const MUNDIAL_PRODUCTS: Producto[] = [
     disponible: true,
     destacado: true,
     badge: 'Edición Especial',
+    es_sin_tacc: false,
     orden: 3,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -70,6 +73,7 @@ const MUNDIAL_PRODUCTS: Producto[] = [
     disponible: true,
     destacado: true,
     badge: 'Edición Especial',
+    es_sin_tacc: false,
     orden: 4,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -86,6 +90,7 @@ const MUNDIAL_PRODUCTS: Producto[] = [
     disponible: true,
     destacado: true,
     badge: 'Edición Especial',
+    es_sin_tacc: false,
     orden: 5,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -102,6 +107,7 @@ const MUNDIAL_PRODUCTS: Producto[] = [
     disponible: true,
     destacado: true,
     badge: 'Edición Especial',
+    es_sin_tacc: false,
     orden: 6,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()

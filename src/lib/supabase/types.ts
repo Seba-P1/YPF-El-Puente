@@ -15,6 +15,7 @@ export interface Database {
           destacado: boolean
           badge: string | null
           orden: number
+          es_sin_tacc: boolean
           created_at: string
           updated_at: string
         }
@@ -84,6 +85,7 @@ export interface Database {
           productos_nuevos: number
           productos_error: number
           detalle_errores: Record<string, unknown> | null
+          modo: string | null
           subido_por: string | null
           created_at: string
         }

@@ -7,6 +7,7 @@ import type { Variants } from 'framer-motion'
 import { toast } from 'sonner'
 import { useCartStore } from '@/stores/cart'
 import { formatearPrecioARS } from '@/lib/excel/parser'
+import { ProductImagePlaceholder } from '@/components/public/ProductImagePlaceholder'
 import type { Producto } from '@/lib/supabase/types'
 
 interface FullProductCardProps {
@@ -51,9 +52,9 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
     >
       {/* 1. PRODUCT IMAGE (Outside the card, overlapping) */}
       <div className="absolute top-0 flex items-center justify-center w-[min(92vw,468px)] h-[min(68vw,350px)] md:w-[clamp(468px,24.7vw,546px)] md:h-[clamp(330px,18vw,410px)] z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
-        {!imgError ? (
+        {!imgError && producto.imagen_url ? (
           <Image
-            src={producto.imagen_url || `/assets/placeholder.png`}
+            src={producto.imagen_url}
             alt={producto.nombre}
             fill
             sizes="(max-width: 768px) 92vw, 546px"
@@ -62,11 +63,7 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="flex items-center justify-center w-full h-full rounded-2xl border border-white/10 bg-white/5">
-            <span className="text-white text-xs font-semibold text-center px-4">
-              {producto.nombre}
-            </span>
-          </div>
+          <ProductImagePlaceholder categoriaSlug={producto.categoria_slug} fill />
         )}
 
         {/* BADGE (Overlapping the image on top at z-20) */}
