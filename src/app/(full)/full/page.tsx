@@ -1,18 +1,18 @@
 import React from 'react'
-import { getProductosDestacados, getCategorias } from '@/lib/supabase/queries'
+import { getCatalogoCompleto, getCategorias } from '@/lib/supabase/queries'
 import FullClient from './FullClient'
 
 export const revalidate = 60
 
 export default async function FullMenuPage() {
-  const [destacados, categorias] = await Promise.all([
-    getProductosDestacados(),
+  const [productos, categorias] = await Promise.all([
+    getCatalogoCompleto(),
     getCategorias(),
   ])
 
   return (
     <FullClient
-      initialDestacados={destacados}
+      initialDestacados={productos}
       initialCategorias={categorias}
     />
   )

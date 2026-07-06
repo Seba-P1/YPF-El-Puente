@@ -40,6 +40,14 @@ function forwardFillRow(row: ExcelJS.Row, colCount: number): string[] {
   return result
 }
 
+function normalizarTexto(str: string): string {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+}
+
 // ═══════════════════════════════════════════════════════════
 // Main parser — reads the exact structure of the YPF Central file
 // ═══════════════════════════════════════════════════════════
@@ -69,71 +77,108 @@ export async function parseExcelFile(file: File): Promise<ExcelRow[]> {
     throw new Error('El archivo no contiene hojas de cálculo')
   }
 
-  // ── STEP 1: Reconstruct row 1 with forward-fill for merged cells ──
+  // ── STEP 1: Reconstruct row 1 & 2 and detect format ──
   const fila1 = worksheet.getRow(1)
   const fila2 = worksheet.getRow(2)
-  const colCount = fila2.cellCount
-
-  const grupoPorColumna = forwardFillRow(fila1, colCount)
-
-  const headerPorColumna: string[] = []
-  fila2.eachCell({ includeEmpty: true }, (cell, col) => {
-    headerPorColumna[col - 1] = String(cell.value ?? '').trim()
-  })
-
-  // ── STEP 2: Verify fixed columns A, B, C ──
-  if (!headerPorColumna[0]?.toLowerCase().includes('cod')) {
-    throw new Error(
-      `La columna A no parece ser "Código" (encontré: "${headerPorColumna[0]}"). ` +
-        `El formato del archivo puede haber cambiado — revisar manualmente.`
-    )
-  }
-  if (!headerPorColumna[1]?.toLowerCase().includes('descrip')) {
-    throw new Error(
-      `La columna B no parece ser "Descripción" (encontré: "${headerPorColumna[1]}"). ` +
-        `El formato del archivo puede haber cambiado — revisar manualmente.`
-    )
-  }
-  if (!headerPorColumna[2]?.toLowerCase().includes('categ')) {
-    throw new Error(
-      `La columna C no parece ser "Categoria" (encontré: "${headerPorColumna[2]}"). ` +
-        `El formato del archivo puede haber cambiado — revisar manualmente.`
-    )
-  }
-
-  const COL_CODIGO = 1
-  const COL_DESCRIPCION = 2
-  const COL_CATEGORIA = 3
-
-  // ── STEP 3: Dynamically locate the price column ──
-  // Find the column where group header contains "PRECIO NUEVO" AND
-  // sub-header is exactly "Premium" (case-insensitive).
+  
+  const val1A = normalizarTexto(String(fila1.getCell(1).value ?? ''))
+  const val2A = normalizarTexto(String(fila2.getCell(1).value ?? ''))
+  
+  // Format B has "codigo" on row 1 and data starts directly on row 2 (which starts with a PLU number like 1230).
+  const isFormatB = val1A === 'codigo' || val1A === 'cod' || /^\d+$/.test(val2A)
+  
+  let COL_CODIGO = 1
+  let COL_DESCRIPCION = 2
+  let COL_CATEGORIA = 3
   let colPrecio: number | null = null
-  for (let i = 0; i < colCount; i++) {
-    const grupo = grupoPorColumna[i]?.toUpperCase() ?? ''
-    const sub = headerPorColumna[i]?.toLowerCase().trim() ?? ''
-    if (grupo.includes('PRECIO NUEVO') && sub === 'premium') {
-      colPrecio = i + 1 // 1-based for ExcelJS
-      break
+  let startRow = 3
+
+  if (isFormatB) {
+    // FORMAT B: Single header row. Row 1 = Headers, Row 2+ = Data.
+    startRow = 2
+    const colCount = fila1.cellCount
+    
+    // Find Code, Description, Category and Price dynamically
+    for (let col = 1; col <= colCount; col++) {
+      const val = normalizarTexto(String(fila1.getCell(col).value ?? ''))
+      if (val === 'codigo' || val === 'cod' || val.includes('plu')) {
+        COL_CODIGO = col
+      } else if (val === 'producto' || val.includes('descrip') || val === 'nombre') {
+        COL_DESCRIPCION = col
+      } else if (val.includes('categ')) {
+        COL_CATEGORIA = col
+      } else if (val.includes('precio') || val.includes('valor') || val.includes('monto')) {
+        colPrecio = col
+      }
+    }
+    
+    // Fallback if not found
+    if (!colPrecio) colPrecio = 5
+  } else {
+    // FORMAT A: Dual header rows. Row 1 = Group headers, Row 2 = Sub headers, Row 3+ = Data.
+    startRow = 3
+    const colCount = fila2.cellCount
+    const grupoPorColumna = forwardFillRow(fila1, colCount)
+    const headerPorColumna: string[] = []
+    
+    fila2.eachCell({ includeEmpty: true }, (cell, col) => {
+      headerPorColumna[col - 1] = String(cell.value ?? '').trim()
+    })
+
+    const colA = normalizarTexto(headerPorColumna[0] ?? '')
+    const colB = normalizarTexto(headerPorColumna[1] ?? '')
+    const colC = normalizarTexto(headerPorColumna[2] ?? '')
+
+    if (!colA.includes('cod')) {
+      throw new Error(
+        `La columna A no parece ser "Código" (encontré: "${headerPorColumna[0]}"). ` +
+          `El formato del archivo puede haber cambiado — revisar manualmente.`
+      )
+    }
+    if (!colB.includes('descrip') && !colB.includes('nombre')) {
+      throw new Error(
+        `La columna B no parece ser "Descripción" (encontré: "${headerPorColumna[1]}"). ` +
+          `El formato del archivo puede haber cambiado — revisar manualmente.`
+      )
+    }
+    if (!colC.includes('categ')) {
+      throw new Error(
+        `La columna C no parece ser "Categoría" (encontré: "${headerPorColumna[2]}"). ` +
+          `El formato del archivo puede haber cambiado — revisar manualmente.`
+      )
+    }
+
+    COL_CODIGO = 1
+    COL_DESCRIPCION = 2
+    COL_CATEGORIA = 3
+
+    // Dynamically locate the price column in dual-header format
+    for (let i = 0; i < colCount; i++) {
+      const grupo = normalizarTexto(grupoPorColumna[i] ?? '')
+      const sub = normalizarTexto(headerPorColumna[i] ?? '')
+      if (grupo.includes('precio nuevo') && sub === 'premium') {
+        colPrecio = i + 1
+        break
+      }
+    }
+
+    if (!colPrecio) {
+      const pares = headerPorColumna
+        .map((h, i) => `[${grupoPorColumna[i]} / ${h}]`)
+        .join(', ')
+      throw new Error(
+        `No se encontró la columna "PRECIO NUEVO / Premium". ` +
+          `Encabezados detectados: ${pares}. ` +
+          `El formato del archivo puede haber cambiado — revisar manualmente.`
+      )
     }
   }
 
-  if (!colPrecio) {
-    const pares = headerPorColumna
-      .map((h, i) => `[${grupoPorColumna[i]} / ${h}]`)
-      .join(', ')
-    throw new Error(
-      `No se encontró la columna "PRECIO NUEVO / Premium". ` +
-        `Encabezados detectados: ${pares}. ` +
-        `El formato del archivo puede haber cambiado — revisar manualmente.`
-    )
-  }
-
-  // ── STEP 4: Iterate data rows from row 3 onward ──
+  // ── STEP 4: Iterate data rows from startRow onward ──
   const codigosVistos = new Map<string, ExcelRow>()
 
   worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-    if (rowNumber < 3) return
+    if (rowNumber < startRow) return
 
     const rawCodigo = row.getCell(COL_CODIGO).value
     if (rawCodigo === null || rawCodigo === undefined || rawCodigo === '') return
@@ -160,7 +205,16 @@ export async function parseExcelFile(file: File): Promise<ExcelRow[]> {
     if (isNaN(precio) || precio <= 0) return
 
     const categoria_slug = mapearCategoria(categoriaOriginal, nombre)
-    const es_sin_tacc = nombre.toUpperCase().includes('SIN TACC')
+    const nameUpper = nombre.toUpperCase()
+    const es_sin_tacc =
+      nameUpper.includes('SIN TACC') ||
+      nameUpper.includes('SIN T.A.C.C.') ||
+      nameUpper.includes('S/TACC') ||
+      nameUpper.includes('S/ TACC') ||
+      nameUpper.includes('SINTACC') ||
+      nameUpper.includes('SIN GLUTEN') ||
+      nameUpper.includes('S.G.') ||
+      nameUpper.includes('S/G')
 
     const fila: ExcelRow = { codigo_plu, nombre, precio, categoria_slug, es_sin_tacc }
 

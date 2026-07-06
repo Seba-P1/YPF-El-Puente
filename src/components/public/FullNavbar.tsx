@@ -9,7 +9,12 @@ import { useSearchStore } from '@/stores/search'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useFullPageStore } from '@/stores/fullpage'
 
-export function FullNavbar() {
+interface FullNavbarProps {
+  visible?: boolean
+  transparent?: boolean
+}
+
+export function FullNavbar({ visible = true, transparent = false }: FullNavbarProps = {}) {
   const [activeSection, setActiveSection] = useState<string>('home')
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
@@ -94,12 +99,14 @@ export function FullNavbar() {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 h-[68px] transition-all duration-300"
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
       style={{
-        background: isScrolled ? 'rgba(0,0,0,0.75)' : 'transparent',
-        backdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'none',
-        WebkitBackdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'none',
-        borderBottom: isScrolled ? '1px solid rgba(255,255,255,0.07)' : '1px solid transparent'
+        height: isScrolled ? '54px' : '68px',
+        background: transparent ? 'transparent' : (isScrolled ? 'rgba(6,8,15,0.4)' : 'transparent'),
+        backdropFilter: transparent ? 'none' : (isScrolled ? 'blur(12px)' : 'none'),
+        WebkitBackdropFilter: transparent ? 'none' : (isScrolled ? 'blur(12px)' : 'none'),
+        borderBottom: transparent ? 'none' : (isScrolled ? '1px solid rgba(255,255,255,0.04)' : '1px solid transparent'),
+        transform: visible ? 'translateY(0)' : 'translateY(-100%)',
       }}
     >
       <div

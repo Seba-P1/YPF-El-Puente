@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Fragment } from 'react'
 import { History, Search, FileText, ChevronDown, ChevronUp, CheckCircle, AlertCircle, HelpCircle } from 'lucide-react'
 import { GlassCard } from '@/components/admin/ui/glass-card'
 import { Input } from '@/components/ui/input'
@@ -79,7 +79,7 @@ export function HistorialClient({ initialUploads }: HistorialClientProps) {
                 const isSelected = selectedUploadId === upload.id
                 const hasErrors = upload.productos_error > 0
                 return (
-                  <tbody key={upload.id} className="border-b last:border-b-0 divide-y divide-border/10">
+                  <Fragment key={upload.id}>
                     <TableRow
                       className={`hover:bg-muted/30 cursor-pointer ${
                         isSelected ? 'bg-muted/50 border-b border-border/20' : ''
@@ -91,7 +91,7 @@ export function HistorialClient({ initialUploads }: HistorialClientProps) {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                           <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
                           <span className="font-semibold text-sm text-foreground truncate max-w-[300px]" title={upload.nombre_archivo}>
                             {upload.nombre_archivo}
                           </span>
@@ -178,18 +178,16 @@ export function HistorialClient({ initialUploads }: HistorialClientProps) {
                         </TableCell>
                       </TableRow>
                     )}
-                  </tbody>
+                  </Fragment>
                 )
               })}
 
               {filteredUploads.length === 0 && (
-                <tbody>
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                      No se encontraron registros de importaciones.
-                    </TableCell>
-                  </TableRow>
-                </tbody>
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                    No se encontraron registros de importaciones.
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>

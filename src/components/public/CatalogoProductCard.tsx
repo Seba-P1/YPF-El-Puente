@@ -53,6 +53,7 @@ export function CatalogoProductCard({ producto }: CatalogoProductCardProps) {
         ) : (
           <ProductImagePlaceholder
             categoriaSlug={producto.categoria_slug}
+            nombre={producto.nombre}
             fill
           />
         )}

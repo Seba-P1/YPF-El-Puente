@@ -40,23 +40,66 @@ export default function FullClient({
 
   const allProducts = useMemo(() => initialDestacados, [initialDestacados])
 
-  // Group featured products by category
+  // Group products by category (with fallback to first 12 active products if no featured exist)
   const productosPorCategoria = useMemo(() => {
     const map: Record<string, Producto[]> = {}
+    
+    // First group all active products by category
+    const groupedAll: Record<string, Producto[]> = {}
     for (const p of initialDestacados) {
-      if (!map[p.categoria_slug]) map[p.categoria_slug] = []
-      map[p.categoria_slug].push(p)
+      if (!groupedAll[p.categoria_slug]) groupedAll[p.categoria_slug] = []
+      groupedAll[p.categoria_slug].push(p)
     }
+
+    // Populate map: featured first, fallback to first 12 active
+    initialCategorias.forEach((cat) => {
+      const allCatProds = groupedAll[cat.slug] ?? []
+      const featured = allCatProds.filter((p) => p.destacado)
+      if (featured.length > 0) {
+        map[cat.slug] = featured
+      } else {
+        map[cat.slug] = allCatProds.slice(0, 12)
+      }
+    })
+
     return map
-  }, [initialDestacados])
+  }, [initialDestacados, initialCategorias])
 
   const comidasCalientes = productosPorCategoria['comidas_calientes'] ?? []
   const cafeteriaProducts = productosPorCategoria['cafeteria'] ?? []
   const marcaFullProducts = productosPorCategoria['marca_full'] ?? []
 
+  // Gather active Sin TACC products
+  const sinTaccProducts = useMemo(() => {
+    return initialDestacados.filter((p) => {
+      if (p.es_sin_tacc) return true
+      const nameLower = p.nombre.toLowerCase()
+      return (
+        nameLower.includes('tacc') ||
+        nameLower.includes('gluten') ||
+        nameLower.includes('s/t') ||
+        nameLower.includes('sintac') ||
+        nameLower.includes('s.g.')
+      )
+    }).slice(0, 12)
+  }, [initialDestacados])
+
   const catHamb = initialCategorias.find(c => c.slug === 'comidas_calientes') || { id: '1', nombre: 'Comidas Calientes', slug: 'comidas_calientes', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 1, created_at: '' } as Categoria
   const catCaf = initialCategorias.find(c => c.slug === 'cafeteria') || { id: '2', nombre: 'Cafetería', slug: 'cafeteria', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 2, created_at: '' } as Categoria
   const catFull = initialCategorias.find(c => c.slug === 'marca_full') || { id: '3', nombre: 'Marca Full', slug: 'marca_full', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 3, created_at: '' } as Categoria
+  
+  const catSinTacc = {
+    id: 'sin-tacc-cat',
+    nombre: 'Sin TACC',
+    slug: 'sin_tacc',
+    descripcion: 'Libres de Gluten',
+    subtitulo: 'Deliciosas opciones aptas para celíacos y libres de TACC.',
+    imagen_fondo_url: null,
+    activa: true,
+    orden: 4,
+    created_at: ''
+  } as Categoria
+
   // Define section IDs for programmatic navigation mapping
   useEffect(() => {
     setSectionIds([
@@ -65,6 +108,7 @@ export default function FullClient({
       'comidas-calientes',
       'cafeteria',
       'productos-full',
+      'sin-tacc',
       'instagram',
       'sustentabilidad-section'
     ])
@@ -166,7 +210,7 @@ export default function FullClient({
 
       if (!direction) return
 
-      if (currentSection === 6) {
+      if (currentSection === 7) {
         const scrollableContainer = document.getElementById('sustentabilidad-section')
         if (scrollableContainer) {
           const scrollTop = scrollableContainer.scrollTop
@@ -175,7 +219,7 @@ export default function FullClient({
 
           if (direction === 'up' && scrollTop <= 0) {
             e.preventDefault()
-            triggerTransition(5)
+            triggerTransition(6)
           } else if (direction === 'down' && scrollTop + clientHeight >= scrollHeight) {
             // End of footer, ignore
           } else {
@@ -185,7 +229,7 @@ export default function FullClient({
       } else {
         e.preventDefault()
         if (direction === 'down') {
-          if (currentSection < 6) triggerTransition(currentSection + 1)
+          if (currentSection < 7) triggerTransition(currentSection + 1)
         } else {
           if (currentSection > 0) triggerTransition(currentSection - 1)
         }
@@ -232,7 +276,7 @@ export default function FullClient({
       const avgSlow = getAverage(70)
       const direction = deltaY > 0 ? 'down' : 'up'
 
-      if (currentSection === 6) {
+      if (currentSection === 7) {
         const scrollableContainer = document.getElementById('sustentabilidad-section')
         if (scrollableContainer) {
           const scrollTop = scrollableContainer.scrollTop
@@ -242,7 +286,7 @@ export default function FullClient({
           if (direction === 'up' && scrollTop <= 0) {
             e.preventDefault()
             if (avgFast >= avgSlow && absDeltaY > 5) {
-              triggerTransition(5)
+              triggerTransition(6)
             }
           } else if (direction === 'down' && scrollTop + clientHeight >= scrollHeight) {
             // At the bottom of map/footer, block event
@@ -255,7 +299,7 @@ export default function FullClient({
         e.preventDefault()
         if (avgFast >= avgSlow && absDeltaY > 5) {
           if (direction === 'down') {
-            if (currentSection < 6) triggerTransition(currentSection + 1)
+            if (currentSection < 7) triggerTransition(currentSection + 1)
           } else {
             if (currentSection > 0) triggerTransition(currentSection - 1)
           }
@@ -519,12 +563,24 @@ export default function FullClient({
             />
           </div>
 
-          {/* Slide 5: Instagram */}
+          {/* Slide 5: Sin TACC */}
+          <div className="fullpage-section">
+            <FullCategorySection
+              id="sin-tacc"
+              categoria={catSinTacc}
+              productos={sinTaccProducts}
+              colorFondo="#041E15"
+              imagenBack="/assets/ypf imagenes/back-3.webp"
+              mandalaPosition="bottom-left"
+            />
+          </div>
+
+          {/* Slide 6: Instagram */}
           <div className="fullpage-section">
             {renderInstagramSection()}
           </div>
 
-          {/* Slide 6: Sustentabilidad, Mapa y Footer (Scrollable) */}
+          {/* Slide 7: Sustentabilidad, Mapa y Footer (Scrollable) */}
           <div id="sustentabilidad-section" className="fullpage-section fullpage-scrollable">
             <FullSustentabilidad />
             {renderFooter()}
@@ -611,6 +667,14 @@ export default function FullClient({
               colorFondo="#060810"
               imagenBack="/assets/ypf imagenes/back-5.webp"
               mandalaPosition="top-right"
+            />
+            <FullCategorySection
+              id="sin-tacc"
+              categoria={catSinTacc}
+              productos={sinTaccProducts}
+              colorFondo="#041E15"
+              imagenBack="/assets/ypf imagenes/back-3.webp"
+              mandalaPosition="bottom-left"
             />
           </motion.div>
         )}

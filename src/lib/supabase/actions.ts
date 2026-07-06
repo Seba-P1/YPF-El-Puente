@@ -28,6 +28,26 @@ export const updateProductoDisponible = withAdminAction(
   { rateLimitKey: 'update-disponible', maxPerMinute: 60 }
 )
 
+const bulkDisponibleSchema = z.object({
+  disponible: z.boolean(),
+})
+
+export const bulkUpdateDisponible = withAdminAction(
+  bulkDisponibleSchema,
+  async ({ disponible }) => {
+    const supabase = (await createClient()) as any
+    const { error, count } = await supabase
+      .from('productos')
+      .update({ disponible })
+      .not('id', 'is', null) // match all rows
+
+    if (error) throw new Error(`Error bulk-updating: ${error.message}`)
+    revalidatePath('/admin/productos')
+    return { disponible, count }
+  },
+  { rateLimitKey: 'bulk-disponible', maxPerMinute: 5 }
+)
+
 const updateDestacadoSchema = z.object({
   id: z.string().uuid(),
   destacado: z.boolean(),

@@ -113,12 +113,13 @@ export async function POST(request: NextRequest) {
     const allPlus = rowsDedup.map((r) => r.codigo_plu as string)
     const { data: existingProducts } = await adminClient
       .from('productos')
-      .select('codigo_plu')
+      .select('codigo_plu, categoria_slug')
       .in('codigo_plu', allPlus)
 
-    const existingSet = new Set(
-      (existingProducts as any[])?.map((p: any) => p.codigo_plu) ?? []
+    const existingMap = new Map<string, string>(
+      (existingProducts as any[])?.map((p: any) => [p.codigo_plu, p.categoria_slug]) ?? []
     )
+    const existingSet = new Set(existingMap.keys())
 
     // ── STEP 5: Filter rows by mode BEFORE upsert ──
     let filasAProcesar: any[]
@@ -148,24 +149,26 @@ export async function POST(request: NextRequest) {
         const isExisting = existingSet.has(row.codigo_plu)
         if (isExisting) {
           // Existing products: only update name, price, sin_tacc.
-          // NEVER overwrite categoria_slug, disponible, destacado, badge,
-          // orden, imagen_url — those are manually curated by the admin.
+          // NEVER overwrite disponible, destacado, badge, orden, imagen_url.
+          // MUST supply categoria_slug to satisfy the NOT NULL constraint in Supabase.
           return {
             codigo_plu: row.codigo_plu,
             nombre: row.nombre,
             precio: row.precio,
+            categoria_slug: existingMap.get(row.codigo_plu) || row.categoria_slug,
             es_sin_tacc: row.es_sin_tacc ?? false,
             updated_at: new Date().toISOString(),
           }
         }
-        // New products: created HIDDEN (disponible=false) until manually reviewed.
+        // New products: created ACTIVE so they appear immediately.
+        // Admin can deactivate individual items or bulk-toggle later.
         return {
           codigo_plu: row.codigo_plu,
           nombre: row.nombre,
           precio: row.precio,
           categoria_slug: row.categoria_slug,
           es_sin_tacc: row.es_sin_tacc ?? false,
-          disponible: false,
+          disponible: true,
           destacado: false,
           orden: 0,
         }

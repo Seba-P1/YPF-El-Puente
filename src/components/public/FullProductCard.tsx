@@ -63,7 +63,7 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
             onError={() => setImgError(true)}
           />
         ) : (
-          <ProductImagePlaceholder categoriaSlug={producto.categoria_slug} fill />
+          <ProductImagePlaceholder categoriaSlug={producto.categoria_slug} nombre={producto.nombre} fill />
         )}
 
         {/* BADGE (Overlapping the image on top at z-20) */}

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { FullNavbar } from '@/components/public/FullNavbar'
@@ -19,42 +19,86 @@ const ITEMS_POR_PAGINA = 48
 export default function MenuClient({ initialProductos }: MenuClientProps) {
   const [busqueda, setBusqueda] = useState('')
   const [categoriaActiva, setCategoriaActiva] = useState<string>('todos')
-  const [soloSinTacc, setSoloSinTacc] = useState(false)
   const [pagina, setPagina] = useState(1)
+  const [isCompact, setIsCompact] = useState(false)
+  const [showNav, setShowNav] = useState(true)
+
+  const lastScrollYRef = React.useRef(0)
+
+  // Scroll listener to detect direction and set compact mode
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      const lastScrollY = lastScrollYRef.current
+
+      // Only trigger hide/show if scrolled past a small threshold
+      if (Math.abs(currentScrollY - lastScrollY) > 5) {
+        if (currentScrollY > lastScrollY && currentScrollY > 80) {
+          // Scrolling down - hide
+          setShowNav(false)
+        } else {
+          // Scrolling up - show
+          setShowNav(true)
+        }
+      }
+
+      setIsCompact(currentScrollY > 40)
+      lastScrollYRef.current = currentScrollY
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Reset page when any filter changes
   useEffect(() => {
     setPagina(1)
-  }, [busqueda, categoriaActiva, soloSinTacc])
+  }, [busqueda, categoriaActiva])
 
   // Chained filtering
   const filtrados = useMemo(() => {
     let result = initialProductos
 
-    if (categoriaActiva !== 'todos') {
-      result = result.filter((p) => p.categoria_slug === categoriaActiva)
-    }
-
-    if (soloSinTacc) {
-      result = result.filter((p) => p.es_sin_tacc)
+    // Bypass category filter when search query is active (search globally)
+    if (categoriaActiva !== 'todos' && !busqueda.trim()) {
+      if (categoriaActiva === 'sin_tacc') {
+        result = result.filter((p) => {
+          if (p.es_sin_tacc) return true
+          const nameLower = p.nombre.toLowerCase()
+          return (
+            nameLower.includes('tacc') ||
+            nameLower.includes('gluten') ||
+            nameLower.includes('s/t') ||
+            nameLower.includes('sintac') ||
+            nameLower.includes('s.g.')
+          )
+        })
+      } else {
+        result = result.filter((p) => p.categoria_slug === categoriaActiva)
+      }
     }
 
     if (busqueda.trim()) {
-      const q = busqueda
+      const qClean = busqueda
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
+      
+      const qAlphanumeric = qClean.replace(/[^a-z0-9]/g, '')
+
       result = result.filter((p) => {
-        const nombre = p.nombre
+        const nameClean = p.nombre
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
           .toLowerCase()
-        return nombre.includes(q)
+        
+        const nameAlphanumeric = nameClean.replace(/[^a-z0-9]/g, '')
+
+        return nameClean.includes(qClean) || nameAlphanumeric.includes(qAlphanumeric)
       })
     }
 
     return result
-  }, [initialProductos, categoriaActiva, soloSinTacc, busqueda])
+  }, [initialProductos, categoriaActiva, busqueda])
 
   // Pagination
   const totalPaginas = Math.ceil(filtrados.length / ITEMS_POR_PAGINA)
@@ -71,24 +115,25 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
         minHeight: '100vh',
       }}
     >
-      <FullNavbar />
+      <FullNavbar visible={showNav} transparent />
       <CartSidebar />
       <MobileBottomBar />
 
-      {/* Header */}
+      {/* Header - Made significantly smaller and more proportionate */}
       <header
         style={{
-          paddingTop: 'calc(68px + 48px)',
-          paddingBottom: 32,
+          paddingTop: 'calc(68px + 16px)',
+          paddingBottom: 12,
           textAlign: 'center',
         }}
+        className="px-4"
       >
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           style={{
-            fontSize: 'clamp(28px, 5vw, 42px)',
+            fontSize: 'clamp(20px, 3.5vw, 30px)',
             fontWeight: 900,
             letterSpacing: '-0.02em',
             color: 'white',
@@ -101,44 +146,44 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           style={{
-            fontSize: 15,
+            fontSize: 'clamp(11px, 2vw, 13px)',
             color: 'rgba(255,255,255,0.45)',
-            marginTop: 8,
+            marginTop: 4,
           }}
         >
           Todos nuestros productos, en un solo lugar
         </motion.p>
       </header>
 
-      {/* Filters */}
+      {/* Filters - Sticky with compact mode toggle */}
       <CatalogoFiltros
         busqueda={busqueda}
         onBusqueda={setBusqueda}
         categoriaActiva={categoriaActiva}
         onCategoria={setCategoriaActiva}
-        soloSinTacc={soloSinTacc}
-        onSinTacc={setSoloSinTacc}
+        isCompact={isCompact}
+        visible={showNav}
       />
 
-      {/* Product Grid */}
+      {/* Product Grid - Maximum width optimized for BenQ / large monitors */}
       <div
         style={{
-          maxWidth: 'var(--page-max, 1280px)',
+          maxWidth: '1600px',
           margin: '0 auto',
-          padding: '24px var(--page-pad-x, 24px) 80px',
+          padding: '16px var(--page-pad-x, 24px) 80px',
         }}
       >
         {/* Result count */}
         <p
           style={{
-            fontSize: 13,
-            color: 'rgba(255,255,255,0.35)',
-            marginBottom: 16,
+            fontSize: 12,
+            color: 'rgba(255,255,255,0.3)',
+            marginBottom: 12,
           }}
         >
           {filtrados.length}{' '}
           {filtrados.length === 1 ? 'producto' : 'productos'}
-          {categoriaActiva !== 'todos' || soloSinTacc || busqueda.trim()
+          {categoriaActiva !== 'todos' || busqueda.trim()
             ? ' encontrados'
             : ' disponibles'}
         </p>
@@ -146,7 +191,7 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
         <AnimatePresence mode="wait">
           {paginados.length > 0 ? (
             <motion.div
-              key={`page-${pagina}-${categoriaActiva}-${soloSinTacc}-${busqueda}`}
+              key={`page-${pagina}-${categoriaActiva}-${busqueda}`}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
@@ -155,7 +200,7 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
                 display: 'grid',
                 gap: 12,
               }}
-              className="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+              className="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 3xl:grid-cols-9"
             >
               {paginados.map((producto) => (
                 <CatalogoProductCard
@@ -170,16 +215,16 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
               animate={{ opacity: 1 }}
               style={{
                 textAlign: 'center',
-                padding: '80px 24px',
-                background: 'rgba(255,255,255,0.03)',
+                padding: '60px 24px',
+                background: 'rgba(255,255,255,0.02)',
                 borderRadius: 16,
-                border: '1px solid rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.05)',
               }}
             >
               <p
                 style={{
                   color: 'rgba(255,255,255,0.4)',
-                  fontSize: 15,
+                  fontSize: 14,
                 }}
               >
                 No encontramos productos con esos filtros.
@@ -206,10 +251,10 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
-                padding: '10px 20px',
+                padding: '8px 16px',
                 borderRadius: 12,
                 border: 'none',
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: 600,
                 cursor: pagina === 1 ? 'not-allowed' : 'pointer',
                 background:
@@ -223,13 +268,13 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
                 transition: 'all 0.15s',
               }}
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={14} />
               Anterior
             </button>
 
             <span
               style={{
-                fontSize: 13,
+                fontSize: 12,
                 color: 'rgba(255,255,255,0.45)',
                 fontWeight: 500,
               }}
@@ -246,10 +291,10 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
-                padding: '10px 20px',
+                padding: '8px 16px',
                 borderRadius: 12,
                 border: 'none',
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: 600,
                 cursor:
                   pagina === totalPaginas ? 'not-allowed' : 'pointer',
@@ -265,7 +310,7 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
               }}
             >
               Siguiente
-              <ChevronRight size={16} />
+              <ChevronRight size={14} />
             </button>
           </div>
         )}

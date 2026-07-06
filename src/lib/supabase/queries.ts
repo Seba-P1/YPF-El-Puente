@@ -1,5 +1,7 @@
 import 'server-only'
 import { createClient as createServerSupabaseClient } from './server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
+import type { Database } from './types'
 import type {
   Producto,
   Categoria,
@@ -150,8 +152,11 @@ export async function getAllCategorias(): Promise<Categoria[]> {
 }
 
 export async function getAuditLogs(limit: number = 50): Promise<any[]> {
-  const supabase = await createServerSupabaseClient()
-  const { data, error } = await supabase
+  const admin = createAdminClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  const { data, error } = await admin
     .from('audit_log')
     .select('*')
     .order('created_at', { ascending: false })

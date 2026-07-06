@@ -12,6 +12,8 @@ import {
   MoreVertical,
   Copy,
   Trash2,
+  Power,
+  PowerOff,
 } from 'lucide-react'
 import {
   updateProductoDisponible,
@@ -19,6 +21,7 @@ import {
   updateProductoPrecio,
   duplicateProducto,
   deleteProducto,
+  bulkUpdateDisponible,
 } from '@/lib/supabase/actions'
 import { formatearPrecioARS } from '@/lib/excel/parser'
 import type { Producto } from '@/types'
@@ -62,23 +65,29 @@ interface ProductTableProps {
 const ITEMS_POR_PAGINA = 20
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string }> = {
-  hamburguesas: { bg: 'bg-orange-500/10 dark:bg-orange-500/20', text: 'text-orange-600 dark:text-orange-400' },
+  comidas_calientes: { bg: 'bg-orange-500/10 dark:bg-orange-500/20', text: 'text-orange-600 dark:text-orange-400' },
+  comidas_frias: { bg: 'bg-cyan-500/10 dark:bg-cyan-500/20', text: 'text-cyan-600 dark:text-cyan-400' },
   cafeteria: { bg: 'bg-amber-500/10 dark:bg-amber-500/20', text: 'text-amber-600 dark:text-amber-400' },
+  panaderia: { bg: 'bg-yellow-500/10 dark:bg-yellow-500/20', text: 'text-yellow-600 dark:text-yellow-400' },
+  combos: { bg: 'bg-purple-500/10 dark:bg-purple-500/20', text: 'text-purple-600 dark:text-purple-400' },
   marca_full: { bg: 'bg-blue-500/10 dark:bg-blue-500/20', text: 'text-blue-600 dark:text-blue-400' },
+  sin_categoria: { bg: 'bg-gray-500/10 dark:bg-gray-500/20', text: 'text-gray-600 dark:text-gray-400' },
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  hamburguesas: 'Hamburguesas',
+  comidas_calientes: 'Comidas Calientes',
+  comidas_frias: 'Comidas Frías',
   cafeteria: 'Cafetería',
-  marca_full: 'Exclusivos Full',
+  panaderia: 'Panadería',
+  combos: 'Combos',
+  marca_full: 'Marca Full',
+  sin_categoria: 'Sin Categoría',
 }
 
 export function ProductTable({ productos: initialProductos }: ProductTableProps) {
   const [productos, setProductos] = useState(initialProductos)
   const [filtroNombre, setFiltroNombre] = useState('')
-  const [filtroCategoria, setFiltroCategoria] = useState<
-    'all' | 'hamburguesas' | 'cafeteria' | 'marca_full'
-  >('all')
+  const [filtroCategoria, setFiltroCategoria] = useState<string>('all')
   const [filtroEstado, setFiltroEstado] = useState<
     'all' | 'active' | 'inactive' | 'noprice'
   >('all')
@@ -96,6 +105,7 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
   const [confirmDelete, setConfirmDelete] = useState<Producto | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
+  const [bulkUpdating, setBulkUpdating] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -244,6 +254,27 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
     }
   }, [confirmDelete])
 
+  const handleBulkToggle = useCallback(async (disponible: boolean) => {
+    setBulkUpdating(true)
+    // Optimistic
+    setProductos((prev) => prev.map((p) => ({ ...p, disponible })))
+    try {
+      const res = await bulkUpdateDisponible({ disponible })
+      if (!res.ok) throw new Error(res.error)
+      toast.success(
+        disponible
+          ? `Todos los productos activados`
+          : `Todos los productos desactivados`
+      )
+    } catch (error: any) {
+      // Revert
+      setProductos(initialProductos)
+      toast.error(error.message || 'Error al actualizar')
+    } finally {
+      setBulkUpdating(false)
+    }
+  }, [initialProductos])
+
   return (
     <div className="space-y-4">
       <GlassCard className="p-4 flex flex-wrap items-center gap-4">
@@ -263,15 +294,19 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
         <select
           value={filtroCategoria}
           onChange={(e) => {
-            setFiltroCategoria(e.target.value as any)
+            setFiltroCategoria(e.target.value)
             setPaginaActual(1)
           }}
           className="h-9 w-[180px] text-sm rounded-md border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <option value="all" className="bg-background">Todas las categorías</option>
-          <option value="hamburguesas" className="bg-background">Hamburguesas</option>
+          <option value="comidas_calientes" className="bg-background">Comidas Calientes</option>
+          <option value="comidas_frias" className="bg-background">Comidas Frías</option>
           <option value="cafeteria" className="bg-background">Cafetería</option>
-          <option value="marca_full" className="bg-background">Exclusivos Full</option>
+          <option value="panaderia" className="bg-background">Panadería</option>
+          <option value="combos" className="bg-background">Combos</option>
+          <option value="marca_full" className="bg-background">Marca Full</option>
+          <option value="sin_categoria" className="bg-background">Sin Categoría</option>
         </select>
 
         <select
@@ -288,8 +323,32 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
           <option value="noprice" className="bg-background">Sin precio</option>
         </select>
 
-        <div className="ml-auto text-sm text-muted-foreground">
-          Mostrando {filteredProducts.length} de {productos.length}
+        <div className="ml-auto flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleBulkToggle(true)}
+              disabled={bulkUpdating}
+              className="h-8 gap-1.5 text-xs bg-blue-600/10 border-blue-600/30 text-blue-500 hover:bg-blue-600/20 hover:text-blue-400"
+            >
+              {bulkUpdating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Power className="h-3 w-3" />}
+              Activar todos
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleBulkToggle(false)}
+              disabled={bulkUpdating}
+              className="h-8 gap-1.5 text-xs"
+            >
+              {bulkUpdating ? <Loader2 className="h-3 w-3 animate-spin" /> : <PowerOff className="h-3 w-3" />}
+              Desactivar todos
+            </Button>
+          </div>
+          <span className="text-sm text-muted-foreground">
+            {filteredProducts.length} de {productos.length}
+          </span>
         </div>
       </GlassCard>
 
