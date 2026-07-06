@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Fragment } from 'react'
 import { Activity, Search, ChevronDown, ChevronUp, Eye, Calendar, User, Database, Settings } from 'lucide-react'
 import { GlassCard } from '@/components/admin/ui/glass-card'
 import { Input } from '@/components/ui/input'
@@ -81,7 +81,7 @@ export function AuditLogsClient({ initialLogs }: AuditLogsClientProps) {
                 <TableHead className="w-[200px]">Usuario</TableHead>
                 <TableHead className="w-[120px]">Acción</TableHead>
                 <TableHead className="w-[150px]">Tabla / Módulo</TableHead>
-                <TableHead className="w-[120px]">Campos</TableHead>
+                <TableHead className="w-[120px]">ID Registro</TableHead>
                 <TableHead className="text-right">Detalle</TableHead>
               </TableRow>
             </TableHeader>
@@ -89,7 +89,7 @@ export function AuditLogsClient({ initialLogs }: AuditLogsClientProps) {
               {filteredLogs.map((log) => {
                 const isSelected = selectedLogId === log.id
                 return (
-                  <tbody key={log.id} className="border-b last:border-b-0 divide-y divide-border/10">
+                  <Fragment key={log.id}>
                     <TableRow
                       className={`hover:bg-muted/30 cursor-pointer ${
                         isSelected ? 'bg-muted/50 border-b border-border/20' : ''
@@ -103,21 +103,15 @@ export function AuditLogsClient({ initialLogs }: AuditLogsClientProps) {
                         {log.user_email || 'Sistema (Trigger)'}
                       </TableCell>
                       <TableCell>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${ACTION_BADGES[log.action] || 'bg-muted text-muted-foreground'}`}>
+                        <Badge className={`text-xs font-bold ${ACTION_BADGES[log.action] || 'bg-muted text-muted-foreground'}`}>
                           {log.action}
-                        </span>
+                        </Badge>
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-foreground uppercase tracking-wide">
+                      <TableCell className="font-semibold text-sm text-foreground">
                         {log.entity_type}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {log.changed_fields && log.changed_fields.length > 0 ? (
-                          <span className="truncate max-w-[120px] inline-block font-mono">
-                            {log.changed_fields.join(', ')}
-                          </span>
-                        ) : (
-                          <span className="italic text-muted-foreground/60">&mdash;</span>
-                        )}
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {log.entity_id ? log.entity_id.slice(0, 8) : '-'}
                       </TableCell>
                       <TableCell className="text-right">
                         <button
@@ -133,7 +127,7 @@ export function AuditLogsClient({ initialLogs }: AuditLogsClientProps) {
                             </>
                           ) : (
                             <>
-                              Ver datos <ChevronDown className="w-3.5 h-3.5" />
+                              Ver detalle <ChevronDown className="w-3.5 h-3.5" />
                             </>
                           )}
                         </button>
@@ -143,48 +137,48 @@ export function AuditLogsClient({ initialLogs }: AuditLogsClientProps) {
                     {isSelected && (
                       <TableRow className="bg-muted/10 hover:bg-muted/10">
                         <TableCell colSpan={6} className="p-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {log.before_data && (
-                              <div className="space-y-2">
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                                  Estado Anterior
-                                </h4>
-                                <pre className="p-4 rounded-xl bg-black/20 dark:bg-black/40 border border-border/10 text-[11px] font-mono overflow-auto max-h-60 text-muted-foreground max-w-full">
-                                  {JSON.stringify(log.before_data, null, 2)}
-                                </pre>
-                              </div>
-                            )}
-                            {log.after_data && (
-                              <div className="space-y-2">
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                                  Estado Posterior
-                                </h4>
-                                <pre className="p-4 rounded-xl bg-black/20 dark:bg-black/40 border border-border/10 text-[11px] font-mono overflow-auto max-h-60 text-emerald-500 max-w-full">
-                                  {JSON.stringify(log.after_data, null, 2)}
-                                </pre>
-                              </div>
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {log.before_data && (
+                                <div className="space-y-2">
+                                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                                    <Database className="w-3.5 h-3.5" /> Estado Anterior
+                                  </h4>
+                                  <pre className="p-4 rounded-xl bg-black/20 dark:bg-black/40 border border-border/10 text-[11px] font-mono overflow-auto max-h-60 text-muted-foreground max-w-full">
+                                    {JSON.stringify(log.before_data, null, 2)}
+                                  </pre>
+                                </div>
+                              )}
+                              {log.after_data && (
+                                <div className="space-y-2">
+                                  <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-500 flex items-center gap-1">
+                                    <Database className="w-3.5 h-3.5 text-emerald-500" /> Estado Posterior
+                                  </h4>
+                                  <pre className="p-4 rounded-xl bg-black/20 dark:bg-black/40 border border-border/10 text-[11px] font-mono overflow-auto max-h-60 text-emerald-500 max-w-full">
+                                    {JSON.stringify(log.after_data, null, 2)}
+                                  </pre>
+                                </div>
+                              )}
+                            </div>
+                            {!log.before_data && !log.after_data && (
+                              <p className="text-xs italic text-muted-foreground text-center py-4">
+                                No hay metadatos adicionales de antes/después para esta acción.
+                              </p>
                             )}
                           </div>
-                          {!log.before_data && !log.after_data && (
-                            <p className="text-xs italic text-muted-foreground text-center py-4">
-                              No hay metadatos adicionales de antes/después para esta acción.
-                            </p>
-                          )}
                         </TableCell>
                       </TableRow>
                     )}
-                  </tbody>
+                  </Fragment>
                 )
               })}
 
               {filteredLogs.length === 0 && (
-                <tbody>
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                      No se encontraron registros de auditoría.
-                    </TableCell>
-                  </TableRow>
-                </tbody>
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                    No se encontraron registros de auditoría.
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>
