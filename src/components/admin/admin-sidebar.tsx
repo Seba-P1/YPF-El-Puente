@@ -1,6 +1,6 @@
 'use client'
 
-import { Package, Tags, Settings, Activity, Fuel, History, LogOut, LayoutDashboard } from 'lucide-react'
+import { Package, Tags, Settings, Activity, Fuel, History, LogOut, LayoutDashboard, LayoutTemplate } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -30,6 +30,7 @@ const navMain = [
   {
     title: 'Catálogo',
     items: [
+      { title: 'Full Principal', url: '/admin/full-principal', icon: LayoutTemplate },
       { title: 'Productos', url: '/admin/productos', icon: Package },
       { title: 'Categorías', url: '/admin/categorias', icon: Tags },
       { title: 'Combustibles', url: '/admin/combustibles', icon: Fuel },

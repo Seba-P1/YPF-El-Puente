@@ -176,7 +176,7 @@
   --sidebar-foreground:            #F8FAFC;
   --sidebar-primary:               #3B92E0;
   --sidebar-primary-foreground:    #06080F;
-  --sidebar-accent:                rgba(255,255,255,0.06);
+  --sidebar-accent:                transparent;
   --sidebar-accent-foreground:     #FFFFFF;
   --sidebar-border:                rgba(226,232,240,0.08);
   --sidebar-ring:                  #3B92E0;
@@ -237,6 +237,7 @@
   --font-mono: 'JetBrains Mono Variable', monospace;
 
   /* Radius */
+  --radius-sm: 8px;
   --radius-lg: 14px;
   --radius-xl: 20px;
   --radius-2xl: 28px;
@@ -245,6 +246,17 @@
   --shadow-glass: 0 8px 32px 0 hsl(228 36% 0% / 0.37);
   --shadow-glow-blue: 0 0 40px 0 hsl(215 100% 50% / 0.35);
   --shadow-glow-yellow: 0 0 40px 0 hsl(45 100% 51% / 0.25);
+}
+
+/* Sidebar: no background on buttons, only left border for active */
+[data-slot="sidebar-menu-button"][data-active="true"],
+button[data-slot="sidebar-menu-button"][aria-expanded="true"] {
+  background: transparent !important;
+  border-left: 2px solid var(--ypf-yellow) !important;
+  border-radius: 0 !important;
+}
+[data-slot="sidebar-menu-button"]:hover {
+  background: transparent !important;
 }
 
 @layer base {
@@ -273,6 +285,10 @@
 }
 
 @layer utilities {
+  .bg-hero-gradient {
+    background: linear-gradient(to bottom, #001428, #003C6E);
+  }
+
   .glass-card {
     background: rgba(255, 255, 255, 0.45);
     backdrop-filter: blur(24px) saturate(180%);
