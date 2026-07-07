@@ -10,6 +10,7 @@ import {
   Upload,
   Fuel,
   Settings,
+  LayoutTemplate,
   ExternalLink,
   LogOut,
   User,
@@ -23,11 +24,11 @@ interface AdminSidebarProps {
 }
 
 const NAV_LINKS = [
-  { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/admin/productos', icon: Package, label: 'Productos' },
-  { href: '/admin/precios', icon: Upload, label: 'Actualizar Precios', highlight: true },
-  { href: '/admin/combustibles', icon: Fuel, label: 'Combustibles' },
-  { href: '/admin/configuracion', icon: Settings, label: 'Configuración' },
+  { href: '/admin', icon: LayoutDashboard, label: 'Dashboard', section: 'general' },
+  { href: '/admin/full-principal', icon: LayoutTemplate, label: 'Full Principal', section: 'catalogo' },
+  { href: '/admin/productos', icon: Package, label: 'Productos', section: 'catalogo' },
+  { href: '/admin/combustibles', icon: Fuel, label: 'Combustibles', section: 'catalogo' },
+  { href: '/admin/configuracion', icon: Settings, label: 'Configuración', section: 'sistema' },
 ]
 
 export function AdminSidebar({ userEmail, className = '' }: AdminSidebarProps) {
@@ -79,39 +80,32 @@ export function AdminSidebar({ userEmail, className = '' }: AdminSidebarProps) {
 
       {/* NAVEGACIÓN */}
       <nav className="flex-1 px-2 py-3">
+        {/* General */}
         <span
           className="block text-[10px] font-bold tracking-[0.12em] uppercase px-2 pb-1 pt-2"
           style={{ color: 'var(--nav-text-muted)' }}
         >
-          Menú
+          General
         </span>
 
-        {NAV_LINKS.map((link) => {
+        {NAV_LINKS.filter(l => l.section === 'general').map((link) => {
           const isActive = pathname === link.href
           return (
             <Link
               key={link.href}
               href={link.href}
-              className="flex items-center gap-[10px] px-[10px] py-2 rounded-lg mb-[2px] text-[13px] font-medium transition-all duration-150"
+              className="flex items-center gap-[10px] px-[10px] py-2 mb-[2px] text-[13px] font-medium transition-all duration-150"
               style={{
-                background: isActive
-                  ? 'var(--ypf-blue)'
-                  : link.highlight && !isActive
-                    ? 'var(--ypf-yellow-dim)'
-                    : 'transparent',
                 color: isActive ? '#FFFFFF' : 'var(--nav-text-muted)',
                 fontWeight: isActive ? 600 : 500,
-                borderLeft: link.highlight && !isActive ? '2px solid var(--ypf-yellow)' : '2px solid transparent',
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = 'var(--bg-card-hover)'
                   e.currentTarget.style.color = 'var(--nav-text)'
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = link.highlight ? 'var(--ypf-yellow-dim)' : 'transparent'
                   e.currentTarget.style.color = 'var(--nav-text-muted)'
                 }
               }}
@@ -122,9 +116,86 @@ export function AdminSidebar({ userEmail, className = '' }: AdminSidebarProps) {
                 style={{ color: isActive ? '#FFFFFF' : 'var(--nav-text-muted)' }}
               />
               {link.label}
-              {link.highlight && !isActive && (
-                <span className="ml-auto text-[10px] font-bold" style={{ color: 'var(--ypf-yellow)' }}>⚡</span>
-              )}
+            </Link>
+          )
+        })}
+
+        {/* Catálogo */}
+        <span
+          className="block text-[10px] font-bold tracking-[0.12em] uppercase px-2 pb-1 pt-2"
+          style={{ color: 'var(--nav-text-muted)' }}
+        >
+          Catálogo
+        </span>
+
+        {NAV_LINKS.filter(l => l.section === 'catalogo').map((link) => {
+          const isActive = pathname === link.href
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="flex items-center gap-[10px] px-[10px] py-2 mb-[2px] text-[13px] font-medium transition-all duration-150"
+              style={{
+                color: isActive ? '#FFFFFF' : 'var(--nav-text-muted)',
+                fontWeight: isActive ? 600 : 500,
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = 'var(--nav-text)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = 'var(--nav-text-muted)'
+                }
+              }}
+            >
+              <link.icon
+                size={16}
+                className="flex-shrink-0"
+                style={{ color: isActive ? '#FFFFFF' : 'var(--nav-text-muted)' }}
+              />
+              {link.label}
+            </Link>
+          )
+        })}
+
+        {/* Sistema */}
+        <span
+          className="block text-[10px] font-bold tracking-[0.12em] uppercase px-2 pb-1 pt-2"
+          style={{ color: 'var(--nav-text-muted)' }}
+        >
+          Sistema
+        </span>
+
+        {NAV_LINKS.filter(l => l.section === 'sistema').map((link) => {
+          const isActive = pathname === link.href
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="flex items-center gap-[10px] px-[10px] py-2 mb-[2px] text-[13px] font-medium transition-all duration-150"
+              style={{
+                color: isActive ? '#FFFFFF' : 'var(--nav-text-muted)',
+                fontWeight: isActive ? 600 : 500,
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = 'var(--nav-text)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = 'var(--nav-text-muted)'
+                }
+              }}
+            >
+              <link.icon
+                size={16}
+                className="flex-shrink-0"
+                style={{ color: isActive ? '#FFFFFF' : 'var(--nav-text-muted)' }}
+              />
+              {link.label}
             </Link>
           )
         })}
