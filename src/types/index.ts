@@ -5,6 +5,7 @@ export type {
   Combustible,
   ConfiguracionItem,
   UploadHistorial,
+  InstagramPost,
 } from '@/lib/supabase/types'
 
 import type { Producto } from '@/lib/supabase/types'

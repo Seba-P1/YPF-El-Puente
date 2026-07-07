@@ -3,26 +3,39 @@
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronDown, Instagram } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 
 import { FullSearchBar } from '@/components/public/FullSearchBar'
 import { FullCategorySection } from '@/components/public/FullCategorySection'
 import { FullProductCard } from '@/components/public/FullProductCard'
 import { FullSustentabilidad } from '@/components/public/FullSustentabilidad'
 import { FullMundialSection } from '@/components/public/FullMundialSection'
+import FullInstagramSection from '@/components/public/FullInstagramSection'
 import { useSearchStore } from '@/stores/search'
 import { useFullPageStore } from '@/stores/fullpage'
 
-import type { Producto, Categoria } from '@/lib/supabase/types'
+import type { Producto, Categoria, InstagramPost } from '@/lib/supabase/types'
 
 interface FullClientProps {
   initialDestacados: Producto[]
   initialCategorias: Categoria[]
+  initialFullHamburguesas: Producto[]
+  initialFullCafeteria: Producto[]
+  initialFullMarca: Producto[]
+  initialFullSinTacc: Producto[]
+  initialFullMundial: Producto[]
+  initialInstagramPosts: InstagramPost[]
 }
 
 export default function FullClient({
   initialDestacados,
-  initialCategorias
+  initialCategorias,
+  initialFullHamburguesas,
+  initialFullCafeteria,
+  initialFullMarca,
+  initialFullSinTacc,
+  initialFullMundial,
+  initialInstagramPosts,
 }: FullClientProps) {
   const [searchResults, setSearchResults] = useState<Producto[] | null>(null)
   const [isSearching, setIsSearching] = useState(false)
@@ -65,47 +78,24 @@ export default function FullClient({
     return map
   }, [initialDestacados, initialCategorias])
 
-  const comidasCalientes = productosPorCategoria['comidas_calientes'] ?? []
-  const cafeteriaProducts = productosPorCategoria['cafeteria'] ?? []
-  const marcaFullProducts = productosPorCategoria['marca_full'] ?? []
+  const fullHamburguesas = initialFullHamburguesas ?? []
+  const fullCafeteria = initialFullCafeteria ?? []
+  const productosFullProducts = initialFullMarca ?? []
+  const fullSinTacc = initialFullSinTacc ?? []
+  const fullMundial = initialFullMundial ?? []
 
-  // Gather active Sin TACC products
-  const sinTaccProducts = useMemo(() => {
-    return initialDestacados.filter((p) => {
-      if (p.es_sin_tacc) return true
-      const nameLower = p.nombre.toLowerCase()
-      return (
-        nameLower.includes('tacc') ||
-        nameLower.includes('gluten') ||
-        nameLower.includes('s/t') ||
-        nameLower.includes('sintac') ||
-        nameLower.includes('s.g.')
-      )
-    }).slice(0, 12)
-  }, [initialDestacados])
-
-  const catHamb = initialCategorias.find(c => c.slug === 'comidas_calientes') || { id: '1', nombre: 'Comidas Calientes', slug: 'comidas_calientes', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 1, created_at: '' } as Categoria
-  const catCaf = initialCategorias.find(c => c.slug === 'cafeteria') || { id: '2', nombre: 'Cafetería', slug: 'cafeteria', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 2, created_at: '' } as Categoria
+  const catHamb = initialCategorias.find(c => c.slug === 'full_hamburguesas') || { id: '1', nombre: 'Hamburguesas', slug: 'full_hamburguesas', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 1, created_at: '' } as Categoria
+  const catCaf = initialCategorias.find(c => c.slug === 'full_cafeteria') || { id: '2', nombre: 'Cafetería', slug: 'full_cafeteria', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 2, created_at: '' } as Categoria
   const catFull = initialCategorias.find(c => c.slug === 'marca_full') || { id: '3', nombre: 'Marca Full', slug: 'marca_full', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 3, created_at: '' } as Categoria
-  
-  const catSinTacc = {
-    id: 'sin-tacc-cat',
-    nombre: 'Sin TACC',
-    slug: 'sin_tacc',
-    descripcion: 'Libres de Gluten',
-    subtitulo: 'Deliciosas opciones aptas para celíacos y libres de TACC.',
-    imagen_fondo_url: null,
-    activa: true,
-    orden: 4,
-    created_at: ''
-  } as Categoria
+  const catSinTacc = initialCategorias.find(c => c.slug === 'full_sin_tacc') || { id: '4', nombre: 'Sin TACC', slug: 'full_sin_tacc', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 4, created_at: '' } as Categoria
+  const catMundial = initialCategorias.find(c => c.slug === 'full_mundial') || { id: '5', nombre: 'Mundial', slug: 'full_mundial', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 5, created_at: '' } as Categoria
 
   // Define section IDs for programmatic navigation mapping
   useEffect(() => {
     setSectionIds([
       'home-hero',
       'mundial',
-      'comidas-calientes',
+      'hamburguesas',
       'cafeteria',
       'productos-full',
       'sin-tacc',
@@ -246,7 +236,9 @@ export default function FullClient({
 
     const onWheel = (e: WheelEvent) => {
       const deltaY = e.deltaY
+      const deltaX = e.deltaX
       const absDeltaY = Math.abs(deltaY)
+      const absDeltaX = Math.abs(deltaX)
       const now = Date.now()
 
       // Reset scroll tracking if scrolling stops for 200ms
@@ -262,6 +254,18 @@ export default function FullClient({
       // Ignore inputs if currently moving
       if (isTransitioningRef.current) {
         e.preventDefault()
+        return
+      }
+
+      // HORIZONTAL GESTURE DETECTION: if deltaX > deltaY, it's a horizontal
+      // trackpad swipe — let the browser scroll the carousel natively
+      if (absDeltaX > absDeltaY * 1.5 && absDeltaX > 2) {
+        // Do NOT preventDefault — let the horizontal scroll happen naturally
+        return
+      }
+
+      // Also ignore small diagonal gestures (trackpad inertia)
+      if (absDeltaX > absDeltaY * 0.8 && absDeltaY < 15) {
         return
       }
 
@@ -313,9 +317,9 @@ export default function FullClient({
 
   const handleScrollToStart = () => {
     if (isEnabled) {
-      goToSectionById('comidas-calientes')
+      goToSectionById('mundial')
     } else {
-      const el = document.getElementById('comidas-calientes')
+      const el = document.getElementById('mundial')
       if (el) el.scrollIntoView({ behavior: 'smooth' })
     }
   }
@@ -374,111 +378,6 @@ export default function FullClient({
     </section>
   )
 
-  // Instagram section component
-  const renderInstagramSection = () => (
-    <section id="instagram" className="bg-black py-[80px] border-t border-white/5 md:min-h-[100svh] md:py-0 md:flex md:flex-col md:justify-center">
-      <div className="mx-auto" style={{ maxWidth: 'var(--page-max, 1280px)', padding: '0 var(--page-pad-x, 24px)' }}>
-        <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.6 }}
-            className="flex-shrink-0"
-          >
-            <a
-              href="https://instagram.com/ypf.elpuente"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block relative group"
-            >
-              <div
-                style={{
-                  width: 'clamp(200px, 30vw, 280px)',
-                  height: 'clamp(200px, 30vw, 280px)',
-                  transition: 'transform 0.3s, filter 0.3s',
-                }}
-                className="group-hover:scale-105"
-              >
-                <Image
-                  src="/assets/instagram/QR-YPFinstagram.png"
-                  alt="QR Instagram @YPF.ELPUENTE"
-                  width={280}
-                  height={280}
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            </a>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="text-center md:text-left"
-          >
-            <p
-              style={{
-                fontFamily: 'var(--font-caveat)',
-                fontSize: 'clamp(18px, 2.5vw, 24px)',
-                fontWeight: 600,
-                color: 'rgba(255,255,255,0.4)',
-                marginBottom: 8,
-              }}
-            >
-              Seguinos
-            </p>
-            <h2
-              className="font-black text-white leading-tight"
-              style={{ fontSize: 'clamp(28px, 5vw, 48px)', letterSpacing: '-0.02em' }}
-            >
-              Seguinos en Instagram
-            </h2>
-            <p className="text-white/50 mt-3 mb-6" style={{ fontSize: 'clamp(14px, 1.6vw, 18px)' }}>
-              Enterate de todas las promociones, novedades y el día a día de YPF El Puente.
-            </p>
-            <a
-              href="https://instagram.com/ypf.elpuente"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 transition-colors group/link"
-              style={{ textDecoration: 'none' }}
-            >
-              <div
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 12,
-                  background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <Instagram size={22} color="white" />
-              </div>
-              <span className="text-white/70 group-hover/link:text-white font-bold text-lg tracking-wide transition-colors">
-                @YPF.ELPUENTE
-              </span>
-            </a>
-
-            <p className="text-white/20 text-xs mt-6">
-              Escaneá el código QR con tu celular para seguirnos
-            </p>
-          </motion.div>
-        </div>
-
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-1 w-full mt-6 md:mt-[3svh]">
-          {[1, 2, 3, 4, 5, 6].map((num) => (
-            <InstagramImage key={num} num={num} />
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-
   // Footer component
   const renderFooter = () => (
     <footer className="bg-black border-t border-white/5 py-[32px]">
@@ -526,15 +425,17 @@ export default function FullClient({
             <FullMundialSection />
           </div>
 
-          {/* Slide 2: Comidas Calientes */}
+          {/* Slide 2: Hamburguesas */}
           <div className="fullpage-section">
             <FullCategorySection
-              id="comidas-calientes"
+              id="hamburguesas"
               categoria={catHamb}
-              productos={comidasCalientes}
+              productos={fullHamburguesas}
               colorFondo="#1A0E00"
               imagenBack="/assets/ypf imagenes/back-4.webp"
               mandalaPosition="bottom-right"
+              mandalaScale={0.6}
+              extraSubtitle="Todas las Hamburguesas vienen con papas y gaseosa linea Coca Cola."
             />
           </div>
 
@@ -543,23 +444,25 @@ export default function FullClient({
             <FullCategorySection
               id="cafeteria"
               categoria={catCaf}
-              productos={cafeteriaProducts}
+              productos={fullCafeteria}
               colorFondo="#0D0800"
               imagenBack="/assets/ypf imagenes/back-2.webp"
               mandalaPosition="top-left"
+              mandalaScale={0.6}
               sectionBgImage="/assets/ypf imagenes/bg.svg"
             />
           </div>
 
-          {/* Slide 4: Exclusivos FULL */}
+          {/* Slide 4: Productos Full */}
           <div className="fullpage-section">
             <FullCategorySection
               id="productos-full"
               categoria={catFull}
-              productos={marcaFullProducts}
+              productos={productosFullProducts}
               colorFondo="#060810"
               imagenBack="/assets/ypf imagenes/back-5.webp"
               mandalaPosition="top-right"
+              mandalaScale={0.6}
             />
           </div>
 
@@ -568,16 +471,17 @@ export default function FullClient({
             <FullCategorySection
               id="sin-tacc"
               categoria={catSinTacc}
-              productos={sinTaccProducts}
+              productos={fullSinTacc}
               colorFondo="#041E15"
               imagenBack="/assets/ypf imagenes/back-3.webp"
               mandalaPosition="bottom-left"
+              mandalaScale={0.6}
             />
           </div>
 
           {/* Slide 6: Instagram */}
           <div className="fullpage-section">
-            {renderInstagramSection()}
+            <FullInstagramSection posts={initialInstagramPosts} />
           </div>
 
           {/* Slide 7: Sustentabilidad, Mapa y Footer (Scrollable) */}
@@ -644,44 +548,49 @@ export default function FullClient({
           >
             <FullMundialSection />
             <FullCategorySection
-              id="comidas-calientes"
+              id="hamburguesas"
               categoria={catHamb}
-              productos={comidasCalientes}
+              productos={fullHamburguesas}
               colorFondo="#1A0E00"
               imagenBack="/assets/ypf imagenes/back-4.webp"
               mandalaPosition="bottom-right"
+              mandalaScale={0.6}
+              extraSubtitle="Todas las Hamburguesas vienen con papas y gaseosa linea Coca Cola."
             />
             <FullCategorySection
               id="cafeteria"
               categoria={catCaf}
-              productos={cafeteriaProducts}
+              productos={fullCafeteria}
               colorFondo="#0D0800"
               imagenBack="/assets/ypf imagenes/back-2.webp"
               mandalaPosition="top-left"
+              mandalaScale={0.6}
               sectionBgImage="/assets/ypf imagenes/bg.svg"
             />
             <FullCategorySection
               id="productos-full"
               categoria={catFull}
-              productos={marcaFullProducts}
+              productos={productosFullProducts}
               colorFondo="#060810"
               imagenBack="/assets/ypf imagenes/back-5.webp"
               mandalaPosition="top-right"
+              mandalaScale={0.6}
             />
             <FullCategorySection
               id="sin-tacc"
               categoria={catSinTacc}
-              productos={sinTaccProducts}
+              productos={fullSinTacc}
               colorFondo="#041E15"
               imagenBack="/assets/ypf imagenes/back-3.webp"
               mandalaPosition="bottom-left"
+              mandalaScale={0.6}
             />
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* 4. SECCIÓN INSTAGRAM */}
-      {renderInstagramSection()}
+      <FullInstagramSection posts={initialInstagramPosts} />
 
       {/* 5. SUSTENTABILIDAD + MAPA */}
       <FullSustentabilidad />
@@ -689,51 +598,5 @@ export default function FullClient({
       {/* 6. FOOTER */}
       {renderFooter()}
     </main>
-  )
-}
-
-const IG_COLORS = ['#1a1a2e', '#16213e', '#0f3460', '#e94560', '#533483', '#3b82f6']
-
-function InstagramImage({ num }: { num: number }) {
-  const [error, setError] = useState(false)
-  const handleError = useCallback(() => setError(true), [])
-
-  if (error) {
-    return (
-      <a
-        href="https://instagram.com/ypf.elpuente"
-        target="_blank"
-        rel="noreferrer"
-        className="relative aspect-square overflow-hidden group block"
-      >
-        <div
-          className="w-full h-full flex items-center justify-center"
-          style={{ backgroundColor: IG_COLORS[num - 1] ?? '#333' }}
-        >
-          <div className="text-center">
-            <div className="text-white/60 text-3xl font-bold">FULL</div>
-            <div className="text-white/30 text-xs mt-1">@{num}</div>
-          </div>
-        </div>
-      </a>
-    )
-  }
-
-  return (
-    <a
-      href="https://instagram.com/ypffull"
-      target="_blank"
-      rel="noreferrer"
-      className="relative aspect-square overflow-hidden group block"
-    >
-      <Image
-        src={`/assets/instagram/ig-${num}.webp`}
-        alt={`Instagram FULL ${num}`}
-        fill
-        className="object-cover transition-transform duration-500 group-hover:scale-105"
-        onError={handleError}
-      />
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
-    </a>
   )
 }

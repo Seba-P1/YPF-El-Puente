@@ -76,6 +76,20 @@ export interface Database {
         }
         Update: Partial<Database['public']['Tables']['configuracion_tienda']['Insert']>
       }
+      boxes_services: {
+        Row: {
+          id: string
+          nombre: string
+          descripcion: string | null
+          icono_slug: string
+          disponible: boolean
+          orden: number
+        }
+        Insert: Omit<Database['public']['Tables']['boxes_services']['Row'], 'id'> & {
+          id?: string
+        }
+        Update: Partial<Database['public']['Tables']['boxes_services']['Insert']>
+      }
       uploads_historial: {
         Row: {
           id: string
@@ -95,6 +109,24 @@ export interface Database {
         }
         Update: Partial<Database['public']['Tables']['uploads_historial']['Insert']>
       }
+      instagram_posts: {
+        Row: {
+          id: string
+          url: string
+          thumbnail_url: string | null
+          thumbnail_path: string | null
+          orden: number
+          activo: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['instagram_posts']['Row'], 'id' | 'created_at' | 'updated_at'> & {
+          id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['instagram_posts']['Insert']>
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -106,5 +138,7 @@ export interface Database {
 export type Producto = Database['public']['Tables']['productos']['Row']
 export type Categoria = Database['public']['Tables']['categorias']['Row']
 export type Combustible = Database['public']['Tables']['combustibles']['Row']
+export type BoxService = Database['public']['Tables']['boxes_services']['Row']
 export type ConfiguracionItem = Database['public']['Tables']['configuracion_tienda']['Row']
 export type UploadHistorial = Database['public']['Tables']['uploads_historial']['Row']
+export type InstagramPost = Database['public']['Tables']['instagram_posts']['Row']

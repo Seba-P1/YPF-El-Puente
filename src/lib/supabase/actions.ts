@@ -394,3 +394,358 @@ export const updateCategoriaActiva = withAdminAction(
   },
   { rateLimitKey: 'update-categoria-activa', maxPerMinute: 60 }
 )
+
+// ── FULL PRINCIPAL ACTIONS ──
+
+const upsertProductoCuradoSchema = z.object({
+  codigo_plu: z.string().trim().min(1, 'El código es obligatorio').max(64),
+  nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(200),
+  precio: z.number().nonnegative(),
+  categoria_slug: z.string().trim().min(1, 'La categoría es obligatoria'),
+})
+
+export const upsertProductoCurado = withAdminAction(
+  upsertProductoCuradoSchema,
+  async ({ codigo_plu, nombre, precio, categoria_slug }) => {
+    const supabase = (await createClient()) as any
+
+    // Calcular próximo orden dentro de la categoría
+    const { data: existentes } = await supabase
+      .from('productos')
+      .select('orden')
+      .eq('categoria_slug', categoria_slug)
+      .order('orden', { ascending: false })
+      .limit(1)
+
+    const siguienteOrden = existentes && existentes.length > 0
+      ? (existentes[0].orden ?? 0) + 1
+      : 0
+
+    const { error } = await supabase
+      .from('productos')
+      .upsert({
+        codigo_plu,
+        nombre,
+        precio,
+        categoria_slug,
+        disponible: true,
+        orden: siguienteOrden,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'codigo_plu' })
+
+    if (error) throw new Error(`Error al guardar producto curado: ${error.message}`)
+    revalidatePath('/admin/full-principal')
+    revalidatePath('/full')
+    return { codigo_plu }
+  },
+  { rateLimitKey: 'upsert-producto-curado', maxPerMinute: 30 }
+)
+
+const deleteProductoCuradoSchema = z.object({ id: z.string().uuid() })
+
+export const deleteProductoCurado = withAdminAction(
+  deleteProductoCuradoSchema,
+  async ({ id }) => {
+    const supabase = (await createClient()) as any
+    const { error } = await supabase.from('productos').delete().eq('id', id)
+    if (error) throw new Error(`Error al eliminar producto curado: ${error.message}`)
+    revalidatePath('/admin/full-principal')
+    revalidatePath('/full')
+    return { id }
+  },
+  { rateLimitKey: 'delete-producto-curado', maxPerMinute: 30 }
+)
+
+const updateCategoriaActivaPorSlugSchema = z.object({
+  slug: z.string().min(1),
+  activa: z.boolean(),
+})
+
+export const updateCategoriaActivaPorSlug = withAdminAction(
+  updateCategoriaActivaPorSlugSchema,
+  async ({ slug, activa }) => {
+    const supabase = (await createClient()) as any
+    const { error } = await supabase
+      .from('categorias')
+      .update({ activa })
+      .eq('slug', slug)
+
+    if (error) throw new Error(`Error al cambiar estado de sección: ${error.message}`)
+    revalidatePath('/admin/full-principal')
+    revalidatePath('/full')
+    return { slug, activa }
+  },
+  { rateLimitKey: 'update-categoria-slug', maxPerMinute: 60 }
+)
+
+const getProductosCuradosSchema = z.object({
+  categoriaSlug: z.string().min(1),
+})
+
+export const getProductosCurados = withAdminAction(
+  getProductosCuradosSchema,
+  async ({ categoriaSlug }) => {
+    const supabase = (await createClient()) as any
+    const { data, error } = await supabase
+      .from('productos')
+      .select('*')
+      .eq('categoria_slug', categoriaSlug)
+      .order('orden', { ascending: true })
+      .order('nombre', { ascending: true })
+
+    if (error) throw new Error(`Error fetching productos curados: ${error.message}`)
+    return data ?? []
+  },
+  { rateLimitKey: 'get-productos-curados', maxPerMinute: 60 }
+)
+
+// ── INSTAGRAM POSTS ACTIONS ──
+
+const createInstagramPostSchema = z.object({
+  url: z.string().min(1, 'El link es obligatorio').refine(
+    (url) => url.includes('instagram.com'),
+    'El link debe ser una URL de Instagram'
+  ),
+  thumbnailUrl: z.string().url('URL de miniatura inválida'),
+  thumbnailPath: z.string().min(1),
+})
+
+export const createInstagramPost = withAdminAction(
+  createInstagramPostSchema,
+  async ({ url, thumbnailUrl, thumbnailPath }) => {
+    const supabase = (await createClient()) as any
+
+    const { data: existentes } = await supabase
+      .from('instagram_posts')
+      .select('orden')
+      .order('orden', { ascending: false })
+      .limit(1)
+
+    const siguienteOrden = existentes && existentes.length > 0
+      ? (existentes[0].orden ?? 0) + 1
+      : 1
+
+    const { error } = await supabase.from('instagram_posts').insert({
+      url,
+      thumbnail_url: thumbnailUrl,
+      thumbnail_path: thumbnailPath,
+      orden: siguienteOrden,
+      activo: true,
+    })
+
+    if (error) {
+      if (error.code === '23505') throw new Error('Ya existe una publicación con ese link')
+      throw new Error(`Error al crear la publicación: ${error.message}`)
+    }
+
+    revalidatePath('/admin/instagram')
+    revalidatePath('/full')
+    return { url }
+  },
+  { rateLimitKey: 'create-instagram-post', maxPerMinute: 30 }
+)
+
+const updateInstagramPostThumbnailSchema = z.object({
+  id: z.string().uuid(),
+  thumbnailUrl: z.string().url(),
+  thumbnailPath: z.string().min(1),
+})
+
+export const updateInstagramPostThumbnail = withAdminAction(
+  updateInstagramPostThumbnailSchema,
+  async ({ id, thumbnailUrl, thumbnailPath }) => {
+    const supabase = (await createClient()) as any
+
+    const { data: actual } = await supabase
+      .from('instagram_posts')
+      .select('thumbnail_path')
+      .eq('id', id)
+      .single()
+
+    if (actual?.thumbnail_path) {
+      try {
+        await supabase.storage.from('instagram-thumbnails').remove([actual.thumbnail_path])
+      } catch {
+        // Cleanup best-effort
+      }
+    }
+
+    const { error } = await supabase
+      .from('instagram_posts')
+      .update({ thumbnail_url: thumbnailUrl, thumbnail_path: thumbnailPath, updated_at: new Date().toISOString() })
+      .eq('id', id)
+
+    if (error) throw new Error(`Error al actualizar miniatura: ${error.message}`)
+    revalidatePath('/admin/instagram')
+    revalidatePath('/full')
+    return { id }
+  },
+  { rateLimitKey: 'update-instagram-thumbnail', maxPerMinute: 30 }
+)
+
+const updateInstagramPostUrlSchema = z.object({
+  id: z.string().uuid(),
+  url: z.string().min(1).refine(
+    (url) => url.includes('instagram.com'),
+    'El link debe ser una URL de Instagram'
+  ),
+})
+
+export const updateInstagramPostUrl = withAdminAction(
+  updateInstagramPostUrlSchema,
+  async ({ id, url }) => {
+    const supabase = (await createClient()) as any
+    const { error } = await supabase
+      .from('instagram_posts')
+      .update({ url, updated_at: new Date().toISOString() })
+      .eq('id', id)
+
+    if (error) {
+      if (error.code === '23505') throw new Error('Ya existe una publicación con ese link')
+      throw new Error(`Error al actualizar link: ${error.message}`)
+    }
+    revalidatePath('/admin/instagram')
+    revalidatePath('/full')
+    return { id }
+  },
+  { rateLimitKey: 'update-instagram-url', maxPerMinute: 30 }
+)
+
+const toggleInstagramPostActivoSchema = z.object({
+  id: z.string().uuid(),
+  activo: z.boolean(),
+})
+
+export const toggleInstagramPostActivo = withAdminAction(
+  toggleInstagramPostActivoSchema,
+  async ({ id, activo }) => {
+    const supabase = (await createClient()) as any
+    const { error } = await supabase
+      .from('instagram_posts')
+      .update({ activo, updated_at: new Date().toISOString() })
+      .eq('id', id)
+
+    if (error) throw new Error(`Error al cambiar estado: ${error.message}`)
+    revalidatePath('/admin/instagram')
+    revalidatePath('/full')
+    return { id, activo }
+  },
+  { rateLimitKey: 'toggle-instagram-activo', maxPerMinute: 60 }
+)
+
+const moverInstagramPostSchema = z.object({
+  id: z.string().uuid(),
+  idVecino: z.string().uuid(),
+})
+
+export const moverInstagramPost = withAdminAction(
+  moverInstagramPostSchema,
+  async ({ id, idVecino }) => {
+    const supabase = (await createClient()) as any
+
+    const { data: posts, error: fetchError } = await supabase
+      .from('instagram_posts')
+      .select('id, orden')
+      .in('id', [id, idVecino])
+      .order('orden', { ascending: true })
+
+    if (fetchError || !posts || posts.length !== 2) {
+      throw new Error('No se encontraron las publicaciones a reordenar')
+    }
+
+    const actual = posts.find((p: any) => p.id === id)
+    const vecino = posts.find((p: any) => p.id === idVecino)
+
+    if (!actual || !vecino) throw new Error('Publicaciones no encontradas')
+
+    await supabase.from('instagram_posts').update({ orden: vecino.orden }).eq('id', actual.id)
+    await supabase.from('instagram_posts').update({ orden: actual.orden }).eq('id', vecino.id)
+
+    revalidatePath('/admin/instagram')
+    revalidatePath('/full')
+    return { id, idVecino }
+  },
+  { rateLimitKey: 'mover-instagram-post', maxPerMinute: 30 }
+)
+
+const deleteInstagramPostSchema = z.object({
+  id: z.string().uuid(),
+  thumbnailPath: z.string().nullable(),
+})
+
+export const deleteInstagramPost = withAdminAction(
+  deleteInstagramPostSchema,
+  async ({ id, thumbnailPath }) => {
+    const supabase = (await createClient()) as any
+
+    const { error } = await supabase.from('instagram_posts').delete().eq('id', id)
+    if (error) throw new Error(`Error al eliminar la publicación: ${error.message}`)
+
+    if (thumbnailPath) {
+      try {
+        await supabase.storage.from('instagram-thumbnails').remove([thumbnailPath])
+      } catch {
+        // Cleanup best-effort
+      }
+    }
+
+    revalidatePath('/admin/instagram')
+    revalidatePath('/full')
+    return { id }
+  },
+  { rateLimitKey: 'delete-instagram-post', maxPerMinute: 30 }
+)
+
+// ── Ensure bucket is public ──
+export async function ensureInstagramBucketPublic() {
+  const supabase = (await createClient()) as any
+  try {
+    await supabase.storage.updateBucket('instagram-thumbnails', { public: true })
+  } catch (e: any) {
+    console.warn('[instagram] Bucket update:', e?.message)
+  }
+}
+
+// ── Sync storage files with DB posts ──
+export async function syncInstagramThumbnails() {
+  const supabase = (await createClient()) as any
+
+  const { data: posts, error: postsError } = await supabase
+    .from('instagram_posts')
+    .select('id, thumbnail_url, thumbnail_path, orden')
+    .order('orden', { ascending: true })
+
+  const { data: files, error: filesError } = await supabase.storage
+    .from('instagram-thumbnails')
+    .list('', { limit: 100, sortBy: { column: 'created_at', order: 'asc' } })
+
+  if (!posts || posts.length === 0) return { synced: 0 }
+  if (!files || files.length === 0) return { synced: 0 }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('instagram-thumbnails')
+    .getPublicUrl('test')
+
+  const baseUrl = publicUrl.replace(/test$/, '')
+
+  let synced = 0
+  for (let i = 0; i < posts.length; i++) {
+    const post = posts[i]
+    if (post.thumbnail_url) continue
+
+    const file = files[i]
+    if (!file) continue
+
+    const fileUrl = `${baseUrl}${file.name}`
+    const { error } = await supabase
+      .from('instagram_posts')
+      .update({ thumbnail_url: fileUrl, thumbnail_path: file.name, updated_at: new Date().toISOString() })
+      .eq('id', post.id)
+
+    if (!error) synced++
+  }
+
+  revalidatePath('/admin/instagram')
+  revalidatePath('/full')
+  return { synced }
+}

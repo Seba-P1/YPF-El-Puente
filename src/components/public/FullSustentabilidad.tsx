@@ -107,7 +107,7 @@ export function FullSustentabilidad() {
               viewport={{ once: true, margin: '-80px' }}
               transition={{ duration: 0.6, delay: 0.1 }}
               style={{
-                fontFamily: 'var(--font-montserrat)',
+                fontFamily: 'var(--font-din-medium)',
                 fontSize: 'clamp(36px, 6vw, 68px)',
                 fontWeight: 900,
                 color: 'white',
@@ -262,7 +262,7 @@ export function FullSustentabilidad() {
             {/* Title */}
             <h2
               style={{
-                fontFamily: 'var(--font-montserrat)',
+                fontFamily: 'var(--font-din-medium)',
                 fontSize: 'clamp(28px, 5vw, 52px)',
                 fontWeight: 900,
                 color: 'white',

@@ -14,6 +14,7 @@ import {
   ExternalLink,
   LogOut,
   User,
+  Instagram,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -28,6 +29,7 @@ const NAV_LINKS = [
   { href: '/admin/full-principal', icon: LayoutTemplate, label: 'Full Principal', section: 'catalogo' },
   { href: '/admin/productos', icon: Package, label: 'Productos', section: 'catalogo' },
   { href: '/admin/combustibles', icon: Fuel, label: 'Combustibles', section: 'catalogo' },
+  { href: '/admin/instagram', icon: Instagram, label: 'Instagram', section: 'catalogo' },
   { href: '/admin/configuracion', icon: Settings, label: 'Configuración', section: 'sistema' },
 ]
 

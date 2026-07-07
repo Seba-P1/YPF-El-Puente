@@ -6,8 +6,10 @@ import type {
   Producto,
   Categoria,
   Combustible,
+  BoxService,
   ConfiguracionItem,
   UploadHistorial,
+  InstagramPost,
 } from './types'
 
 // ── PRODUCTOS ──
@@ -64,6 +66,21 @@ export async function getProductosDestacados(): Promise<Producto[]> {
   return data ?? []
 }
 
+export async function getProductosPorCategoriaAdmin(
+  categoriaSlug: string
+): Promise<Producto[]> {
+  const supabase = await createServerSupabaseClient()
+  const { data, error } = await supabase
+    .from('productos')
+    .select('*')
+    .eq('categoria_slug', categoriaSlug)
+    .order('orden', { ascending: true })
+    .order('nombre', { ascending: true })
+
+  if (error) throw new Error(`Error fetching productos admin: ${error.message}`)
+  return data ?? []
+}
+
 export async function getCatalogoCompleto(): Promise<Producto[]> {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase
@@ -103,6 +120,37 @@ export async function getCombustibles(): Promise<Combustible[]> {
 
   if (error) throw new Error(`Error fetching combustibles: ${error.message}`)
   return data ?? []
+}
+
+// ── BOXES SERVICES ──
+
+const FALLBACK_SERVICIOS: BoxService[] = [
+  { id: 'fallback-1',  nombre: 'Cambio de aceite',            descripcion: 'Lubricantes Elaion con la mejor tecnología.',   icono_slug: 'Droplets',     disponible: true, orden: 1 },
+  { id: 'fallback-2',  nombre: 'Inflado de neumáticos',        descripcion: 'Control de presión y calibración.',            icono_slug: 'Gauge',        disponible: true, orden: 2 },
+  { id: 'fallback-3',  nombre: 'Agua y refrigerante',          descripcion: 'Revisión y reposición de fluidos.',            icono_slug: 'Thermometer',  disponible: true, orden: 3 },
+  { id: 'fallback-4',  nombre: 'Limpieza de parabrisas',       descripcion: 'Para tu máxima visibilidad en la ruta.',       icono_slug: 'Eye',          disponible: true, orden: 4 },
+  { id: 'fallback-5',  nombre: 'Control de presión',           descripcion: 'Seguridad garantizada para tu viaje.',         icono_slug: 'Activity',     disponible: true, orden: 5 },
+  { id: 'fallback-6',  nombre: 'Revisión general',             descripcion: 'Chequeo de 20 puntos clave de tu vehículo.',   icono_slug: 'CheckCircle2', disponible: true, orden: 6 },
+]
+
+export async function getBoxesServices(): Promise<BoxService[]> {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data, error } = await supabase
+      .from('boxes_services')
+      .select('*')
+      .eq('disponible', true)
+      .order('orden', { ascending: true })
+
+    if (error) {
+      console.warn('[boxes_services] Tabla no encontrada, usando fallback:', error.message)
+      return FALLBACK_SERVICIOS
+    }
+    return data ?? []
+  } catch (err) {
+    console.warn('[boxes_services] Error inesperado, usando fallback:', err)
+    return FALLBACK_SERVICIOS
+  }
 }
 
 // ── CONFIGURACIÓN ──
@@ -163,5 +211,19 @@ export async function getAuditLogs(limit: number = 50): Promise<any[]> {
     .limit(limit)
 
   if (error) throw new Error(`Error fetching audit logs: ${error.message}`)
+  return data ?? []
+}
+
+// ── INSTAGRAM POSTS ──
+
+export async function getInstagramPostsPublicos(): Promise<InstagramPost[]> {
+  const supabase = await createServerSupabaseClient()
+  const { data, error } = await supabase
+    .from('instagram_posts')
+    .select('*')
+    .eq('activo', true)
+    .order('orden', { ascending: true })
+
+  if (error) throw new Error(`Error fetching instagram posts: ${error.message}`)
   return data ?? []
 }
