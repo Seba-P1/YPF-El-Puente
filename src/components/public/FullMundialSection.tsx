@@ -133,13 +133,24 @@ export function FullMundialSection() {
 
   return (
     <section id="mundial" className="relative bg-[#F4F9FC] overflow-hidden border-y border-[#005A9C]/10 min-h-[100svh] py-[clamp(56px,7svh,96px)] md:py-[clamp(72px,8svh,120px)] flex flex-col justify-center">
-      {/* Background doodles on desktop */}
-      <div 
-        className="absolute inset-0 right-0 w-full lg:w-1/2 opacity-30 lg:opacity-80 pointer-events-none z-0 bg-no-repeat bg-right bg-cover ml-auto"
-        style={{
-          backgroundImage: "url('/assets/ypf imagenes/mundial/bg-mundial.svg')",
-        }}
-      />
+      {/* Background doodles on desktop — animated entrance from right */}
+      <motion.div 
+        className="absolute inset-0 pointer-events-none z-0 bg-no-repeat bg-right bg-cover"
+        initial={{ opacity: 0, x: 80 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: false, margin: '-100px' }}
+        transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
+        <div 
+          className="w-full h-full opacity-30 lg:opacity-80"
+          style={{
+            backgroundImage: "url('/assets/ypf%20imagenes/full_mundial/bg-mundial.svg')",
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right',
+          }}
+        />
+      </motion.div>
 
       <div className="relative w-full flex-1 min-h-0 group z-10 flex items-center">
         {/* SCROLL BUTTONS (Desktop only) */}
@@ -188,7 +199,7 @@ export function FullMundialSection() {
               EDICIÓN ESPECIAL
             </span>
             {/* Title */}
-            <h2 className="font-[family-name:var(--font-montserrat)] font-black text-4xl md:text-6xl text-[#005A9C] leading-none mb-3 tracking-tight">
+            <h2 className="font-[family-name:var(--font-din-medium)] font-black text-4xl md:text-6xl text-[#005A9C] leading-none mb-3 tracking-tight">
               Productos mundialistas
             </h2>
             {/* Subtitle */}
@@ -214,7 +225,7 @@ export function FullMundialSection() {
               className="relative flex-shrink-0 w-[270px] md:w-[clamp(320px,18vw,400px)] snap-center flex flex-col items-center justify-end group pt-[175px] md:pt-[clamp(190px,15vw,260px)] pb-4"
             >
               {/* Product Image (Outside the card, overlapping) */}
-              <div className="absolute top-0 w-[min(92vw,468px)] h-[min(68vw,350px)] md:w-[clamp(468px,24.7vw,546px)] md:h-[clamp(330px,18vw,410px)] flex items-center justify-center z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[min(92vw,468px)] h-[min(68vw,350px)] md:w-[clamp(468px,24.7vw,546px)] md:h-[clamp(330px,18vw,410px)] flex items-center justify-center z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
                 <Image
                   src={producto.imagen_url || '/assets/placeholder.png'}
                   alt={producto.nombre}
