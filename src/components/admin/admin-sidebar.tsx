@@ -91,7 +91,12 @@ export function AdminSidebar() {
                       : pathname === item.url || pathname.startsWith(item.url + '/')
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={item.title}
+                        className="[&[data-active='true']]:!bg-transparent [&[data-active='true']]:!border-l-2 [&[data-active='true']]:!border-l-[var(--ypf-yellow)] [&[data-active='true']]:!rounded-none hover:!bg-transparent"
+                      >
                         <Link href={item.url}>
                           <item.icon className="h-4 w-4" />
                           <span>{item.title}</span>
