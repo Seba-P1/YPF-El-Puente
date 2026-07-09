@@ -3,11 +3,9 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { FullNavbar } from '@/components/public/FullNavbar'
 import { CatalogoFiltros } from '@/components/public/CatalogoFiltros'
 import { CatalogoProductCard } from '@/components/public/CatalogoProductCard'
-import { CartSidebar } from '@/components/public/CartSidebar'
-import { MobileBottomBar } from '@/components/public/MobileBottomBar'
+
 import type { Producto } from '@/lib/supabase/types'
 
 interface MenuClientProps {
@@ -115,10 +113,6 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
         minHeight: '100vh',
       }}
     >
-      <FullNavbar visible={showNav} transparent />
-      <CartSidebar />
-      <MobileBottomBar />
-
       {/* Header - Made significantly smaller and more proportionate */}
       <header
         style={{

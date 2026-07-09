@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { ShoppingCart, Search, X } from 'lucide-react'
 import { useCartStore } from '@/stores/cart'
 import { useSearchStore } from '@/stores/search'
@@ -23,6 +24,10 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
   const openCart = useCartStore((state) => state.openCart)
   const query = useSearchStore((state) => state.query)
   const setQuery = useSearchStore((state) => state.setQuery)
+
+  const pathname = usePathname()
+  const router = useRouter()
+  const isMenuPage = pathname === '/full/menu'
 
   const isFullPageEnabled = useFullPageStore((state) => state.isEnabled)
   const currentSection = useFullPageStore((state) => state.currentSection)
@@ -59,6 +64,14 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
 
   const handleScroll = useCallback((e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault()
+    if (isMenuPage) {
+      if (targetId === 'home') {
+        router.push('/full')
+      } else {
+        router.push(`/full#${targetId}`)
+      }
+      return
+    }
     if (isFullPageEnabled) {
       goToSectionById(targetId)
     } else {
@@ -71,7 +84,7 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
         }
       }
     }
-  }, [isFullPageEnabled, goToSectionById])
+  }, [isMenuPage, isFullPageEnabled, goToSectionById, router])
 
   // Intersection Observer for normal scroll layout (mobile / standard)
   useEffect(() => {
@@ -167,18 +180,20 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
 
         <div className="flex items-center justify-end flex-shrink-0 gap-2">
           {/* CTA: Ver Menú Completo */}
-          <Link
-            href="/full/menu"
-            className="hidden md:inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[13px] font-bold whitespace-nowrap transition-all duration-200 hover:scale-105"
-            style={{
-              background: 'rgba(255,209,0,0.12)',
-              border: '1px solid rgba(255,209,0,0.35)',
-              color: '#FFD100',
-              textDecoration: 'none',
-            }}
-          >
-            Ver Menú Completo →
-          </Link>
+          {!isMenuPage && (
+            <Link
+              href="/full/menu"
+              className="hidden md:inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[13px] font-bold whitespace-nowrap transition-all duration-200 hover:scale-105"
+              style={{
+                background: 'rgba(255,209,0,0.12)',
+                border: '1px solid rgba(255,209,0,0.35)',
+                color: '#FFD100',
+                textDecoration: 'none',
+              }}
+            >
+              Ver Menú Completo →
+            </Link>
+          )}
 
           <button
             onClick={() => setIsSearchExpanded(true)}
