@@ -1,12 +1,40 @@
-stack:
-  language: typescript
-  framework: nextjs@16
-  ui: tailwind@4 + shadcn/ui
-  orm: drizzle
-  db: postgres@17
-  auth: better-auth
+# openspec/config.yaml
+schema: spec-driven
+
+context: |
+  Tech stack: Next.js 16 App Router, TypeScript strict, React 19, Tailwind v4 + shadcn/ui, Supabase (hosted Postgres + Auth + Storage), Zustand 5
+  Architecture: Route groups ((admin), (full), (public)), Supabase SSR middleware auth, Server Actions with withAdminAction wrapper, Zustand stores
+  Testing: No test runner installed (strict_tdd: false — recommend vitest setup)
+  Persistence: hybrid (openspec files + Engram)
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    - Follow existing code patterns
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: "pnpm test"
+    build_command: "pnpm build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
+
 testing:
   strict_tdd: false
   runner: none
   layers: []
-  coverage: unknown
+  coverage: false
+  linter: eslint
+  typecheck: typescript (no script)
+  formatter: none
