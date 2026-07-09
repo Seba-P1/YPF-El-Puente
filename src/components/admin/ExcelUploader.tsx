@@ -395,77 +395,77 @@ export function ExcelUploader({ modo }: ExcelUploaderProps) {
 
       {/* State: SUCCESS */}
       {state === 'success' && uploadResult && (
-        <div className="p-12 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-300">
-          <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mb-6 text-green-600 dark:text-green-500">
-            <CheckCircle2 className="w-12 h-12" />
+        <div className="p-8 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-300">
+          <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-5 text-green-600 dark:text-green-500">
+            <CheckCircle2 className="w-8 h-8" />
           </div>
-          <h3 className="text-3xl font-black text-foreground mb-2 tracking-tight">
+          <h3 className="text-2xl font-black text-foreground mb-2 tracking-tight">
             {isCatalogo ? '¡Catálogo importado!' : '¡Precios actualizados!'}
           </h3>
-          <p className="text-muted-foreground mb-8 max-w-md text-sm">
+          <p className="text-muted-foreground mb-6 max-w-md text-sm">
             {isCatalogo
               ? 'El catálogo completo se procesó correctamente. Los productos nuevos están ocultos hasta que los revises.'
               : 'El archivo se procesó correctamente y los precios ya están visibles en la página web.'}
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-2xl mb-10">
-            <div className="bg-muted/50 p-4 rounded-xl border">
-              <p className="text-sm font-medium text-muted-foreground mb-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 w-full max-w-2xl mb-8 min-w-0">
+            <div className="bg-muted/50 p-3 rounded-xl border min-w-0">
+              <p className="text-xs font-medium text-muted-foreground mb-0.5">
                 Procesados
               </p>
-              <p className="text-3xl font-black text-foreground">
+              <p className="text-2xl font-black text-foreground truncate">
                 {parsedRows.length}
               </p>
             </div>
-            <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20">
-              <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">
+            <div className="bg-blue-500/10 p-3 rounded-xl border border-blue-500/20 min-w-0">
+              <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-0.5">
                 Actualizados
               </p>
-              <p className="text-3xl font-black text-blue-700 dark:text-blue-300">
+              <p className="text-2xl font-black text-blue-700 dark:text-blue-300 truncate">
                 {uploadResult.actualizados}
               </p>
             </div>
-            <div className="bg-purple-500/10 p-4 rounded-xl border border-purple-500/20">
-              <p className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">
+            <div className="bg-purple-500/10 p-3 rounded-xl border border-purple-500/20 min-w-0">
+              <p className="text-xs font-medium text-purple-600 dark:text-purple-400 mb-0.5">
                 Full Principal sinc.
               </p>
-              <p className="text-3xl font-black text-purple-700 dark:text-purple-300">
+              <p className="text-2xl font-black text-purple-700 dark:text-purple-300 truncate">
                 {uploadResult.sincronizadosCurados}
               </p>
             </div>
-            <div className="bg-green-500/10 p-4 rounded-xl border border-green-500/20">
-              <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+            <div className="bg-green-500/10 p-3 rounded-xl border border-green-500/20 min-w-0">
+              <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-0.5">
                 Nuevos
               </p>
-              <p className="text-3xl font-black text-green-700 dark:text-green-300">
+              <p className="text-2xl font-black text-green-700 dark:text-green-300 truncate">
                 {uploadResult.nuevos}
               </p>
             </div>
-            <div className="bg-emerald-500/10 p-4 rounded-xl border border-emerald-500/20">
-              <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">
+            <div className="bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 min-w-0">
+              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-0.5">
                 Sin TACC
               </p>
-              <p className="text-3xl font-black text-emerald-700 dark:text-emerald-300">
+              <p className="text-2xl font-black text-emerald-700 dark:text-emerald-300 truncate">
                 {uploadResult.sinTacc}
               </p>
             </div>
-            <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20">
-              <p className="text-sm font-medium text-amber-600 dark:text-amber-400 mb-1">
+            <div className="bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 min-w-0">
+              <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mb-0.5">
                 Omitidos
               </p>
-              <p className="text-3xl font-black text-amber-700 dark:text-amber-300">
+              <p className="text-2xl font-black text-amber-700 dark:text-amber-300 truncate">
                 {uploadResult.omitidos}
               </p>
             </div>
             <div
-              className={`p-4 rounded-xl border ${
+              className={`p-3 rounded-xl border min-w-0 ${
                 uploadResult.errores > 0
                   ? 'bg-destructive/10 border-destructive/20'
                   : 'bg-muted/50 border'
               }`}
             >
               <p
-                className={`text-sm font-medium mb-1 ${
+                className={`text-xs font-medium mb-0.5 ${
                   uploadResult.errores > 0
                     ? 'text-destructive'
                     : 'text-muted-foreground'
@@ -474,7 +474,7 @@ export function ExcelUploader({ modo }: ExcelUploaderProps) {
                 Errores
               </p>
               <p
-                className={`text-3xl font-black ${
+                className={`text-2xl font-black truncate ${
                   uploadResult.errores > 0
                     ? 'text-destructive'
                     : 'text-foreground'
@@ -486,14 +486,14 @@ export function ExcelUploader({ modo }: ExcelUploaderProps) {
           </div>
 
           {isCatalogo && uploadResult.nuevos > 0 && (
-            <div className="mb-6 bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 flex flex-col items-center gap-3 max-w-md">
-              <p className="text-sm text-orange-700 dark:text-orange-400 font-medium">
+            <div className="mb-5 bg-orange-500/10 border border-orange-500/20 rounded-xl p-3 flex flex-col items-center gap-2 max-w-md">
+              <p className="text-xs text-orange-700 dark:text-orange-400 font-medium">
                 {uploadResult.nuevos} productos nuevos quedaron ocultos,
                 pendientes de revisión.
               </p>
               <Link
                 href="/admin/productos"
-                className="text-sm font-bold text-orange-600 dark:text-orange-400 hover:underline"
+                className="text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline"
               >
                 Ir a Productos →
               </Link>
