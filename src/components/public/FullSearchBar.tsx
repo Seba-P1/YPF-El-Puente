@@ -18,13 +18,15 @@ export function FullSearchBar() {
   useEffect(() => {
     if (!isFullPageEnabled || query.length > 0) return
 
-    // Show searchbar pills on category slides (indices 2, 3, 4)
-    const isCategorySlide = currentSection >= 2 && currentSection <= 4
+    // Show searchbar pills on category slides (indices 1-5)
+    const isCategorySlide = currentSection >= 1 && currentSection <= 5
     setShowSearch(isCategorySlide)
 
+    if (currentSection === 1) setActivePill('mundial')
     if (currentSection === 2) setActivePill('hamburguesas')
     if (currentSection === 3) setActivePill('cafeteria')
     if (currentSection === 4) setActivePill('productos-full')
+    if (currentSection === 5) setActivePill('sin-tacc')
   }, [isFullPageEnabled, currentSection, query])
   
   // Intersection Observer para actualizar el pill activo basado en scroll (solo en mobile/normal scroll)
@@ -32,7 +34,7 @@ export function FullSearchBar() {
     if (isFullPageEnabled) return // Ignorar si el fullpage está activo
     if (query.length > 0) return // No espiar secciones si estamos buscando
     
-    const sections = ['hamburguesas', 'cafeteria', 'productos-full']
+    const sections = ['mundial', 'hamburguesas', 'cafeteria', 'productos-full', 'sin-tacc']
     
     const observer = new IntersectionObserver(
       (entries) => {
@@ -100,14 +102,16 @@ export function FullSearchBar() {
 
   const pills = [
     { id: 'todos', label: 'Todos' },
+    { id: 'mundial', label: '⚽ Mundial' },
     { id: 'hamburguesas', label: '🍔 Hamburguesas' },
     { id: 'cafeteria', label: '☕ Cafetería' },
-    { id: 'productos-full', label: '⭐ Exclusivos' }
+    { id: 'productos-full', label: '⭐ Exclusivos' },
+    { id: 'sin-tacc', label: '🌾 Sin Tacc' }
   ]
 
   return (
     <div 
-      className={`fixed z-40 w-full transition-all duration-500 ease-in-out ${showSearch ? 'translate-y-0 opacity-100' : '-translate-y-[150%] opacity-0'}`}
+      className={`fixed z-40 w-full transition-all duration-500 ease-in-out md:hidden ${showSearch ? 'translate-y-0 opacity-100' : '-translate-y-[150%] opacity-0'}`}
       style={{
         top: '68px',
         background: 'transparent',

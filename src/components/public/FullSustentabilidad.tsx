@@ -41,6 +41,7 @@ export function FullSustentabilidad() {
               src="/assets/ypf imagenes/sustentabilidad.webp"
               alt="Sustentabilidad YPF Full"
               fill
+              sizes="(max-width: 768px) 100vw, 45vw"
               style={{ objectFit: 'contain', objectPosition: 'right top' }}
               quality={90}
             />

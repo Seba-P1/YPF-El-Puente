@@ -35,7 +35,9 @@ interface FullCategorySectionProps {
   colorFondo: string
   imagenBack: string
   mandalaPosition?: 'top-right' | 'bottom-right' | 'top-left' | 'bottom-left'
+  mandalaScale?: number
   sectionBgImage?: string
+  extraSubtitle?: string
 }
 
 export function FullCategorySection({
@@ -45,7 +47,9 @@ export function FullCategorySection({
   colorFondo,
   imagenBack,
   mandalaPosition = 'top-right',
+  mandalaScale = 1,
   sectionBgImage,
+  extraSubtitle,
 }: FullCategorySectionProps) {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null)
 
@@ -83,21 +87,24 @@ export function FullCategorySection({
         />
       )}
 
-      {/* DECORATIVE BACKGROUND IMAGE */}
-      <img
+      {/* DECORATIVE BACKGROUND IMAGE — animated entrance */}
+      <motion.img
         src={imagenBack}
         alt=""
+        initial={{ opacity: 0, x: mandalaPosition.includes('right') ? 80 : -80 }}
+        whileInView={{ opacity: 0.35, x: 0 }}
+        viewport={{ once: false, margin: '-100px' }}
+        transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
         style={{
           position: 'absolute',
           top: mandalaPosition.includes('top') ? 0 : 'auto',
           bottom: mandalaPosition.includes('bottom') ? 0 : 'auto',
           right: mandalaPosition.includes('right') ? 0 : 'auto',
           left: mandalaPosition.includes('left') ? 0 : 'auto',
-          width: 'clamp(250px, 35vw, 450px)',
+          width: `calc(clamp(250px, 35vw, 450px) * ${mandalaScale})`,
           height: 'auto',
           objectFit: 'contain',
           objectPosition: mandalaPosition.includes('left') ? 'left' : 'right',
-          opacity: 0.35,      /* más tenue */
           pointerEvents: 'none',
           zIndex: 0,
         }}
@@ -124,7 +131,7 @@ export function FullCategorySection({
         {/* PRODUCTS SCROLL CONTAINER */}
         <div
           ref={scrollContainerRef}
-          className="hide-scrollbar scroll-smooth snap-x snap-mandatory flex flex-row overflow-x-auto overflow-y-visible"
+          className="hide-scrollbar snap-x snap-mandatory flex flex-row overflow-x-auto overflow-y-visible"
           style={{
             position: 'relative',
             zIndex: 1,
@@ -151,13 +158,19 @@ export function FullCategorySection({
               {categoria?.nombre?.toLowerCase() ?? id}
             </p>
             {/* Title */}
-            <h2 className="font-[family-name:var(--font-montserrat)] font-black text-4xl md:text-6xl text-white leading-none mb-3 tracking-tight">
-              {categoria?.descripcion || categoria?.nombre}
-            </h2>
+<h2 className="font-[family-name:var(--font-din-medium)] font-black text-4xl md:text-6xl text-white leading-none mb-3 tracking-tight">
+  {categoria?.descripcion || categoria?.nombre}
+</h2>
             {/* Subtitle */}
             {categoria?.subtitulo && (
-              <p className="font-[family-name:var(--font-montserrat)] text-sm md:text-base text-white/60 mb-6 leading-relaxed">
+              <p className="font-[family-name:var(--font-montserrat)] text-sm md:text-base text-white/60 mb-4 leading-relaxed">
                 {categoria.subtitulo}
+              </p>
+            )}
+            {/* Extra subtitle (e.g. hamburguesas info) */}
+            {extraSubtitle && (
+              <p className="font-[family-name:var(--font-montserrat)] text-xs md:text-sm text-white/40 mb-6 leading-relaxed italic">
+                {extraSubtitle}
               </p>
             )}
             {/* Indicator */}

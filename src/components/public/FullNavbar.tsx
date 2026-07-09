@@ -37,10 +37,12 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
 
     // Map section index to slug
     if (currentSection === 0) setActiveSection('home')
+    if (currentSection === 1) setActiveSection('mundial')
     if (currentSection === 2) setActiveSection('hamburguesas')
     if (currentSection === 3) setActiveSection('cafeteria')
     if (currentSection === 4) setActiveSection('productos-full')
-    if (currentSection === 6) setActiveSection('sustentabilidad')
+    if (currentSection === 5) setActiveSection('sin-tacc')
+    if (currentSection === 7) setActiveSection('sustentabilidad')
   }, [isFullPageEnabled, currentSection])
 
   // Normal window scroll handler (mobile / standard layout)
@@ -76,7 +78,7 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
     if (isFullPageEnabled) return
     if (query.length > 0) return
 
-    const sections = ['hamburguesas', 'cafeteria', 'productos-full', 'sustentabilidad']
+    const sections = ['hamburguesas', 'cafeteria', 'productos-full', 'sin-tacc', 'mundial']
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -131,6 +133,7 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
               alt="YPF FULL"
               width={120}
               height={38}
+              priority
               className="h-10 w-auto"
               onError={() => setImgError(true)}
             />
@@ -139,13 +142,14 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
           )}
         </Link>
 
-        {/* LINKS DE SECCIÓN (Desktop) */}
-        <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-6">
+        {/* LINKS DE SECCIÓN (Desktop) — flows naturally between logo and right actions */}
+        <div className="hidden md:flex items-center gap-6 flex-1 justify-center">
           {[
-            { id: 'comidas-calientes', label: 'Comidas Calientes' },
+            { id: 'mundial', label: 'Mundial' },
+            { id: 'hamburguesas', label: 'Hamburguesas' },
             { id: 'cafeteria', label: 'Cafetería' },
-            { id: 'productos-full', label: 'Marca FULL' },
-            { id: 'sustentabilidad', label: 'Sustentabilidad' },
+            { id: 'productos-full', label: 'Productos Full' },
+            { id: 'sin-tacc', label: 'Sin Tacc' },
           ].map((item) => (
             <Link
               key={item.id}
@@ -161,7 +165,7 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
           ))}
         </div>
 
-        <div className="flex items-center justify-end flex-1 ml-auto gap-2">
+        <div className="flex items-center justify-end flex-shrink-0 gap-2">
           {/* CTA: Ver Menú Completo */}
           <Link
             href="/full/menu"

@@ -387,6 +387,7 @@ export default function FullClient({
           alt="YPF El Puente"
           width={160}
           height={48}
+          style={{ width: 'auto', height: '48px' }}
           className="opacity-50 dark:hidden"
         />
         <Image

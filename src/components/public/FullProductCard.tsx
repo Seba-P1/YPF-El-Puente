@@ -51,7 +51,7 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
       }`}
     >
       {/* 1. PRODUCT IMAGE (Outside the card, overlapping) */}
-      <div className="absolute top-0 flex items-center justify-center w-[min(92vw,468px)] h-[min(68vw,350px)] md:w-[clamp(468px,24.7vw,546px)] md:h-[clamp(330px,18vw,410px)] z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center justify-center w-[min(92vw,468px)] h-[min(68vw,350px)] md:w-[clamp(468px,24.7vw,546px)] md:h-[clamp(330px,18vw,410px)] z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
         {!imgError && producto.imagen_url ? (
           <Image
             src={producto.imagen_url}
