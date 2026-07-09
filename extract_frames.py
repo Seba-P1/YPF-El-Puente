@@ -3,17 +3,16 @@ import sys
 import subprocess
 import json
 import math
+import urllib.request
 
 # ── AUTOCONFIG: Auto-install dependencies if missing ──
-REQUIRED_PACKAGES = ["opencv-python", "Pillow", "supabase"]
+REQUIRED_PACKAGES = ["opencv-python", "Pillow"]
 for package in REQUIRED_PACKAGES:
     try:
         if package == "opencv-python":
             import cv2
         elif package == "Pillow":
             from PIL import Image
-        elif package == "supabase":
-            import supabase
         else:
             __import__(package)
     except ImportError:
@@ -23,18 +22,17 @@ for package in REQUIRED_PACKAGES:
 import cv2
 import numpy as np
 from PIL import Image
-from supabase import create_client
 
 # ── CONFIGURATION ──
 VIDEO_DIR = r"C:\Users\sebas\OneDrive\Escritorio\Videos YPF FULL"
 OUTPUT_DIR = r"c:\YPF - El Puente\ypf-el-puente\public\assets\ypf imagenes\extraidas"
 ENV_PATH = r"c:\YPF - El Puente\ypf-el-puente\.env.local"
 
-# ── SUPABASE CLIENT ──
-def get_supabase_client():
+# ── SUPABASE REST API CLIENT ──
+def get_db_products():
     if not os.path.exists(ENV_PATH):
         print(f"Error: env file not found at {ENV_PATH}")
-        return None
+        return []
     
     env_vars = {}
     with open(ENV_PATH, "r", encoding="utf-8") as f:
@@ -49,16 +47,23 @@ def get_supabase_client():
     
     if not url or not key:
         print("Missing Supabase credentials in env file")
-        return None
+        return []
         
-    return create_client(url, key)
-
-def get_db_products(supabase_client):
     try:
-        res = supabase_client.table("productos").select("codigo_plu, nombre, categoria_slug").execute()
-        return res.data
+        # Construct Supabase PostgREST query
+        rest_url = f"{url}/rest/v1/productos?select=codigo_plu,nombre,categoria_slug"
+        headers = {
+            "apikey": key,
+            "Authorization": f"Bearer {key}"
+        }
+        
+        print(f"Fetching active products from Supabase REST API...")
+        req = urllib.request.Request(rest_url, headers=headers)
+        with urllib.request.urlopen(req) as response:
+            res_data = response.read().decode('utf-8')
+            return json.loads(res_data)
     except Exception as e:
-        print(f"Error reading products from database: {e}")
+        print(f"Error reading products from Supabase REST API: {e}")
         return []
 
 # ── MATCHING LOGIC ──
@@ -214,9 +219,8 @@ def main():
         
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     
-    # Connect to Supabase
-    client = get_supabase_client()
-    db_products = get_db_products(client) if client else []
+    # Connect to Supabase REST API (0 dependencies)
+    db_products = get_db_products()
     print(f"Database products loaded: {len(db_products)}")
     
     # Scan for video files
