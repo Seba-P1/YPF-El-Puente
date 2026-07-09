@@ -277,60 +277,70 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
 
   return (
     <div className="space-y-4">
-      <GlassCard className="p-4 flex flex-wrap items-center gap-4">
-        <div className="relative w-[280px] max-sm:w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre o PLU..."
-            value={filtroNombre}
+      <GlassCard className="p-3 flex flex-wrap lg:flex-nowrap items-center gap-3">
+        {/* Left: Filter Controls */}
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full lg:flex-1 lg:min-w-0">
+          <div className="relative w-full sm:w-[220px] lg:flex-1 lg:min-w-[180px] lg:max-w-[260px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre o PLU..."
+              value={filtroNombre}
+              onChange={(e) => {
+                setFiltroNombre(e.target.value)
+                setPaginaActual(1)
+              }}
+              className="pl-9 h-9"
+            />
+          </div>
+
+          <select
+            value={filtroCategoria}
             onChange={(e) => {
-              setFiltroNombre(e.target.value)
+              setFiltroCategoria(e.target.value)
               setPaginaActual(1)
             }}
-            className="pl-9 h-9"
-          />
+            className="h-9 w-full sm:w-[165px] lg:w-[150px] xl:w-[175px] text-sm rounded-md border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="all" className="bg-background">Todas las categorías</option>
+            <option disabled className="bg-background text-muted-foreground">── Full Principal ──</option>
+            <option value="full_hamburguesas" className="bg-background">🍔 Hamburguesas</option>
+            <option value="full_cafeteria" className="bg-background">☕ Cafetería</option>
+            <option value="marca_full" className="bg-background">🏷️ Productos Full</option>
+            <option value="full_sin_tacc" className="bg-background">🌾 Sin Tacc</option>
+            <option value="full_mundial" className="bg-background">🌎 Mundial</option>
+            <option disabled className="bg-background text-muted-foreground">── Catálogo General ──</option>
+            <option value="comidas_calientes" className="bg-background">Comidas Calientes</option>
+            <option value="comidas_frias" className="bg-background">Comidas Frías</option>
+            <option value="cafeteria" className="bg-background">Cafetería</option>
+            <option value="panaderia" className="bg-background">Panadería</option>
+            <option value="combos" className="bg-background">Combos</option>
+            <option value="sin_categoria" className="bg-background">Sin Categoría</option>
+          </select>
+
+          <select
+            value={filtroEstado}
+            onChange={(e) => {
+              setFiltroEstado(e.target.value as any)
+              setPaginaActual(1)
+            }}
+            className="h-9 w-full sm:w-[145px] lg:w-[132px] xl:w-[150px] text-sm rounded-md border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="all" className="bg-background">Cualquier estado</option>
+            <option value="active" className="bg-background">Activos</option>
+            <option value="inactive" className="bg-background">Inactivos</option>
+            <option value="noprice" className="bg-background">Sin precio</option>
+          </select>
         </div>
 
-        <select
-          value={filtroCategoria}
-          onChange={(e) => {
-            setFiltroCategoria(e.target.value)
-            setPaginaActual(1)
-          }}
-          className="h-9 w-[180px] text-sm rounded-md border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          <option value="all" className="bg-background">Todas las categorías</option>
-          <option value="comidas_calientes" className="bg-background">Comidas Calientes</option>
-          <option value="comidas_frias" className="bg-background">Comidas Frías</option>
-          <option value="cafeteria" className="bg-background">Cafetería</option>
-          <option value="panaderia" className="bg-background">Panadería</option>
-          <option value="combos" className="bg-background">Combos</option>
-          <option value="marca_full" className="bg-background">Marca Full</option>
-          <option value="sin_categoria" className="bg-background">Sin Categoría</option>
-        </select>
-
-        <select
-          value={filtroEstado}
-          onChange={(e) => {
-            setFiltroEstado(e.target.value as any)
-            setPaginaActual(1)
-          }}
-          className="h-9 w-[160px] text-sm rounded-md border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          <option value="all" className="bg-background">Cualquier estado</option>
-          <option value="active" className="bg-background">Activos</option>
-          <option value="inactive" className="bg-background">Inactivos</option>
-          <option value="noprice" className="bg-background">Sin precio</option>
-        </select>
-
-        <div className="ml-auto flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
+        {/* Right: Bulk Actions & Count */}
+        <div className="flex items-center gap-2 w-full lg:w-auto justify-between lg:justify-end lg:ml-auto shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleBulkToggle(true)}
               disabled={bulkUpdating}
-              className="h-8 gap-1.5 text-xs bg-blue-600/10 border-blue-600/30 text-blue-500 hover:bg-blue-600/20 hover:text-blue-400"
+              className="h-8 gap-1 px-2 text-xs bg-blue-600/10 border-blue-600/30 text-blue-500 hover:bg-blue-600/20 hover:text-blue-400 xl:gap-1.5 xl:px-2.5"
             >
               {bulkUpdating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Power className="h-3 w-3" />}
               Activar todos
@@ -340,13 +350,13 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
               size="sm"
               onClick={() => handleBulkToggle(false)}
               disabled={bulkUpdating}
-              className="h-8 gap-1.5 text-xs"
+              className="h-8 gap-1 px-2 text-xs xl:gap-1.5 xl:px-2.5"
             >
               {bulkUpdating ? <Loader2 className="h-3 w-3 animate-spin" /> : <PowerOff className="h-3 w-3" />}
               Desactivar todos
             </Button>
           </div>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-xs lg:text-sm text-muted-foreground whitespace-nowrap">
             {filteredProducts.length} de {productos.length}
           </span>
         </div>

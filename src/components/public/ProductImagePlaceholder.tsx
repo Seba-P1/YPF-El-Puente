@@ -22,11 +22,11 @@ function getPlaceholderImage(categoriaSlug: string, nombre: string): string | nu
     const burgerIds = [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
     const hash = nombre.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
     const id = burgerIds[hash % burgerIds.length]
-    return `/assets/ypf imagenes/burger-${id}.webp`
+    return `/assets/ypf imagenes/full_hamburguesas/burger-${id}.webp`
   }
 
   if (nameLower.includes('papas')) {
-    return '/assets/ypf imagenes/papas-chimi.webp'
+    return '/assets/ypf imagenes/full_mundial/papas-chimi.webp'
   }
 
   if (
@@ -37,25 +37,25 @@ function getPlaceholderImage(categoriaSlug: string, nombre: string): string | nu
     nameLower.includes('espresso')
   ) {
     if (nameLower.includes('capi') || nameLower.includes('cappuccino')) {
-      return '/assets/ypf imagenes/cafe-capi.webp'
+      return '/assets/ypf imagenes/full_cafeteria/cafe-capi.webp'
     }
     const cafeIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     const hash = nombre.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
     const id = cafeIds[hash % cafeIds.length]
-    return `/assets/ypf imagenes/cafe-${id}.webp`
+    return `/assets/ypf imagenes/full_cafeteria/cafe-${id}.webp`
   }
 
   if (nameLower.includes('alfajor')) {
     if (nameLower.includes('negro') || nameLower.includes('chocolate')) {
-      return '/assets/ypf imagenes/alfajor-negro.webp'
+      return '/assets/ypf imagenes/marca_full/alfajor-negro.webp'
     }
     if (nameLower.includes('blanco')) {
-      return '/assets/ypf imagenes/alfajor-15.webp'
+      return '/assets/ypf imagenes/marca_full/alfajor-15.webp'
     }
     const alfajorIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15]
     const hash = nombre.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
     const id = alfajorIds[hash % alfajorIds.length]
-    return `/assets/ypf imagenes/alfajor-${id}.webp`
+    return `/assets/ypf imagenes/marca_full/alfajor-${id}.webp`
   }
 
   if (nameLower.includes('dona')) {

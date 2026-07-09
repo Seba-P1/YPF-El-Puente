@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Montserrat, Caveat } from 'next/font/google'
+import localFont from 'next/font/local'
 import '@fontsource-variable/inter'
 import '@fontsource-variable/jetbrains-mono'
 import './globals.css'
@@ -15,6 +16,12 @@ const caveat = Caveat({
   variable: '--font-caveat',
   subsets: ['latin'],
   weight: ['400', '600', '700'],
+  display: 'swap',
+})
+
+const dinMedium = localFont({
+  src: '../fonts/DIN-Medium.ttf',
+  variable: '--font-din-medium',
   display: 'swap',
 })
 
@@ -48,7 +55,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`${montserrat.variable} ${caveat.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="es" className={`${montserrat.variable} ${caveat.variable} ${dinMedium.variable} h-full antialiased`} suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col font-[family-name:var(--font-montserrat)]">
         {children}
       </body>
