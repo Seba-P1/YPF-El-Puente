@@ -1,0 +1,107 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - link "YPF Full" [ref=e5] [cursor=pointer]:
+        - /url: "#home"
+        - img "YPF Full" [ref=e6]
+      - generic "Show menu" [ref=e7] [cursor=pointer]
+  - generic [ref=e11]:
+    - generic [ref=e14]:
+      - img "Logo RDP7" [ref=e16]
+      - link "Conocé todos los productos del mundial" [ref=e17] [cursor=pointer]:
+        - /url: "#mundial"
+        - generic [ref=e18]: Conocé todos los productos del mundial
+        - img [ref=e19]
+    - generic [ref=e23]:
+      - img "Hamburguesa RDP7" [ref=e26]
+      - img "Papas chimi" [ref=e28]
+      - img "Cabumelos" [ref=e30]
+      - img "Paletas heladas" [ref=e32]
+      - img "Alfajor negro" [ref=e93]
+      - img "Alfajor blanco" [ref=e95]
+      - img "Café capitán" [ref=e97]
+      - img "Donas" [ref=e99]
+    - generic [ref=e35]:
+      - img "fullbo" [ref=e101]
+      - img "full pollo" [ref=e103]
+      - img "hamburguesa-max" [ref=e105]
+      - img "sandwich-keto" [ref=e107]
+      - img "hamburguesa-mexico" [ref=e109]
+      - img "hamburguesa-triple" [ref=e111]
+      - img "hamburguesa-triple" [ref=e113]
+      - img "gran-hamburguesa" [ref=e115]
+      - img "hamburguesa-doble" [ref=e117]
+      - img "doble-hamburguesa-queso-huevo" [ref=e119]
+      - generic:
+        - img "hamburguesa-doble"
+      - generic:
+        - img "hamburguesa-vegeta"
+      - generic:
+        - img "hamburguesa-vegeta-2"
+      - generic:
+        - img "papas-cheddar"
+    - generic [ref=e39]:
+      - img "cafe-con-leche" [ref=e121]
+      - img "cafe-cortado" [ref=e123]
+      - img "pocillo" [ref=e125]
+      - img "cate-en-tazon" [ref=e127]
+      - img "chocolate-caliente" [ref=e129]
+      - img "capuccino" [ref=e131]
+      - img "submarino" [ref=e133]
+      - img "lattes" [ref=e135]
+      - img "lattes" [ref=e137]
+      - img "cafe-frappe-dulce-de-leche" [ref=e139]
+      - img "cafe-frappe-cookies-cream" [ref=e141]
+    - generic [ref=e44]:
+      - img "alfajor-negro" [ref=e143]
+      - img "alfajor-blanco" [ref=e47]
+      - img "alfajor-mousse" [ref=e145]
+      - img "alfajor-mousse" [ref=e147]
+      - img "promos-max" [ref=e149]
+      - img "galletita-limón-bañada" [ref=e49]
+      - img "promos-max" [ref=e151]
+      - img "promos-max" [ref=e153]
+      - img "promos-max" [ref=e155]
+      - img "promos-max" [ref=e157]
+      - img "promos-max" [ref=e159]
+      - img "promos-max" [ref=e161]
+      - img "promos-max" [ref=e163]
+      - img "promos-max" [ref=e165]
+    - generic [ref=e56]:
+      - heading "Promos Full" [level=6] [ref=e57]
+      - heading "Seguinos en Instagram y enterate de todas las promociones" [level=2] [ref=e58]:
+        - text: Seguinos en Instagram
+        - text: y enterate de todas las promociones
+      - link " /ypffull" [ref=e60] [cursor=pointer]:
+        - /url: https://www.instagram.com/ypffull/
+        - generic [ref=e61]: 
+        - text: /ypffull
+    - contentinfo [ref=e72]:
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - link "ypf-logo-white":
+            - /url: https://www.ypf.com
+            - img "ypf-logo-white"
+          - paragraph [ref=e76]: © YPF
+          - paragraph [ref=e77]:
+            - generic [ref=e78]:
+              - link "Términos y condiciones" [ref=e79] [cursor=pointer]:
+                - /url: https://www.ypf.com/Paginas/terminos-y-condiciones.aspx?_ga=2.114099268.2140142670.1630329446-346441793.1598369587
+              - text: "|"
+              - link "Extranets" [ref=e80] [cursor=pointer]:
+                - /url: https://www.ypf.com/Extranet/Paginas/Extranet-de-YPF.aspx
+              - text: "|"
+              - link "Proveedores" [ref=e81] [cursor=pointer]:
+                - /url: https://www.ypf.com/Proveedores/Paginas/condiciones-de-compras-y-contrataciones.aspx
+        - generic [ref=e83]:
+          - paragraph [ref=e84]: Seguinos en
+          - generic [ref=e85]:
+            - link "" [ref=e86] [cursor=pointer]:
+              - /url: https://www.instagram.com/ypffull/
+              - generic [ref=e87]: 
+            - link "" [ref=e88] [cursor=pointer]:
+              - /url: https://www.facebook.com/YPF-FULL-106939642298404
+              - generic [ref=e89]: 
+            - link "" [ref=e90] [cursor=pointer]:
+              - /url: https://www.youtube.com/ypfoficial
+              - generic [ref=e91]: 

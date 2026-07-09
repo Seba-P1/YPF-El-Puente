@@ -21,83 +21,101 @@ export default async function AdminPreciosPage() {
   const historial = await getUploadsHistorial(10)
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <div>
-        <h1 className="text-3xl font-black tracking-tight text-foreground">
+        <h1 className="text-2xl font-black tracking-tight text-foreground">
           Actualización de Precios
         </h1>
-        <p className="mt-1 text-lg text-muted-foreground">
+        <p className="mt-0.5 text-sm text-muted-foreground">
           Subí el Excel oficial para actualizar masivamente el menú.
         </p>
       </div>
 
-      {/* Two uploaders side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Uploaders */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <ExcelUploader modo="actualizar" />
         <ExcelUploader modo="catalogo_completo" />
       </div>
 
       {/* Upload History */}
       <GlassCard className="overflow-hidden">
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
-            <FileUp className="w-5 h-5 text-muted-foreground" />
+        <div className="px-5 py-3 border-b">
+          <h2 className="text-base font-bold flex items-center gap-2 text-foreground">
+            <FileUp className="w-4 h-4 text-muted-foreground" />
             Historial de Actualizaciones
           </h2>
         </div>
 
         {historial.length > 0 ? (
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="text-xs">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Archivo</TableHead>
-                  <TableHead className="text-center">Modo</TableHead>
-                  <TableHead className="text-center">Total Filas</TableHead>
-                  <TableHead className="text-center text-blue-600 dark:text-blue-400">Actualizados</TableHead>
-                  <TableHead className="text-center text-green-600 dark:text-green-400">Nuevos</TableHead>
-                  <TableHead className="text-center text-red-600 dark:text-red-400">Errores</TableHead>
-                  <TableHead className="text-right">Fecha y Hora</TableHead>
+                  <TableHead className="h-8 text-xs">Archivo</TableHead>
+                  <TableHead className="h-8 text-xs text-center">Modo</TableHead>
+                  <TableHead className="h-8 text-xs text-center">Total</TableHead>
+                  <TableHead className="h-8 text-xs text-center text-blue-600 dark:text-blue-400">
+                    Actualizados
+                  </TableHead>
+                  <TableHead className="h-8 text-xs text-center text-green-600 dark:text-green-400">
+                    Nuevos
+                  </TableHead>
+                  <TableHead className="h-8 text-xs text-center text-red-600 dark:text-red-400">
+                    Errores
+                  </TableHead>
+                  <TableHead className="h-8 text-xs text-right">Fecha y Hora</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {historial.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-medium text-foreground">
-                      <div className="flex items-center gap-2">
-                        <FileDown className="w-4 h-4 text-muted-foreground" />
-                        <span className="truncate max-w-[200px]" title={item.nombre_archivo}>
+                    <TableCell className="py-1.5 text-xs">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <FileDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <span
+                          className="truncate max-w-[180px]"
+                          title={item.nombre_archivo}
+                        >
                           {item.nombre_archivo}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="py-1.5 text-xs text-center">
                       {item.modo === 'actualizar' ? (
-                        <Badge variant="secondary" className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 hover:bg-blue-500/20">
+                        <Badge
+                          variant="secondary"
+                          className="text-[11px] px-1.5 py-0 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
+                        >
                           Actualización
                         </Badge>
                       ) : item.modo === 'catalogo_completo' ? (
-                        <Badge variant="secondary" className="bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20 hover:bg-orange-500/20">
+                        <Badge
+                          variant="secondary"
+                          className="text-[11px] px-1.5 py-0 bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20"
+                        >
                           Catálogo completo
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="text-muted-foreground">
+                        <Badge variant="secondary" className="text-[11px] text-muted-foreground">
                           —
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-center font-semibold text-foreground">
+                    <TableCell className="py-1.5 text-xs text-center font-semibold text-foreground tabular-nums">
                       {item.total_filas}
                     </TableCell>
-                    <TableCell className="text-center font-bold text-blue-600 dark:text-blue-400">
+                    <TableCell className="py-1.5 text-xs text-center font-bold text-blue-600 dark:text-blue-400 tabular-nums">
                       {item.productos_actualizados}
                     </TableCell>
-                    <TableCell className="text-center font-bold text-green-600 dark:text-green-400">
+                    <TableCell className="py-1.5 text-xs text-center font-bold text-green-600 dark:text-green-400 tabular-nums">
                       {item.productos_nuevos}
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="py-1.5 text-xs text-center">
                       {item.productos_error > 0 ? (
-                        <Badge variant="destructive" className="bg-destructive/10 text-destructive hover:bg-destructive/20 border-none gap-1">
+                        <Badge
+                          variant="destructive"
+                          className="text-[11px] px-1.5 py-0 bg-destructive/10 text-destructive border-none gap-1"
+                        >
                           <AlertTriangle className="w-3 h-3" />
                           {item.productos_error}
                         </Badge>
@@ -105,7 +123,7 @@ export default async function AdminPreciosPage() {
                         <span className="text-muted-foreground font-medium">0</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
+                    <TableCell className="py-1.5 text-xs text-right text-muted-foreground tabular-nums whitespace-nowrap">
                       {format(new Date(item.created_at), 'dd/MM/yyyy HH:mm')}
                     </TableCell>
                   </TableRow>
@@ -114,14 +132,14 @@ export default async function AdminPreciosPage() {
             </Table>
           </div>
         ) : (
-          <div className="p-12 text-center flex flex-col items-center justify-center">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-muted text-muted-foreground border">
-              <FileUp className="w-8 h-8" />
+          <div className="p-8 text-center flex flex-col items-center justify-center">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-muted text-muted-foreground border">
+              <FileUp className="w-5 h-5" />
             </div>
-            <p className="text-lg font-medium text-foreground">
+            <p className="text-sm font-medium text-foreground">
               Aún no hay historial de actualizaciones.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-1">
               Cuando subas tu primer archivo Excel, aparecerá aquí.
             </p>
           </div>

@@ -140,11 +140,16 @@ export async function POST(request: NextRequest) {
     const filasNuevas: any[] = []     // no coincide con nada
 
     for (const row of rowsDedup) {
-      if (existingSet.has(row.codigo_plu)) {
+      const matchedCatalogo = existingSet.has(row.codigo_plu)
+      const matchedYpf = mapaPorYpf.has(row.codigo_plu)
+
+      if (matchedCatalogo) {
         filasCatalogo.push({ ...row })
-      } else if (mapaPorYpf.has(row.codigo_plu)) {
+      }
+      if (matchedYpf) {
         filasCurado.push({ ...row, _id: mapaPorYpf.get(row.codigo_plu) })
-      } else {
+      }
+      if (!matchedCatalogo && !matchedYpf) {
         filasNuevas.push(row)
       }
     }
