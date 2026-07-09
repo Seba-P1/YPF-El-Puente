@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Tags, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { Tags, Loader2, Pencil } from 'lucide-react'
 import { GlassCard } from '@/components/admin/ui/glass-card'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
@@ -89,6 +90,15 @@ export function CategoriasClient({ initialCategorias }: CategoriasClientProps) {
                 <div className="text-xs font-semibold text-muted-foreground">
                   Orden: <span className="font-bold text-foreground">{categoria.orden}</span>
                 </div>
+
+                <Link
+                  href={`/admin/categorias/${categoria.id}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-border/30 hover:bg-muted/50 transition-colors cursor-pointer text-muted-foreground hover:text-foreground shrink-0"
+                  title="Editar categoría"
+                >
+                  <Pencil size={13} />
+                  Editar
+                </Link>
 
                 <div className="flex items-center gap-3">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${categoria.activa ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>

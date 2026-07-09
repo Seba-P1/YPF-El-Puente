@@ -101,7 +101,7 @@ export function FullCategorySection({
           bottom: mandalaPosition.includes('bottom') ? 0 : 'auto',
           right: mandalaPosition.includes('right') ? 0 : 'auto',
           left: mandalaPosition.includes('left') ? 0 : 'auto',
-          width: `calc(clamp(250px, 35vw, 450px) * ${mandalaScale})`,
+          width: `calc(clamp(300px, 42vw, 540px) * ${mandalaScale})`,
           height: 'auto',
           objectFit: 'contain',
           objectPosition: mandalaPosition.includes('left') ? 'left' : 'right',
@@ -151,7 +151,7 @@ export function FullCategorySection({
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="flex-shrink-0 w-[85vw] max-w-[340px] md:max-w-[400px] flex flex-col justify-center snap-center mr-6 md:mr-12"
+            className="flex-shrink-0 w-[85vw] max-w-[442px] md:max-w-[520px] flex flex-col justify-center snap-center mr-6 md:mr-12"
           >
             {/* Tag */}
             <p className="font-[family-name:var(--font-caveat)] text-xl md:text-2xl text-white/55 mb-2 tracking-wide">

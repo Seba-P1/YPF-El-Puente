@@ -307,8 +307,8 @@ export default function FullInstagramSection({ posts }: FullInstagramSectionProp
               <div
                 className="transition-transform duration-300 group-hover:scale-105"
                 style={{
-                  width: 'clamp(140px, 28vw, 220px)',
-                  height: 'clamp(140px, 28vw, 220px)',
+width: 'clamp(168px, 33.6vw, 264px)',
+                    height: 'clamp(168px, 33.6vw, 264px)',
                 }}
               >
                 <Image
@@ -339,7 +339,7 @@ export default function FullInstagramSection({ posts }: FullInstagramSectionProp
             </h2>
 
             <p
-              className="text-white/50 mt-3 mb-4 max-w-md mx-auto md:mx-0"
+              className="text-white/50 mt-3 mb-4 max-w-lg mx-auto md:mx-0"
               style={{ fontSize: 'clamp(14px, 1.6vw, 18px)' }}
             >
               Enterate de todas las promociones, novedades y el día a día de YPF El Puente.

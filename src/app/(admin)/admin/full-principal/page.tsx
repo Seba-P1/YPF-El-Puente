@@ -1,4 +1,4 @@
-import { getProductosPorCategoriaAdmin } from '@/lib/supabase/queries'
+import { getProductosPorCategoriaAdmin, getAllCategorias } from '@/lib/supabase/queries'
 import { FullPrincipalManager } from '@/components/admin/FullPrincipalManager'
 import type { Producto } from '@/lib/supabase/types'
 
@@ -26,6 +26,13 @@ export default async function FullPrincipalPage() {
     }
   }
 
+  // Fetch categories to know which sections are active
+  const categorias = await getAllCategorias()
+  const categoriasStatus: Record<string, boolean> = {}
+  for (const cat of categorias) {
+    categoriasStatus[cat.slug] = cat.activa
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -34,7 +41,7 @@ export default async function FullPrincipalPage() {
           Las 5 secciones curadas que se muestran en la portada del menú FULL.
         </p>
       </div>
-      <FullPrincipalManager initialData={seccionesData} />
+      <FullPrincipalManager initialData={seccionesData} categoriasStatus={categoriasStatus} />
     </div>
   )
 }

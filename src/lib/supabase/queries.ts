@@ -188,6 +188,18 @@ export async function getUploadsHistorial(
   return data ?? []
 }
 
+export async function getCategoriaById(id: string): Promise<Categoria | null> {
+  const supabase = await createServerSupabaseClient()
+  const { data, error } = await supabase
+    .from('categorias')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (error) throw new Error(`Error fetching categoria: ${error.message}`)
+  return data ?? null
+}
+
 export async function getAllCategorias(): Promise<Categoria[]> {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase

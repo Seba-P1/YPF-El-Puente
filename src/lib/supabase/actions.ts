@@ -395,6 +395,40 @@ export const updateCategoriaActiva = withAdminAction(
   { rateLimitKey: 'update-categoria-activa', maxPerMinute: 60 }
 )
 
+const updateCategoriaSchema = z.object({
+  id: z.string().uuid(),
+  nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(200),
+  descripcion: z.string().trim().nullable(),
+  subtitulo: z.string().trim().nullable(),
+  imagen_fondo_url: z.string().trim().nullable(),
+  orden: z.number().int(),
+  activa: z.boolean(),
+})
+
+export const updateCategoria = withAdminAction(
+  updateCategoriaSchema,
+  async ({ id, nombre, descripcion, subtitulo, imagen_fondo_url, orden, activa }) => {
+    const supabase = (await createClient()) as any
+    const { error } = await supabase
+      .from('categorias')
+      .update({
+        nombre,
+        descripcion,
+        subtitulo,
+        imagen_fondo_url,
+        orden,
+        activa,
+      })
+      .eq('id', id)
+
+    if (error) throw new Error(`Error al actualizar categoría: ${error.message}`)
+    revalidatePath('/admin/categorias')
+    revalidatePath('/full')
+    return { id, nombre }
+  },
+  { rateLimitKey: 'update-categoria', maxPerMinute: 30 }
+)
+
 // ── FULL PRINCIPAL ACTIONS ──
 
 const upsertProductoCuradoSchema = z.object({

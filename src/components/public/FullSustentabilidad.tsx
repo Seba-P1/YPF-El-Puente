@@ -29,8 +29,8 @@ export function FullSustentabilidad() {
             position: 'absolute', 
             top: 0, 
             right: 0, 
-            width: '45%', 
-            maxWidth: '500px',
+            width: '54%', 
+            maxWidth: '600px',
             height: '80%', 
             zIndex: 0,
             opacity: 1,
@@ -41,7 +41,7 @@ export function FullSustentabilidad() {
               src="/assets/ypf imagenes/sustentabilidad.webp"
               alt="Sustentabilidad YPF Full"
               fill
-              sizes="(max-width: 768px) 100vw, 45vw"
+              sizes="(max-width: 768px) 100vw, 54vw"
               style={{ objectFit: 'contain', objectPosition: 'right top' }}
               quality={90}
             />
@@ -81,7 +81,7 @@ export function FullSustentabilidad() {
           }}
         >
           {/* Text content */}
-          <div style={{ maxWidth: 600 }}>
+          <div style={{ maxWidth: 780 }}>
             {/* TAG */}
             <motion.p
               initial={{ opacity: 0, y: 20 }}

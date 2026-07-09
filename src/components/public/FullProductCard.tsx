@@ -47,17 +47,17 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
       viewport={{ once: true, margin: '50px' }}
       variants={containerVariants}
       className={`relative flex flex-col items-center justify-end snap-center group pt-[175px] md:pt-[clamp(190px,15vw,260px)] pb-4 ${
-        isCarousel ? 'flex-shrink-0 w-[270px] md:w-[clamp(320px,18vw,400px)]' : 'w-full'
+        isCarousel ? 'flex-shrink-0 w-[324px] md:w-[clamp(384px,21.6vw,480px)]' : 'w-full'
       }`}
     >
       {/* 1. PRODUCT IMAGE (Outside the card, overlapping) */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center justify-center w-[min(92vw,468px)] h-[min(68vw,350px)] md:w-[clamp(468px,24.7vw,546px)] md:h-[clamp(330px,18vw,410px)] z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center justify-center w-[min(92vw,562px)] h-[min(68vw,420px)] md:w-[clamp(562px,29.6vw,655px)] md:h-[clamp(396px,21.6vw,492px)] z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
         {!imgError && producto.imagen_url ? (
           <Image
             src={producto.imagen_url}
             alt={producto.nombre}
             fill
-            sizes="(max-width: 768px) 92vw, 546px"
+            sizes="(max-width: 768px) 92vw, 655px"
             priority={index < 4}
             className="object-contain drop-shadow-2xl"
             onError={() => setImgError(true)}

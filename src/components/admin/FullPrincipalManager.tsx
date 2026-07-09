@@ -25,14 +25,14 @@ type FormState = {
 
 const initialForm: FormState = { id: null, nombre: '', codigo_plu: '', precio: '', codigo_ypf: '' }
 
-export function FullPrincipalManager({ initialData }: { initialData: Record<string, Producto[]> }) {
+export function FullPrincipalManager({ initialData, categoriasStatus }: { initialData: Record<string, Producto[]>; categoriasStatus?: Record<string, boolean> }) {
   const [seccionActiva, setSeccionActiva] = useState<string>(SECCIONES[0].slug)
   const [productosPorSeccion, setProductosPorSeccion] = useState<Record<string, Producto[]>>(initialData)
   const [guardando, setGuardando] = useState(false)
   const [form, setForm] = useState<FormState>(initialForm)
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
-  const [seccionesStatus, setSeccionesStatus] = useState<Record<string, boolean>>({})
+  const [seccionesStatus, setSeccionesStatus] = useState<Record<string, boolean>>(categoriasStatus ?? {})
   const [modalOpen, setModalOpen] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
