@@ -12,7 +12,7 @@ interface ProductImagePlaceholderProps {
   fill?: boolean
 }
 
-// ── STRICT KEYWORD IMAGE MATCHING ──
+// ── LEVEL 1: STRICT KEYWORD IMAGE MATCHING ──
 function getPlaceholderImage(categoriaSlug: string, nombre: string): string | null {
   const nameLower = nombre.toLowerCase().trim()
   if (!nameLower) return null
@@ -65,76 +65,94 @@ function getPlaceholderImage(categoriaSlug: string, nombre: string): string | nu
   return null
 }
 
-// ── 3D ICON DESIGN SYSTEM ──
-function get3DStyle(category: string) {
-  switch (category) {
-    case 'comidas_calientes':
-      return {
-        bg: 'radial-gradient(circle at 30% 30%, #FF6B4A 0%, #D82200 65%, #6A0000 100%)',
-        glow: 'rgba(216,34,0,0.3)',
-      }
-    case 'comidas_frias':
-      return {
-        bg: 'radial-gradient(circle at 30% 30%, #5FE0FF 0%, #007CA3 65%, #00364A 100%)',
-        glow: 'rgba(0,124,163,0.3)',
-      }
+// ── LEVEL 2: PREMIUM 3D ICON SYSTEM ──
+
+/** Subtle, premium glow colors per category */
+function getCategoryGlow(categoriaSlug: string): string {
+  switch (categoriaSlug) {
     case 'cafeteria':
-      return {
-        bg: 'radial-gradient(circle at 30% 30%, #E8B48F 0%, #A35C37 65%, #4C1F0E 100%)',
-        glow: 'rgba(163,92,55,0.3)',
-      }
+      return 'rgba(180, 120, 80, 0.4)'
     case 'panaderia':
-      return {
-        bg: 'radial-gradient(circle at 30% 30%, #FFE082 0%, #F5B041 65%, #7E5109 100%)',
-        glow: 'rgba(245,176,65,0.3)',
-      }
-    case 'combos':
-      return {
-        bg: 'radial-gradient(circle at 30% 30%, #D7BDE2 0%, #8E44AD 65%, #4A148C 100%)',
-        glow: 'rgba(142,68,173,0.3)',
-      }
+      return 'rgba(245, 176, 65, 0.4)'
+    case 'comidas_calientes':
+      return 'rgba(216, 34, 0, 0.4)'
+    case 'comidas_frias':
+      return 'rgba(0, 124, 163, 0.4)'
     case 'marca_full':
-      return {
-        bg: 'radial-gradient(circle at 30% 30%, #FFF59D 0%, #F1C40F 65%, #7D6608 100%)',
-        glow: 'rgba(241,196,15,0.3)',
-      }
+      return 'rgba(241, 196, 15, 0.4)'
+    case 'combos':
+      return 'rgba(142, 68, 173, 0.4)'
     default:
-      return {
-        bg: 'radial-gradient(circle at 30% 30%, #B2BABB 0%, #7F8C8D 65%, #34495E 100%)',
-        glow: 'rgba(127,140,141,0.2)',
-      }
+      return 'rgba(127, 140, 141, 0.2)'
   }
 }
 
-function getEmoji(categoriaSlug: string, nombre: string): string {
+/** Maps product name keywords to 3D icon filenames */
+function get3DIcon(categoriaSlug: string, nombre: string): string {
   const nameLower = nombre.toLowerCase().trim()
 
-  if (nameLower.includes('empanada')) return '🥟'
-  if (nameLower.includes('tostado') || nameLower.includes('sandwich') || nameLower.includes('miga') || nameLower.includes('ciabatta') || nameLower.includes('baguetin')) return '🥪'
-  if (nameLower.includes('pizzeta') || nameLower.includes('pizza')) return '🍕'
-  if (nameLower.includes('papas') || nameLower.includes('papas fritas')) return '🍟'
-  if (nameLower.includes('medialuna')) return '🥐'
-  if (nameLower.includes('muffin') || nameLower.includes('cupcake')) return '🧁'
-  if (nameLower.includes('budin') || nameLower.includes('budín') || nameLower.includes('pan ')) return '🍞'
-  if (nameLower.includes('cookie') || nameLower.includes('galleta') || nameLower.includes('pepa')) return '🍪'
-  if (nameLower.includes('te ') || nameLower.includes('té')) return '🍵'
-  if (nameLower.includes('licuado') || nameLower.includes('exprimido') || nameLower.includes('jugo') || nameLower.includes('gaseosa') || nameLower.includes('bebida') || nameLower.includes('agua')) return '🍹'
+  // Keyword-based matching
+  if (
+    nameLower.includes('cafe') ||
+    nameLower.includes('cappuccino') ||
+    nameLower.includes('cortado') ||
+    nameLower.includes('latte') ||
+    nameLower.includes('espresso') ||
+    nameLower.includes('capi')
+  ) {
+    return '/assets/3d-icons/hot-beverage.png'
+  }
 
+  if (
+    nameLower.includes('medialuna') ||
+    nameLower.includes('croissant') ||
+    nameLower.includes('factura')
+  ) {
+    return '/assets/3d-icons/croissant.png'
+  }
+
+  if (nameLower.includes('dona') || nameLower.includes('donut')) {
+    return '/assets/3d-icons/doughnut.png'
+  }
+
+  if (nameLower.includes('hamburguesa') || nameLower.includes('burger')) {
+    return '/assets/3d-icons/hamburger.png'
+  }
+
+  if (
+    nameLower.includes('licuado') ||
+    nameLower.includes('exprimido') ||
+    nameLower.includes('jugo') ||
+    nameLower.includes('gaseosa') ||
+    nameLower.includes('bebida')
+  ) {
+    return '/assets/3d-icons/cup-with-straw.png'
+  }
+
+  if (nameLower.includes('alfajor') || nameLower.includes('chocolate')) {
+    return '/assets/3d-icons/chocolate-bar.png'
+  }
+
+  if (nameLower.includes('pizza') || nameLower.includes('pizzeta')) {
+    return '/assets/3d-icons/pizza.png'
+  }
+
+  // Category-based fallback
   switch (categoriaSlug) {
-    case 'comidas_calientes':
-      return '🍔'
-    case 'comidas_frias':
-      return '🥪'
     case 'cafeteria':
-      return '☕'
+      return '/assets/3d-icons/hot-beverage.png'
     case 'panaderia':
-      return '🥐'
-    case 'combos':
-      return '📦'
+      return '/assets/3d-icons/croissant.png'
+    case 'comidas_calientes':
+      return '/assets/3d-icons/hamburger.png'
+    case 'comidas_frias':
+      return '/assets/3d-icons/cup-with-straw.png'
     case 'marca_full':
-      return '⭐'
+      return '/assets/3d-icons/chocolate-bar.png'
+    case 'combos':
+      return '/assets/3d-icons/doughnut.png'
     default:
-      return '🛍️'
+      return '/assets/3d-icons/hot-beverage.png'
   }
 }
 
@@ -146,6 +164,7 @@ export function ProductImagePlaceholder({
 }: ProductImagePlaceholderProps) {
   const mappedImage = getPlaceholderImage(categoriaSlug, nombre)
 
+  // Level 1: real product image by keyword match
   if (mappedImage) {
     return (
       <div
@@ -169,13 +188,33 @@ export function ProductImagePlaceholder({
     )
   }
 
-  // Fallback: 3D Illustration Sphere
-  const style = get3DStyle(categoriaSlug)
-  const emoji = getEmoji(categoriaSlug, nombre)
+  // Level 2: premium glassmorphism 3D icon fallback
+  const iconSrc = get3DIcon(categoriaSlug, nombre)
+  const glowColor = getCategoryGlow(categoriaSlug)
 
-  // OPTIMIZATION FOR LANDING PAGE OVERLAPPING COVER:
-  // If fill is true (used in FullProductCard), center a floating 3D sphere at a fixed scale.
-  // This avoids a massive solid colored rectangle covering the entire slide container!
+  const cardStyle: React.CSSProperties = {
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    position: 'relative' as const,
+  }
+
+  const iconContainerStyle: React.CSSProperties = {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: `0 12px 40px -8px ${glowColor}, 0 4px 12px rgba(0,0,0,0.3)`,
+    borderRadius: '50%',
+    background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%)',
+  }
+
+  // Fill mode: used in FullProductCard (overlapping cover layout)
   if (fill) {
     return (
       <div
@@ -192,111 +231,87 @@ export function ProductImagePlaceholder({
       >
         <div
           style={{
-            width: 'clamp(120px, 15vw, 180px)',
-            height: 'clamp(120px, 15vw, 180px)',
-            borderRadius: '50%',
-            background: style.bg,
-            boxShadow: `0 12px 36px -4px ${style.glow}, inset 0 2px 4px rgba(255,255,255,0.25), inset 0 -6px 12px rgba(0,0,0,0.45)`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-            position: 'relative',
+            ...cardStyle,
+            width: 'clamp(140px, 18vw, 200px)',
+            height: 'clamp(140px, 18vw, 200px)',
+            borderRadius: 24,
           }}
         >
-          {/* 3D Glass Gloss Overlay */}
+          {/* Subtle top highlight */}
           <div
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
               right: 0,
-              height: '50%',
-              background: 'linear-gradient(to bottom, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 100%)',
-              borderRadius: '50% 50% 0 0 / 100% 100% 0 0',
-              transform: 'scaleX(0.9)',
+              height: '40%',
+              background: 'linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 100%)',
+              borderRadius: '24px 24px 0 0',
               pointerEvents: 'none',
             }}
           />
-          {/* Glossy ring */}
           <div
             style={{
-              position: 'absolute',
-              inset: 4,
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '50%',
-              pointerEvents: 'none',
-            }}
-          />
-          {/* Floating 3D Emoji */}
-          <span
-            style={{
-              fontSize: 'clamp(44px, 5vw, 64px)',
-              filter: 'drop-shadow(0 10px 16px rgba(0,0,0,0.55))',
-              transform: 'translateY(-2px)',
-              userSelect: 'none',
+              ...iconContainerStyle,
+              width: 'clamp(64px, 8vw, 96px)',
+              height: 'clamp(64px, 8vw, 96px)',
+              padding: '12%',
             }}
           >
-            {emoji}
-          </span>
+            <Image
+              src={iconSrc}
+              alt={nombre || categoriaSlug}
+              fill
+              sizes="clamp(64px, 8vw, 96px)"
+              style={{ objectFit: 'contain' }}
+            />
+          </div>
         </div>
       </div>
     )
   }
 
-  // Fallback for square grids (e.g. Catalog Page)
+  // Fixed size mode: used in CatalogoProductCard (square grid)
+  const iconSize = Math.round(size * 0.55)
+
   return (
     <div
       style={{
+        ...cardStyle,
         width: size,
         height: size,
-        borderRadius: 16,
-        background: style.bg,
-        boxShadow: `0 8px 24px -4px ${style.glow}, inset 0 2px 4px rgba(255,255,255,0.2), inset 0 -4px 10px rgba(0,0,0,0.4)`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-        position: 'relative',
+        borderRadius: 20,
       }}
     >
-      {/* 3D Glass Gloss Overlay */}
+      {/* Subtle top highlight */}
       <div
         style={{
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
-          height: '50%',
-          background: 'linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%)',
-          borderRadius: '50% 50% 0 0 / 100% 100% 0 0',
-          transform: 'scaleX(0.9)',
+          height: '40%',
+          background: 'linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 100%)',
+          borderRadius: '20px 20px 0 0',
           pointerEvents: 'none',
         }}
       />
-      
-      {/* Glossy ring */}
       <div
         style={{
-          position: 'absolute',
-          inset: 4,
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: 12,
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Floating 3D Emoji */}
-      <span
-        style={{
-          fontSize: size * 0.28,
-          filter: 'drop-shadow(0 8px 12px rgba(0,0,0,0.5))',
-          transform: 'translateY(-2px)',
-          userSelect: 'none',
+          ...iconContainerStyle,
+          width: iconSize,
+          height: iconSize,
+          padding: '10%',
         }}
       >
-        {emoji}
-      </span>
+        <Image
+          src={iconSrc}
+          alt={nombre || categoriaSlug}
+          fill
+          sizes={`${iconSize}px`}
+          style={{ objectFit: 'contain' }}
+        />
+      </div>
     </div>
   )
 }
