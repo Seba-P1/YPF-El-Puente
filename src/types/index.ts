@@ -40,6 +40,7 @@ export interface ExcelRow {
 
 export interface UploadResult {
   actualizados: number
+  sincronizadosCurados: number
   nuevos: number
   omitidos: number
   sinTacc: number

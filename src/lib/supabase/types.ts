@@ -16,6 +16,7 @@ export interface Database {
           badge: string | null
           orden: number
           es_sin_tacc: boolean
+          codigo_ypf: string | null
           created_at: string
           updated_at: string
         }

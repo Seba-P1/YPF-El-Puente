@@ -402,11 +402,12 @@ const upsertProductoCuradoSchema = z.object({
   nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(200),
   precio: z.number().nonnegative(),
   categoria_slug: z.string().trim().min(1, 'La categoría es obligatoria'),
+  codigo_ypf: z.string().trim().max(64).nullable().optional(),
 })
 
 export const upsertProductoCurado = withAdminAction(
   upsertProductoCuradoSchema,
-  async ({ codigo_plu, nombre, precio, categoria_slug }) => {
+  async ({ codigo_plu, nombre, precio, categoria_slug, codigo_ypf }) => {
     const supabase = (await createClient()) as any
 
     // Calcular próximo orden dentro de la categoría
@@ -421,24 +422,61 @@ export const upsertProductoCurado = withAdminAction(
       ? (existentes[0].orden ?? 0) + 1
       : 0
 
+    const upsertData: any = {
+      codigo_plu,
+      nombre,
+      precio,
+      categoria_slug,
+      disponible: true,
+      orden: siguienteOrden,
+      updated_at: new Date().toISOString(),
+    }
+    if (codigo_ypf !== undefined) {
+      upsertData.codigo_ypf = codigo_ypf || null
+    }
+
     const { error } = await supabase
       .from('productos')
-      .upsert({
-        codigo_plu,
-        nombre,
-        precio,
-        categoria_slug,
-        disponible: true,
-        orden: siguienteOrden,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'codigo_plu' })
+      .upsert(upsertData, { onConflict: 'codigo_plu' })
 
-    if (error) throw new Error(`Error al guardar producto curado: ${error.message}`)
+    if (error) {
+      if (error.code === '23505') {
+        throw new Error('Ese código de YPF ya está vinculado a otro producto.')
+      }
+      throw new Error(`Error al guardar producto curado: ${error.message}`)
+    }
     revalidatePath('/admin/full-principal')
     revalidatePath('/full')
     return { codigo_plu }
   },
   { rateLimitKey: 'upsert-producto-curado', maxPerMinute: 30 }
+)
+
+const updateProductoCodigoYpfSchema = z.object({
+  id: z.string().uuid(),
+  codigoYpf: z.string().trim().max(64).nullable(),
+})
+
+export const updateProductoCodigoYpf = withAdminAction(
+  updateProductoCodigoYpfSchema,
+  async ({ id, codigoYpf }) => {
+    const supabase = (await createClient()) as any
+    const valorLimpio = codigoYpf?.trim() || null
+    const { error } = await supabase
+      .from('productos')
+      .update({ codigo_ypf: valorLimpio })
+      .eq('id', id)
+
+    if (error) {
+      if (error.code === '23505') {
+        throw new Error('Ese código de YPF ya está vinculado a otro producto.')
+      }
+      throw new Error(`Error al actualizar código YPF: ${error.message}`)
+    }
+    revalidatePath('/admin/full-principal')
+    return { id, codigoYpf: valorLimpio }
+  },
+  { rateLimitKey: 'update-codigo-ypf', maxPerMinute: 60 }
 )
 
 const deleteProductoCuradoSchema = z.object({ id: z.string().uuid() })

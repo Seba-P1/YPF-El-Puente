@@ -109,89 +109,131 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     ) as any
 
-    // ── STEP 4: Determine existing products ──
-    const allPlus = rowsDedup.map((r) => r.codigo_plu as string)
-    const { data: existingProducts } = await adminClient
+    // ── STEP 4: Determine existing products (dual matching) ──
+    const allCodigos = rowsDedup.map((r) => r.codigo_plu as string)
+
+    // Vía 1: coincidencia por codigo_plu — comportamiento del catálogo grande
+    const { data: existingByPlu } = await adminClient
       .from('productos')
       .select('codigo_plu, categoria_slug')
-      .in('codigo_plu', allPlus)
+      .in('codigo_plu', allCodigos)
+
+    // Vía 2: coincidencia por codigo_ypf — productos curados de Full Principal
+    const { data: existingByYpf } = await adminClient
+      .from('productos')
+      .select('id, codigo_ypf')
+      .in('codigo_ypf', allCodigos)
+      .not('codigo_ypf', 'is', null)
 
     const existingMap = new Map<string, string>(
-      (existingProducts as any[])?.map((p: any) => [p.codigo_plu, p.categoria_slug]) ?? []
+      (existingByPlu as any[])?.map((p: any) => [p.codigo_plu, p.categoria_slug]) ?? []
     )
     const existingSet = new Set(existingMap.keys())
 
-    // ── STEP 5: Filter rows by mode BEFORE upsert ──
-    let filasAProcesar: any[]
+    const mapaPorYpf = new Map<string, string>(
+      (existingByYpf as any[])?.map((p: any) => [p.codigo_ypf, p.id]) ?? []
+    )
+
+    // ── STEP 5: Classify rows into THREE groups ──
+    const filasCatalogo: any[] = []   // coincide por codigo_plu → update completo
+    const filasCurado: any[] = []     // coincide por codigo_ypf → update SOLO precio
+    const filasNuevas: any[] = []     // no coincide con nada
+
+    for (const row of rowsDedup) {
+      if (existingSet.has(row.codigo_plu)) {
+        filasCatalogo.push({ ...row })
+      } else if (mapaPorYpf.has(row.codigo_plu)) {
+        filasCurado.push({ ...row, _id: mapaPorYpf.get(row.codigo_plu) })
+      } else {
+        filasNuevas.push(row)
+      }
+    }
+
     let omitidos = 0
 
     if (modo === 'actualizar') {
-      // Only touch products that ALREADY exist. Everything else is counted
-      // as omitted and NOT inserted.
-      filasAProcesar = rowsDedup.filter((r) => existingSet.has(r.codigo_plu))
-      omitidos = rowsDedup.length - filasAProcesar.length
-    } else {
-      // catalogo_completo: process all rows (existing + new)
-      filasAProcesar = rowsDedup
+      // En modo actualizar, las filas nuevas NO se procesan
+      omitidos = filasNuevas.length
+      filasNuevas.length = 0
     }
 
     let actualizados = 0
+    let sincronizadosCurados = 0
     let nuevos = 0
     let sinTaccCount = 0
     let errores = 0
 
-    // ── STEP 6: Upsert in batches ──
     const BATCH_SIZE = 50
-    for (let i = 0; i < filasAProcesar.length; i += BATCH_SIZE) {
-      const batch = filasAProcesar.slice(i, i + BATCH_SIZE)
 
-      const upsertData = batch.map((row: any) => {
-        const isExisting = existingSet.has(row.codigo_plu)
-        if (isExisting) {
-          // Existing products: only update name, price, sin_tacc.
-          // NEVER overwrite disponible, destacado, badge, orden, imagen_url.
-          // MUST supply categoria_slug to satisfy the NOT NULL constraint in Supabase.
-          return {
-            codigo_plu: row.codigo_plu,
-            nombre: row.nombre,
-            precio: row.precio,
-            categoria_slug: existingMap.get(row.codigo_plu) || row.categoria_slug,
-            es_sin_tacc: row.es_sin_tacc ?? false,
-            updated_at: new Date().toISOString(),
-          }
-        }
-        // New products: created ACTIVE so they appear immediately.
-        // Admin can deactivate individual items or bulk-toggle later.
-        return {
-          codigo_plu: row.codigo_plu,
-          nombre: row.nombre,
-          precio: row.precio,
-          categoria_slug: row.categoria_slug,
-          es_sin_tacc: row.es_sin_tacc ?? false,
-          disponible: true,
-          destacado: false,
-          orden: 0,
-        }
-      })
+    // ── STEP 6a: Catálogo grande — mismo comportamiento que ya existía ──
+    for (let i = 0; i < filasCatalogo.length; i += BATCH_SIZE) {
+      const batch = filasCatalogo.slice(i, i + BATCH_SIZE)
+
+      const upsertData = batch.map((row: any) => ({
+        codigo_plu: row.codigo_plu,
+        nombre: row.nombre,
+        precio: row.precio,
+        categoria_slug: existingMap.get(row.codigo_plu) || row.categoria_slug,
+        es_sin_tacc: row.es_sin_tacc ?? false,
+        updated_at: new Date().toISOString(),
+      }))
 
       const { error: upsertError } = await adminClient
         .from('productos')
         .upsert(upsertData, { onConflict: 'codigo_plu', ignoreDuplicates: false })
 
       if (upsertError) {
-        console.error(
-          `Batch upsert error (rows ${i + 1}-${i + batch.length}):`,
-          upsertError
-        )
+        console.error(`Batch catálogo (${i}-${i + batch.length}):`, upsertError)
         errores += batch.length
       } else {
         batch.forEach((row: any) => {
+          actualizados++
           if (row.es_sin_tacc) sinTaccCount++
-          if (existingSet.has(row.codigo_plu)) {
-            actualizados++
-          } else {
-            nuevos++
-          }
+        })
+      }
+    }
+
+    // ── STEP 6b: Productos curados vinculados por codigo_ypf — SOLO precio ──
+    for (const row of filasCurado) {
+      const { error } = await adminClient
+        .from('productos')
+        .update({ precio: row.precio, updated_at: new Date().toISOString() })
+        .eq('id', row._id)
+
+      if (error) {
+        console.error(`Error sincronizando producto curado id=${row._id}:`, error)
+        errores++
+      } else {
+        sincronizadosCurados++
+      }
+    }
+
+    // ── STEP 6c: Productos nuevos (solo en modo catalogo_completo) ──
+    for (let i = 0; i < filasNuevas.length; i += BATCH_SIZE) {
+      const batch = filasNuevas.slice(i, i + BATCH_SIZE)
+
+      const upsertData = batch.map((row: any) => ({
+        codigo_plu: row.codigo_plu,
+        nombre: row.nombre,
+        precio: row.precio,
+        categoria_slug: row.categoria_slug,
+        es_sin_tacc: row.es_sin_tacc ?? false,
+        disponible: true,
+        destacado: false,
+        orden: 0,
+      }))
+
+      const { error: upsertError } = await adminClient
+        .from('productos')
+        .upsert(upsertData, { onConflict: 'codigo_plu', ignoreDuplicates: false })
+
+      if (upsertError) {
+        console.error(`Batch nuevos (${i}-${i + batch.length}):`, upsertError)
+        errores += batch.length
+      } else {
+        batch.forEach((row: any) => {
+          nuevos++
+          if (row.es_sin_tacc) sinTaccCount++
         })
       }
     }
@@ -200,7 +242,7 @@ export async function POST(request: NextRequest) {
     await adminClient.from('uploads_historial').insert({
       nombre_archivo: filename || 'archivo.xlsx',
       total_filas: rows.length,
-      productos_actualizados: actualizados,
+      productos_actualizados: actualizados + sincronizadosCurados,
       productos_nuevos: nuevos,
       productos_error: errores,
       modo,
@@ -212,6 +254,7 @@ export async function POST(request: NextRequest) {
       success: errores === 0,
       result: {
         actualizados,
+        sincronizadosCurados,
         nuevos,
         omitidos,
         sinTacc: sinTaccCount,

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
-import { Loader2, Pencil, Trash2, Plus, X } from 'lucide-react'
+import { Loader2, Pencil, Trash2, Plus, X, Link2, Link2Off } from 'lucide-react'
 import { upsertProductoCurado, deleteProductoCurado, updateCategoriaActivaPorSlug, updateProductoDisponible, getProductosCurados } from '@/lib/supabase/actions'
 import { CuratedProductImage } from '@/components/public/CuratedProductImage'
 import type { Producto } from '@/lib/supabase/types'
@@ -20,9 +20,10 @@ type FormState = {
   nombre: string
   codigo_plu: string
   precio: string
+  codigo_ypf: string
 }
 
-const initialForm: FormState = { id: null, nombre: '', codigo_plu: '', precio: '' }
+const initialForm: FormState = { id: null, nombre: '', codigo_plu: '', precio: '', codigo_ypf: '' }
 
 export function FullPrincipalManager({ initialData }: { initialData: Record<string, Producto[]> }) {
   const [seccionActiva, setSeccionActiva] = useState<string>(SECCIONES[0].slug)
@@ -64,6 +65,7 @@ export function FullPrincipalManager({ initialData }: { initialData: Record<stri
       nombre,
       precio: precioNum,
       categoria_slug: seccionActiva,
+      codigo_ypf: form.codigo_ypf.trim() || null,
     })
     if (!result.ok) {
       toast.error(result.error)
@@ -84,6 +86,7 @@ export function FullPrincipalManager({ initialData }: { initialData: Record<stri
       nombre: p.nombre,
       codigo_plu: p.codigo_plu,
       precio: String(p.precio),
+      codigo_ypf: p.codigo_ypf || '',
     })
     setEditandoId(p.id)
     setModalOpen(true)
@@ -151,7 +154,7 @@ export function FullPrincipalManager({ initialData }: { initialData: Record<stri
           <div className="flex-1 min-w-[160px]">
             <label className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Nombre</label>
             <input
-              value={form.nombre}
+              value={form.nombre ?? ''}
               onChange={(e) => setForm(prev => ({ ...prev, nombre: e.target.value }))}
               placeholder="Ej: Fullbo"
               className="h-9 w-full text-sm rounded-lg border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
@@ -160,7 +163,7 @@ export function FullPrincipalManager({ initialData }: { initialData: Record<stri
           <div className="flex-1 min-w-[120px]">
             <label className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Código</label>
             <input
-              value={form.codigo_plu}
+              value={form.codigo_plu ?? ''}
               onChange={(e) => setForm(prev => ({ ...prev, codigo_plu: e.target.value }))}
               placeholder="Ej: burger-1"
               className="h-9 w-full text-sm rounded-lg border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50 font-mono"
@@ -173,11 +176,21 @@ export function FullPrincipalManager({ initialData }: { initialData: Record<stri
               type="number"
               step="0.01"
               min="0"
-              value={form.precio}
+              value={form.precio ?? ''}
               onChange={(e) => setForm(prev => ({ ...prev, precio: e.target.value }))}
               placeholder="0"
               className="h-9 w-full text-sm rounded-lg border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             />
+          </div>
+          <div className="w-[140px]">
+            <label className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Código YPF <span className="normal-case font-normal text-muted-foreground/70">(opcional)</span></label>
+            <input
+              value={form.codigo_ypf ?? ''}
+              onChange={(e) => setForm(prev => ({ ...prev, codigo_ypf: e.target.value }))}
+              placeholder="Ej: 02131"
+              className="h-9 w-full text-sm rounded-lg border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50 font-mono"
+            />
+            <p className="mt-1 text-[10px] text-muted-foreground/70">Sincroniza solo el precio</p>
           </div>
           <button
             type="submit"
@@ -229,6 +242,7 @@ export function FullPrincipalManager({ initialData }: { initialData: Record<stri
                   <th className="text-left px-4 py-3 font-semibold">Nombre</th>
                   <th className="text-left px-4 py-3 font-semibold font-mono">Código</th>
                   <th className="text-right px-4 py-3 font-semibold">Precio</th>
+                  <th className="text-center px-4 py-3 font-semibold w-28">Sync YPF</th>
                   <th className="text-center px-4 py-3 font-semibold w-24">Disponible</th>
                   <th className="text-center px-4 py-3 font-semibold w-24">Acciones</th>
                 </tr>
@@ -250,6 +264,19 @@ export function FullPrincipalManager({ initialData }: { initialData: Record<stri
                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{p.codigo_plu}</td>
                     <td className="px-4 py-3 text-right font-mono">
                       ${p.precio > 0 ? p.precio.toLocaleString('es-AR') : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {p.codigo_ypf ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20" title={`Código YPF: ${p.codigo_ypf}`}>
+                          <Link2 size={10} />
+                          {p.codigo_ypf}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-muted/50 text-muted-foreground border border-muted">
+                          <Link2Off size={10} />
+                          Sin sincronizar
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <button
@@ -323,7 +350,7 @@ export function FullPrincipalManager({ initialData }: { initialData: Record<stri
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Nombre</label>
                 <input
-                  value={form.nombre}
+                  value={form.nombre ?? ''}
                   onChange={(e) => setForm(prev => ({ ...prev, nombre: e.target.value }))}
                   className="h-9 w-full text-sm rounded-lg border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 />
@@ -331,7 +358,7 @@ export function FullPrincipalManager({ initialData }: { initialData: Record<stri
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Código</label>
                 <input
-                  value={form.codigo_plu}
+                  value={form.codigo_plu ?? ''}
                   onChange={(e) => setForm(prev => ({ ...prev, codigo_plu: e.target.value }))}
                   className="h-9 w-full text-sm rounded-lg border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50 font-mono"
                 />
@@ -342,10 +369,24 @@ export function FullPrincipalManager({ initialData }: { initialData: Record<stri
                   type="number"
                   step="0.01"
                   min="0"
-                  value={form.precio}
+                  value={form.precio ?? ''}
                   onChange={(e) => setForm(prev => ({ ...prev, precio: e.target.value }))}
                   className="h-9 w-full text-sm rounded-lg border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+                  Código YPF <span className="normal-case font-normal text-muted-foreground/70">(opcional)</span>
+                </label>
+                <input
+                  value={form.codigo_ypf ?? ''}
+                  onChange={(e) => setForm(prev => ({ ...prev, codigo_ypf: e.target.value }))}
+                  placeholder="Ej: 02131"
+                  className="h-9 w-full text-sm rounded-lg border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50 font-mono"
+                />
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  El código real que usa YPF Central para este producto en el archivo de precios. Si lo completás, el precio se actualiza solo al subir un Excel nuevo — el nombre y la imagen no se tocan.
+                </p>
               </div>
               <div className="flex gap-2 pt-2">
                 <button

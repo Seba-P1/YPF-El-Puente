@@ -408,7 +408,7 @@ export function ExcelUploader({ modo }: ExcelUploaderProps) {
               : 'El archivo se procesó correctamente y los precios ya están visibles en la página web.'}
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-2xl mb-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-2xl mb-10">
             <div className="bg-muted/50 p-4 rounded-xl border">
               <p className="text-sm font-medium text-muted-foreground mb-1">
                 Procesados
@@ -423,6 +423,14 @@ export function ExcelUploader({ modo }: ExcelUploaderProps) {
               </p>
               <p className="text-3xl font-black text-blue-700 dark:text-blue-300">
                 {uploadResult.actualizados}
+              </p>
+            </div>
+            <div className="bg-purple-500/10 p-4 rounded-xl border border-purple-500/20">
+              <p className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">
+                Full Principal sinc.
+              </p>
+              <p className="text-3xl font-black text-purple-700 dark:text-purple-300">
+                {uploadResult.sincronizadosCurados}
               </p>
             </div>
             <div className="bg-green-500/10 p-4 rounded-xl border border-green-500/20">
