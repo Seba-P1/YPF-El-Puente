@@ -23,11 +23,13 @@ export function CTASection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           style={{
-            fontSize: 'clamp(44px, 6vw, 96px)',
+            fontSize: 'clamp(38px, 6vw, 72px)',
             fontWeight: 900,
+            fontFamily: 'var(--font-din-medium), sans-serif',
             color: 'white',
             letterSpacing: '-0.03em',
             lineHeight: 1.05,
+            textTransform: 'uppercase',
           }}
         >
           ¿Tenés{' '}
@@ -62,26 +64,30 @@ export function CTASection() {
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              height: 60,
+              height: 56,
               padding: '0 40px',
-              borderRadius: 999,
+              borderRadius: 9999,
               background: '#FFD100',
               color: '#000000',
-              fontSize: 17,
+              fontSize: 15,
               fontWeight: 800,
+              fontFamily: 'var(--font-din-medium), sans-serif',
               textDecoration: 'none',
               transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+              boxShadow: '0 4px 20px rgba(255,209,0,0.15)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.03)'
-              e.currentTarget.style.boxShadow = '0 20px 40px rgba(255,209,0,0.3)'
+              e.currentTarget.style.boxShadow = '0 12px 36px rgba(255,209,0,0.35)'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)'
-              e.currentTarget.style.boxShadow = 'none'
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(255,209,0,0.15)'
             }}
           >
-            Ver el Menú FULL →
+            Ver Menú FULL →
           </Link>
         </motion.div>
       </div>
