@@ -38,6 +38,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in https://cdn.jsdelivr.net",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
               "media-src 'self' https://*.supabase.co",
+              "frame-src 'self' https://maps.google.com https://*.google.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

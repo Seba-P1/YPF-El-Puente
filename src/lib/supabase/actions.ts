@@ -175,6 +175,72 @@ export const updateCombustibleDisponible = withAdminAction(
   { rateLimitKey: 'update-combustible-disponible', maxPerMinute: 60 }
 )
 
+const updateCombustibleNombreSchema = z.object({
+  id: z.string().uuid(),
+  nombre: z.string().min(1).max(100),
+})
+
+export const updateCombustibleNombre = withAdminAction(
+  updateCombustibleNombreSchema,
+  async ({ id, nombre }) => {
+    const supabase = (await createClient()) as any
+    const { error } = await supabase
+      .from('combustibles')
+      .update({ nombre })
+      .eq('id', id)
+
+    if (error) throw new Error(`Error updating nombre combustible: ${error.message}`)
+    revalidatePath('/admin/combustibles')
+    return { id, nombre }
+  },
+  { rateLimitKey: 'update-combustible-nombre', maxPerMinute: 60 }
+)
+
+const createCombustibleSchema = z.object({
+  nombre: z.string().min(1).max(100),
+  octanaje: z.string().max(20).optional(),
+  color_hex: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  precio: z.number().nonnegative().default(0),
+  orden: z.number().int().nonnegative().default(0),
+})
+
+export const createCombustible = withAdminAction(
+  createCombustibleSchema,
+  async ({ nombre, octanaje, color_hex, precio, orden }) => {
+    const supabase = (await createClient()) as any
+    const { data, error } = await supabase
+      .from('combustibles')
+      .insert({ nombre, octanaje: octanaje ?? null, color_hex, precio, orden, disponible: true, descripcion: null })
+      .select()
+      .single()
+
+    if (error) throw new Error(`Error creating combustible: ${error.message}`)
+    revalidatePath('/admin/combustibles')
+    return data
+  },
+  { rateLimitKey: 'create-combustible', maxPerMinute: 20 }
+)
+
+const deleteCombustibleSchema = z.object({
+  id: z.string().uuid(),
+})
+
+export const deleteCombustible = withAdminAction(
+  deleteCombustibleSchema,
+  async ({ id }) => {
+    const supabase = (await createClient()) as any
+    const { error } = await supabase
+      .from('combustibles')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw new Error(`Error deleting combustible: ${error.message}`)
+    revalidatePath('/admin/combustibles')
+    return { id }
+  },
+  { rateLimitKey: 'delete-combustible', maxPerMinute: 20 }
+)
+
 // getWhatsAppConfig no es una Server Action de mutación admin (se usa en public), 
 // así que no la envolvemos con withAdminAction para que siga retornando lo mismo.
 export async function getWhatsAppConfig(): Promise<WhatsAppConfig> {

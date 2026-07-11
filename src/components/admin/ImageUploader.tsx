@@ -33,7 +33,7 @@ export function ImageUploader({
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
     if (rejectedFiles.length > 0) {
       setState('error')
-      setErrorMessage('Formato no válido. Asegurate de subir una imagen PNG.')
+      setErrorMessage('Formato no válido. Subí una imagen PNG, JPG, WebP o GIF.')
       return
     }
 
@@ -50,6 +50,9 @@ export function ImageUploader({
     onDrop,
     accept: {
       'image/png': ['.png'],
+      'image/jpeg': ['.jpg', '.jpeg'],
+      'image/webp': ['.webp'],
+      'image/gif': ['.gif'],
     },
     maxFiles: 1,
     multiple: false,
@@ -81,7 +84,9 @@ export function ImageUploader({
       }
 
       // 2. Generate new unique file name
-      const fileName = `${productoId}-${Date.now()}.png`
+      const extMap: Record<string, string> = { 'image/png': '.png', 'image/jpeg': '.jpg', 'image/webp': '.webp', 'image/gif': '.gif' }
+      const ext = extMap[file.type] || '.png'
+      const fileName = `${productoId}-${Date.now()}${ext}`
 
       // 3. Upload to Supabase Storage
       const { data, error: uploadError } = await supabase.storage
@@ -155,9 +160,9 @@ export function ImageUploader({
               <p className="text-center text-sm text-gray-500 max-w-xs">
                 O hacé click para seleccionar un archivo desde tu computadora.
               </p>
-              <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-full">
+              <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
                 <AlertCircle className="w-4 h-4" />
-                Solo se permiten archivos PNG.
+                Formatos aceptados: PNG, JPG, WebP, GIF
               </div>
             </div>
           )}
