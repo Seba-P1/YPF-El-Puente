@@ -81,36 +81,36 @@ export function FullProductCard({
       whileInView="visible"
       viewport={{ once: true, margin: '50px' }}
       variants={containerVariants}
-      className={`relative flex flex-col items-center justify-end snap-center group pt-[175px] md:pt-[clamp(190px,15vw,260px)] pb-4 ${
+      className={`relative flex flex-col items-center justify-end snap-center group pb-4 ${
         isCarousel ? 'flex-shrink-0 w-[324px] md:w-[clamp(384px,21.6vw,480px)]' : 'w-full'
       }`}
     >
-      {/* 1. PRODUCT IMAGE (Outside the card, overlapping) */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center justify-center w-[min(92vw,562px)] h-[min(68vw,420px)] md:w-[clamp(562px,29.6vw,655px)] md:h-[clamp(396px,21.6vw,492px)] z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
-        {!imgError && producto.imagen_url ? (
-          <Image
-            src={producto.imagen_url}
-            alt={producto.nombre}
-            fill
-            sizes="(max-width: 768px) 92vw, 655px"
-            priority={index < 4}
-            className="object-contain drop-shadow-2xl"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <ProductImagePlaceholder categoriaSlug={producto.categoria_slug} nombre={producto.nombre} fill />
-        )}
-
-        {/* BADGE (Overlapping the image on top at z-20). Hidden for mundial variant. */}
-        {!isMundial && producto.badge && (
-          <div className="absolute top-[clamp(50px,5.5vw,85px)] right-4 md:right-8 bg-[#FFD100] text-black text-[9px] font-extrabold px-2.5 py-0.5 rounded-md uppercase tracking-wider z-20 shadow-md pointer-events-auto">
-            {producto.badge}
-          </div>
-        )}
-      </div>
-
       {/* 2. GLASS PRODUCT INFO CARD */}
-      <div className={`w-full ${cardFlex} backdrop-blur-md border rounded-3xl p-5 shadow-xl transition-all duration-300 pt-[68px] md:pt-[clamp(72px,5vw,104px)] ${cardMarginTop} min-h-[230px] md:min-h-[clamp(230px,14vw,280px)] relative z-0 ${glassCardBg}`}>
+      <div className={`w-full ${cardFlex} backdrop-blur-md border rounded-3xl p-5 shadow-xl transition-all duration-300 pt-4 md:pt-6 ${cardMarginTop} min-h-[230px] md:min-h-[clamp(230px,14vw,280px)] relative z-0 ${glassCardBg}`}>
+        {/* 1. PRODUCT IMAGE (Positioned relative to card top edge) */}
+        <div className="absolute bottom-[100%] left-1/2 -translate-x-1/2 flex items-center justify-center w-[min(92vw,562px)] h-[min(68vw,420px)] md:w-[clamp(562px,29.6vw,655px)] md:h-[clamp(396px,21.6vw,492px)] z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
+          {!imgError && producto.imagen_url ? (
+            <Image
+              src={producto.imagen_url}
+              alt={producto.nombre}
+              fill
+              sizes="(max-width: 768px) 92vw, 655px"
+              priority={index < 4}
+              className="object-contain drop-shadow-2xl"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <ProductImagePlaceholder categoriaSlug={producto.categoria_slug} nombre={producto.nombre} fill />
+          )}
+
+          {/* BADGE (Overlapping the image on top at z-20). Hidden for mundial variant. */}
+          {!isMundial && producto.badge && (
+            <div className="absolute top-[clamp(50px,5.5vw,85px)] right-4 md:right-8 bg-[#FFD100] text-black text-[9px] font-extrabold px-2.5 py-0.5 rounded-md uppercase tracking-wider z-20 shadow-md pointer-events-auto">
+              {producto.badge}
+            </div>
+          )}
+        </div>
+
         <div className="text-center w-full flex flex-col items-center flex-grow">
             <h3 className={`text-[13px] lg:text-[14px] font-bold text-center px-1 ${nameClass}`}>
               {producto.nombre}

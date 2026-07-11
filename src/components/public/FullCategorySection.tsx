@@ -154,7 +154,7 @@ export function FullCategorySection({
             className="flex-shrink-0 w-[85vw] max-w-[442px] md:max-w-[520px] flex flex-col justify-center snap-center mr-6 md:mr-12"
           >
             {/* Tag */}
-            <p className="font-[family-name:var(--font-caveat)] text-xl md:text-2xl text-white/55 mb-2 tracking-wide">
+            <p className="font-[family-name:var(--font-caveat)] text-2xl md:text-3xl text-white/55 font-bold mb-2 tracking-wide">
               {categoria?.nombre?.toLowerCase() ?? id}
             </p>
             {/* Title */}
@@ -174,9 +174,14 @@ export function FullCategorySection({
               </p>
             )}
             {/* Indicator */}
-            <div className="flex items-center gap-2 text-white/35 text-xs font-bold tracking-wider uppercase">
-              <span>Scrolleá para ver más</span>
-              <span>→</span>
+            <div className="flex items-center gap-2 text-white/35 text-sm font-bold tracking-wider uppercase">
+              <span className="font-[family-name:var(--font-caveat)] text-xl">Scrolleá para ver más</span>
+              <motion.span
+                animate={{ x: [0, 5, 0] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              >
+                →
+              </motion.span>
             </div>
           </motion.div>
 
