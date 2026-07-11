@@ -82,15 +82,15 @@ export function FullProductCard({
         isCarousel ? 'flex-shrink-0 w-[280px] md:w-[clamp(320px,18vw,400px)]' : 'w-full'
       }`}
     >
-      {/* Image container — increased height to h-[160px]/h-[190px] and shifted card overlap to mb-[-65px]/mb-[-85px] to lower card by 15px. Enlarged image and lowered it using bottom-[-55px]/bottom-[-75px]. */}
-      <div className="relative w-full h-[160px] md:h-[190px] flex items-end justify-center mb-[-65px] md:mb-[-85px]">
-        <div className="absolute bottom-[-55px] md:bottom-[-75px] w-[min(95vw,380px)] h-[min(90vw,360px)] md:w-[clamp(380px,25vw,460px)] md:h-[clamp(340px,22vw,420px)] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
+      {/* Image container — optimized size to prevent pixelation while maintaining proper overlap and spacing */}
+      <div className="relative w-full h-[150px] md:h-[170px] flex items-end justify-center mb-[-50px] md:mb-[-60px]">
+        <div className="absolute bottom-[-35px] md:bottom-[-45px] w-[240px] h-[220px] md:w-[280px] md:h-[260px] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
           {!imgError && producto.imagen_url ? (
             <Image
               src={producto.imagen_url.startsWith('http') ? producto.imagen_url : `${producto.imagen_url}?v=2`}
               alt={producto.nombre}
               fill
-              sizes="(max-width: 768px) 380px, 460px"
+              sizes="(max-width: 768px) 240px, 280px"
               quality={100}
               priority={index < 4}
               className="object-contain drop-shadow-2xl"
@@ -111,7 +111,7 @@ export function FullProductCard({
       </div>
 
       {/* Glass product info card */}
-      <div className={`w-full flex flex-col items-center justify-between backdrop-blur-md border rounded-3xl px-4 pt-[48px] pb-4 shadow-xl transition-all duration-300 mt-[65px] md:mt-[85px] min-h-[160px] md:min-h-[clamp(160px,10vw,200px)] ${glassCardBg}`}>
+      <div className={`w-full flex flex-col items-center justify-between backdrop-blur-md border rounded-3xl px-4 pt-[40px] pb-4 shadow-xl transition-all duration-300 mt-[50px] md:mt-[60px] min-h-[150px] md:min-h-[170px] ${glassCardBg}`}>
         <div className="text-center w-full flex flex-col items-center flex-grow">
           <h3 className={`text-[13px] lg:text-[14px] font-bold text-center px-1 ${nameClass}`}>
             {producto.nombre}
