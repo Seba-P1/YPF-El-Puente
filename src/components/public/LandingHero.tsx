@@ -111,32 +111,38 @@ export function LandingHero() {
 
         {/* 2. Brand Identity Block */}
         <motion.div variants={itemVariants} className="flex flex-col items-center mb-6">
-          <div className="flex items-center gap-2 mb-2">
+          <h1
+            style={{
+              fontFamily: 'var(--font-din-medium), sans-serif',
+              textTransform: 'uppercase',
+              textAlign: 'center',
+            }}
+          >
             <span
               style={{
-                fontFamily: 'var(--font-din-medium), sans-serif',
+                display: 'block',
                 fontSize: 16,
                 fontWeight: 900,
                 letterSpacing: '0.45em',
                 color: '#FFD100',
                 textShadow: '0 2px 10px rgba(255,209,0,0.2)',
+                marginBottom: 8,
               }}
             >
               YPF
             </span>
-          </div>
-          <h1
-            style={{
-              fontFamily: 'var(--font-din-medium), sans-serif',
-              fontSize: 'clamp(38px, 6.5vw, 76px)',
-              fontWeight: 900,
-              color: '#FFFFFF',
-              letterSpacing: '-0.02em',
-              lineHeight: 0.98,
-              textTransform: 'uppercase',
-            }}
-          >
-            EL PUENTE
+            <span
+              style={{
+                display: 'block',
+                fontSize: 'clamp(38px, 6.5vw, 76px)',
+                fontWeight: 900,
+                color: '#FFFFFF',
+                letterSpacing: '-0.02em',
+                lineHeight: 0.98,
+              }}
+            >
+              EL PUENTE
+            </span>
           </h1>
         </motion.div>
 

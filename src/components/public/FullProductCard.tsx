@@ -91,10 +91,10 @@ export function FullProductCard({
               alt={producto.nombre}
               fill
               sizes="(max-width: 768px) 380px, 460px"
-              quality={95}
+              quality={100}
               priority={index < 4}
               className="object-contain drop-shadow-2xl"
-              unoptimized={!producto.imagen_url.startsWith('http')}
+              unoptimized={true}
               onError={() => setImgError(true)}
             />
           ) : (

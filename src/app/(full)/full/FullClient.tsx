@@ -515,7 +515,7 @@ export default function FullClient({
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
             className="min-h-screen py-[60px]"
-            style={{ background: 'var(--bg-base)' }}
+            style={{ background: '#000000' }}
           >
             <div className="mx-auto" style={{ maxWidth: 'var(--page-max, 1280px)', padding: '0 var(--page-pad-x, 24px)' }}>
               <h2 className="text-[22px] font-bold text-white">
