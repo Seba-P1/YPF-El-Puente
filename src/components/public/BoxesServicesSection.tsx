@@ -114,52 +114,45 @@ export function BoxesServicesSection({ servicios }: BoxesServicesSectionProps) {
             Rapidez, confianza y tecnología YPF.
           </p>
 
-          {/* Services list */}
-          <div style={{ marginTop: 28 }}>
-            {servicios.map((s, i) => {
-              const IconComponent = ICON_MAP[s.icono_slug] ?? ICON_MAP.Car
-              return (
-                <div
-                  key={s.id}
-                  className="group/item"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 14,
-                    padding: '14px 0',
-                    borderBottom: i < servicios.length - 1 ? '1px solid var(--border)' : 'none',
-                    transition: 'opacity 0.2s ease',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 40,
-                      height: 40,
-                      background: 'rgba(0,90,156,0.15)',
-                      border: '1px solid rgba(0,90,156,0.25)',
-                      borderRadius: 10,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <IconComponent style={{ width: 18, height: 18, color: 'var(--ypf-blue-bright)' }} />
-                  </div>
-                  <span
-                    style={{
-                      fontSize: 15,
-                      fontWeight: 700,
-                      fontFamily: 'var(--font-din-medium), sans-serif',
-                      color: 'var(--text-primary)',
-                      letterSpacing: '-0.01em',
-                    }}
-                  >
-                    {s.nombre}
-                  </span>
-                </div>
-              )
-            })}
+          {/* Construction notice banner */}
+          <div
+            style={{
+              marginTop: 32,
+              padding: '24px 28px',
+              background: 'linear-gradient(135deg, rgba(255,209,0,0.06) 0%, rgba(255,209,0,0.02) 100%)',
+              border: '1px dashed rgba(255,209,0,0.3)',
+              borderRadius: 16,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18 }}>⚠️</span>
+              <span
+                style={{
+                  fontSize: 15,
+                  fontWeight: 900,
+                  fontFamily: 'var(--font-din-medium), sans-serif',
+                  color: '#FFD100',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Sitio en Construcción
+              </span>
+            </div>
+            <p
+              style={{
+                fontSize: 14,
+                color: 'rgba(255,255,255,0.7)',
+                lineHeight: 1.6,
+                fontWeight: 500,
+              }}
+            >
+              Pronto la mejor atención. Estamos terminando el desarrollo de la sección de Boxes de lubricación y mantenimiento rápido.
+            </p>
           </div>
         </motion.div>
 

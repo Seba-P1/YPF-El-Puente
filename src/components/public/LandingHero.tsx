@@ -202,7 +202,7 @@ export function LandingHero() {
             }}
             className="hover:shadow-[0_8px_32px_rgba(0,112,192,0.5)] hover:scale-[1.02] active:scale-95 sm:w-auto"
           >
-            Acceder al Catálogo Full
+            FULL
           </Link>
           <a
             href="#combustibles"

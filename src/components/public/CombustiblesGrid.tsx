@@ -157,6 +157,9 @@ function CombustibleCard({
 }) {
   const isDiesel = combustible.nombre.toLowerCase().includes('diesel') || combustible.nombre.toLowerCase().includes('d5')
   const isInfinia = combustible.nombre.toLowerCase().includes('infinia')
+  
+  // Clean name dynamically: e.g. "Nafta Super" -> "Super"
+  const displayNombre = combustible.nombre.replace(/Nafta\s+/gi, '')
 
   // Generate a customized glow color based on the actual brand fuel color
   const glowShadow = `0 12px 36px rgba(${
@@ -274,7 +277,7 @@ function CombustibleCard({
           zIndex: 1,
         }}
       >
-        {combustible.nombre}
+        {displayNombre}
       </h3>
 
       {/* Octanaje badge */}
