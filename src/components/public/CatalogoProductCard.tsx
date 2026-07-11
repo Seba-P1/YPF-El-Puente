@@ -24,22 +24,24 @@ export function CatalogoProductCard({ producto }: CatalogoProductCardProps) {
   return (
     <div
       style={{
-        background: '#111827',
-        border: '1px solid rgba(255,255,255,0.07)',
-        borderRadius: 14,
+        background: 'linear-gradient(145deg, rgba(17,24,39,0.95) 0%, rgba(13,17,32,0.98) 100%)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: 16,
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'border-color 0.2s, transform 0.2s',
+        transition: 'border-color 0.3s, transform 0.25s, box-shadow 0.3s',
+        position: 'relative',
       }}
-      className="hover:border-white/15 hover:scale-[1.02] group"
+      className="hover:border-white/15 hover:scale-[1.03] hover:shadow-[0_8px_32px_rgba(0,90,156,0.15)] group"
     >
-      {/* Square image */}
+      {/* Image area */}
       <div
         style={{
           aspectRatio: '1/1',
           position: 'relative',
-          background: '#0D1120',
+          background: 'radial-gradient(circle at 50% 60%, rgba(255,209,0,0.03) 0%, rgba(13,17,32,1) 70%)',
+          overflow: 'hidden',
         }}
       >
         {producto.imagen_url ? (
@@ -48,7 +50,9 @@ export function CatalogoProductCard({ producto }: CatalogoProductCardProps) {
             alt={producto.nombre}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
-            style={{ objectFit: 'cover' }}
+            quality={95}
+            style={{ objectFit: 'cover', transition: 'transform 0.4s ease' }}
+            className="group-hover:scale-110"
           />
         ) : (
           <ProductImagePlaceholder
@@ -57,29 +61,47 @@ export function CatalogoProductCard({ producto }: CatalogoProductCardProps) {
             fill
           />
         )}
+
+        {/* Sin TACC badge */}
         {producto.es_sin_tacc && (
           <span
             style={{
               position: 'absolute',
               top: 8,
               left: 8,
-              background: 'rgba(34,197,94,0.9)',
+              background: 'linear-gradient(135deg, rgba(34,197,94,0.95) 0%, rgba(22,163,74,0.95) 100%)',
               color: 'white',
-              fontSize: 10,
-              fontWeight: 700,
-              padding: '2px 8px',
+              fontSize: 9,
+              fontWeight: 800,
+              padding: '3px 8px',
               borderRadius: 6,
+              letterSpacing: '0.05em',
+              backdropFilter: 'blur(4px)',
+              boxShadow: '0 2px 8px rgba(34,197,94,0.3)',
             }}
           >
             SIN TACC
           </span>
         )}
+
+        {/* Bottom gradient fade for seamless transition */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '40%',
+            background: 'linear-gradient(to top, rgba(13,17,32,0.9) 0%, transparent 100%)',
+            pointerEvents: 'none',
+          }}
+        />
       </div>
 
-      {/* Info */}
+      {/* Info section */}
       <div
         style={{
-          padding: 12,
+          padding: '10px 12px 12px',
           display: 'flex',
           flexDirection: 'column',
           gap: 6,
@@ -88,14 +110,16 @@ export function CatalogoProductCard({ producto }: CatalogoProductCardProps) {
       >
         <p
           style={{
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: 600,
-            color: 'rgba(255,255,255,0.9)',
+            color: 'rgba(255,255,255,0.88)',
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
-            minHeight: 34,
+            minHeight: 32,
+            lineHeight: '1.35',
+            letterSpacing: '-0.01em',
           }}
         >
           {producto.nombre}
@@ -108,26 +132,34 @@ export function CatalogoProductCard({ producto }: CatalogoProductCardProps) {
             marginTop: 'auto',
           }}
         >
-          <span style={{ fontSize: 14, fontWeight: 800, color: '#FFD100' }}>
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 800,
+              color: '#FFD100',
+              letterSpacing: '-0.02em',
+            }}
+          >
             {formatearPrecioARS(producto.precio)}
           </span>
           <button
             onClick={handleAdd}
             style={{
-              width: 28,
-              height: 28,
-              borderRadius: 8,
-              background: 'rgba(0,90,156,0.85)',
-              border: 'none',
+              width: 30,
+              height: 30,
+              borderRadius: 10,
+              background: 'linear-gradient(135deg, rgba(0,90,156,0.9) 0%, rgba(0,112,192,0.9) 100%)',
+              border: '1px solid rgba(255,255,255,0.1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              transition: 'background 0.15s',
+              transition: 'all 0.2s',
+              boxShadow: '0 2px 8px rgba(0,90,156,0.25)',
             }}
-            className="hover:!bg-[#0070C0]"
+            className="hover:!bg-[#0070C0] hover:shadow-[0_4px_16px_rgba(0,112,192,0.4)] active:scale-90"
           >
-            <Plus size={16} color="white" />
+            <Plus size={15} color="white" />
           </button>
         </div>
       </div>

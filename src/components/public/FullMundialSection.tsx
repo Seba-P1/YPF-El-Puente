@@ -70,7 +70,7 @@ const MUNDIAL_PRODUCTS: Producto[] = [
     descripcion: 'Edición Mundialista. Alfajor con doble cobertura de chocolate blanco y abundante dulce de leche.',
     categoria_slug: 'mundial',
     precio: 1800,
-    imagen_url: '/assets/ypf imagenes/full_mundial/mundial-alfajor-blanco.webp',
+    imagen_url: '/assets/ypf imagenes/full_mundial/mundial-alfajor-blanco.webp?v=2',
     imagen_path: null,
     disponible: true,
     destacado: true,

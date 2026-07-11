@@ -87,73 +87,116 @@ function getCategoryGlow(categoriaSlug: string): string {
   }
 }
 
-/** Maps product name keywords to 3D icon filenames */
-function get3DIcon(categoriaSlug: string, nombre: string): string {
+/**
+ * Noto Emoji CDN base URL (Apache 2.0 license, free for commercial use).
+ * Format: https://cdn.jsdelivr.net/npm/@svgmoji/noto@0.2.0/svg/{UNICODE_HEX}.svg
+ */
+const NOTO = 'https://cdn.jsdelivr.net/npm/@svgmoji/noto@0.2.0/svg'
+
+/** Maps product name keywords → Noto Emoji SVG. Priority order: first match wins. */
+const KEYWORD_ICON_RULES: Array<{ keywords: string[]; icon: string }> = [
+  // ── EMPANADAS ──
+  { keywords: ['empanada'], icon: `${NOTO}/1F95F.svg` },          // 🥟 dumpling
+
+  // ── WRAPS / BURRITOS / CREPES / FAJITAS ──
+  { keywords: ['wrap', 'burrito', 'crepe', 'crêpe', 'fajita'], icon: `${NOTO}/1F32F.svg` }, // 🌯 burrito/wrap
+
+  // ── TARTAS / QUICHES ──
+  { keywords: ['tarta', 'quiche', 'pastel', 'pie'], icon: `${NOTO}/1F967.svg` }, // 🥧 pie
+
+  // ── PIZZA / PIZZETAS ──
+  { keywords: ['pizza', 'pizzeta', 'muzzarella'], icon: `${NOTO}/1F355.svg` }, // 🍕 pizza
+
+  // ── HAMBURGUESAS ──
+  { keywords: ['hamburguesa', 'burger', 'smash'], icon: `${NOTO}/1F354.svg` },  // 🍔 hamburger
+
+  // ── SANDWICHES / TOSTADOS ──
+  { keywords: ['sandwich', 'sándwich', 'tostado', 'tostada', 'bagel', 'ciabatta'], icon: `${NOTO}/1F96A.svg` },  // 🥪 sandwich
+  { keywords: ['pancho', 'hot dog'], icon: `${NOTO}/1F32D.svg` }, // 🌭 hot dog
+
+  // ── WOK / COMIDA ASIATICA ──
+  { keywords: ['wok', 'stir fry', 'noodle', 'fideos', 'pasta'], icon: `${NOTO}/1F35C.svg` },   // 🍜 steaming bowl
+
+  // ── MILANESAS / SUPREMAS / CARNES ──
+  { keywords: ['milanesa', 'suprema', 'schnitzel', 'carne', 'bife', 'lomo', 'peceto', 'pollo', 'chicken', 'pata muslo'], icon: `${NOTO}/1F969.svg` }, // 🥩 cut of meat
+
+  // ── PAPAS FRITAS ──
+  { keywords: ['papas', 'frita'], icon: `${NOTO}/1F35F.svg` },  // 🍟 french fries
+
+  // ── ENSALADAS ──
+  { keywords: ['ensalada', 'salad', 'bowl verde'], icon: `${NOTO}/1F957.svg` }, // 🥗 green salad
+
+  // ── PLATOS CALIENTES / GUISOS ──
+  { keywords: ['guiso', 'estofado', 'locro', 'plato'], icon: `${NOTO}/1F372.svg` }, // 🍲 pot of food
+
+  // ── TACOS ──
+  { keywords: ['taco', 'nacho'], icon: `${NOTO}/1F32E.svg` }, // 🌮 taco
+
+  // ── ARROZ ──
+  { keywords: ['arroz', 'rice'], icon: `${NOTO}/1F35A.svg` }, // 🍚 cooked rice
+
+  // ── HUEVOS ──
+  { keywords: ['huevo', 'omelette', 'revuelto'], icon: `${NOTO}/1F373.svg` }, // 🍳 cooking/egg
+
+  // ── CAFÉ / BEBIDAS CALIENTES ──
+  { keywords: ['cafe', 'café', 'cappuccino', 'cortado', 'latte', 'espresso', 'capi', 'mocca', 'flat white', 'pocillo', 'tazón', 'submarino'], icon: `${NOTO}/2615.svg` }, // ☕ hot beverage
+  { keywords: ['te ', 'té ', 'infusion', 'infusión', 'mate cocido'], icon: `${NOTO}/1FAD6.svg` }, // 🫖 teapot
+  { keywords: ['chocolate caliente'], icon: `${NOTO}/2615.svg` }, // ☕ hot beverage
+
+  // ── FRAPPES / LICUADOS / SMOOTHIES ──
+  { keywords: ['frappe', 'frappé', 'licuado', 'smoothie', 'batido', 'milkshake'], icon: `${NOTO}/1F964.svg` }, // 🥤 cup with straw
+
+  // ── JUGOS / EXPRIMIDOS ──
+  { keywords: ['jugo', 'exprimido', 'naranja', 'limonada'], icon: `${NOTO}/1F9C3.svg` }, // 🧃 beverage box
+
+  // ── GASEOSAS / BEBIDAS FRIAS ──
+  { keywords: ['gaseosa', 'coca', 'pepsi', 'sprite', 'fanta', 'seven up', 'aquarius', 'agua'], icon: `${NOTO}/1F964.svg` }, // 🥤 cup with straw
+
+  // ── PANADERÍA / FACTURAS ──
+  { keywords: ['medialuna', 'croissant', 'factura'], icon: `${NOTO}/1F950.svg` }, // 🥐 croissant
+  { keywords: ['pan ', 'baguette', 'focaccia', 'chipá', 'chipa', 'muffin', 'cupcake', 'magdalena'], icon: `${NOTO}/1F956.svg` },       // 🥖 baguette
+  { keywords: ['dona', 'donut', 'rosquilla'], icon: `${NOTO}/1F369.svg` },         // 🍩 doughnut
+  { keywords: ['torta', 'cake', 'cheesecake', 'brownie', 'budín', 'budin'], icon: `${NOTO}/1F370.svg` }, // 🍰 shortcake
+  { keywords: ['galleta', 'galletita', 'cookie', 'cuadradito'], icon: `${NOTO}/1F36A.svg` }, // 🍪 cookie
+
+  // ── ALFAJORES / CHOCOLATE / SNACKS ──
+  { keywords: ['alfajor', 'chocolate', 'barra', 'snack', 'mix energetico', 'mix clasico', 'bocadito'], icon: `${NOTO}/1F36B.svg` }, // 🍫 chocolate bar
+  { keywords: ['caramelo', 'gomita', 'chupetin'], icon: `${NOTO}/1F36C.svg` },         // 🍬 candy
+
+  // ── HELADOS ──
+  { keywords: ['helado', 'ice cream', 'paleta'], icon: `${NOTO}/1F368.svg` },  // 🍨 ice cream
+
+  // ── COMBOS (must be LAST — it's generic) ──
+  { keywords: ['combo'], icon: `${NOTO}/1F371.svg` }, // 🍱 bento box
+]
+
+/** Category-based fallback icons when no keyword matches */
+const CATEGORY_FALLBACK_ICONS: Record<string, string> = {
+  cafeteria: `${NOTO}/2615.svg`,           // ☕
+  panaderia: `${NOTO}/1F950.svg`,          // 🥐
+  comidas_calientes: `${NOTO}/1F372.svg`,  // 🍲
+  comidas_frias: `${NOTO}/1F957.svg`,      // 🥗
+  marca_full: `${NOTO}/1F36B.svg`,         // 🍫
+  combos: `${NOTO}/1F371.svg`,             // 🍱
+  sin_tacc: `${NOTO}/1F957.svg`,           // 🥗
+  sin_categoria: `${NOTO}/1F37D.svg`,      // 🍽️ fork and knife with plate
+}
+
+const DEFAULT_ICON = `${NOTO}/1F37D.svg`   // 🍽️ fork and knife with plate
+
+/** Smart keyword-first icon resolver */
+function getEmojiIcon(categoriaSlug: string, nombre: string): string {
   const nameLower = nombre.toLowerCase().trim()
 
-  // Keyword-based matching
-  if (
-    nameLower.includes('cafe') ||
-    nameLower.includes('cappuccino') ||
-    nameLower.includes('cortado') ||
-    nameLower.includes('latte') ||
-    nameLower.includes('espresso') ||
-    nameLower.includes('capi')
-  ) {
-    return '/assets/3d-icons/hot-beverage.png'
+  // Priority scan: first matching rule wins
+  for (const rule of KEYWORD_ICON_RULES) {
+    if (rule.keywords.some((kw) => nameLower.includes(kw))) {
+      return rule.icon
+    }
   }
 
-  if (
-    nameLower.includes('medialuna') ||
-    nameLower.includes('croissant') ||
-    nameLower.includes('factura')
-  ) {
-    return '/assets/3d-icons/croissant.png'
-  }
-
-  if (nameLower.includes('dona') || nameLower.includes('donut')) {
-    return '/assets/3d-icons/doughnut.png'
-  }
-
-  if (nameLower.includes('hamburguesa') || nameLower.includes('burger')) {
-    return '/assets/3d-icons/hamburger.png'
-  }
-
-  if (
-    nameLower.includes('licuado') ||
-    nameLower.includes('exprimido') ||
-    nameLower.includes('jugo') ||
-    nameLower.includes('gaseosa') ||
-    nameLower.includes('bebida')
-  ) {
-    return '/assets/3d-icons/cup-with-straw.png'
-  }
-
-  if (nameLower.includes('alfajor') || nameLower.includes('chocolate')) {
-    return '/assets/3d-icons/chocolate-bar.png'
-  }
-
-  if (nameLower.includes('pizza') || nameLower.includes('pizzeta')) {
-    return '/assets/3d-icons/pizza.png'
-  }
-
-  // Category-based fallback
-  switch (categoriaSlug) {
-    case 'cafeteria':
-      return '/assets/3d-icons/hot-beverage.png'
-    case 'panaderia':
-      return '/assets/3d-icons/croissant.png'
-    case 'comidas_calientes':
-      return '/assets/3d-icons/hamburger.png'
-    case 'comidas_frias':
-      return '/assets/3d-icons/cup-with-straw.png'
-    case 'marca_full':
-      return '/assets/3d-icons/chocolate-bar.png'
-    case 'combos':
-      return '/assets/3d-icons/doughnut.png'
-    default:
-      return '/assets/3d-icons/hot-beverage.png'
-  }
+  // Category fallback
+  return CATEGORY_FALLBACK_ICONS[categoriaSlug] ?? DEFAULT_ICON
 }
 
 export function ProductImagePlaceholder({
@@ -182,37 +225,16 @@ export function ProductImagePlaceholder({
           alt={nombre}
           fill
           sizes={fill ? '(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw' : `${size}px`}
+          quality={95}
           style={{ objectFit: 'cover' }}
         />
       </div>
     )
   }
 
-  // Level 2: premium glassmorphism 3D icon fallback
-  const iconSrc = get3DIcon(categoriaSlug, nombre)
+  // Level 2: Noto Emoji SVG icon fallback
+  const iconSrc = getEmojiIcon(categoriaSlug, nombre)
   const glowColor = getCategoryGlow(categoriaSlug)
-
-  const cardStyle: React.CSSProperties = {
-    background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    position: 'relative' as const,
-  }
-
-  const iconContainerStyle: React.CSSProperties = {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: `0 12px 40px -8px ${glowColor}, 0 4px 12px rgba(0,0,0,0.3)`,
-    borderRadius: '50%',
-    background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%)',
-  }
 
   // Fill mode: used in FullProductCard (overlapping cover layout)
   if (fill) {
@@ -229,89 +251,48 @@ export function ProductImagePlaceholder({
           background: 'transparent',
         }}
       >
-        <div
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={iconSrc}
+          alt={nombre || categoriaSlug}
           style={{
-            ...cardStyle,
-            width: 'clamp(140px, 18vw, 200px)',
-            height: 'clamp(140px, 18vw, 200px)',
-            borderRadius: 24,
+            width: 'clamp(60px, 8vw, 100px)',
+            height: 'clamp(60px, 8vw, 100px)',
+            objectFit: 'contain',
+            filter: `drop-shadow(0 8px 24px ${glowColor}) drop-shadow(0 2px 8px rgba(0,0,0,0.3))`,
           }}
-        >
-          {/* Subtle top highlight */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '40%',
-              background: 'linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 100%)',
-              borderRadius: '24px 24px 0 0',
-              pointerEvents: 'none',
-            }}
-          />
-          <div
-            style={{
-              ...iconContainerStyle,
-              width: 'clamp(64px, 8vw, 96px)',
-              height: 'clamp(64px, 8vw, 96px)',
-              padding: '12%',
-            }}
-          >
-            <Image
-              src={iconSrc}
-              alt={nombre || categoriaSlug}
-              fill
-              sizes="clamp(64px, 8vw, 96px)"
-              style={{ objectFit: 'contain' }}
-            />
-          </div>
-        </div>
+        />
       </div>
     )
   }
 
   // Fixed size mode: used in CatalogoProductCard (square grid)
-  const iconSize = Math.round(size * 0.55)
+  const iconSize = Math.round(size * 0.38)
 
   return (
     <div
       style={{
-        ...cardStyle,
         width: size,
         height: size,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
         borderRadius: 20,
+        position: 'relative',
       }}
     >
-      {/* Subtle top highlight */}
-      <div
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={iconSrc}
+        alt={nombre || categoriaSlug}
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '40%',
-          background: 'linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 100%)',
-          borderRadius: '20px 20px 0 0',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        style={{
-          ...iconContainerStyle,
           width: iconSize,
           height: iconSize,
-          padding: '10%',
+          objectFit: 'contain',
+          filter: `drop-shadow(0 6px 16px ${glowColor}) drop-shadow(0 2px 6px rgba(0,0,0,0.2))`,
         }}
-      >
-        <Image
-          src={iconSrc}
-          alt={nombre || categoriaSlug}
-          fill
-          sizes={`${iconSize}px`}
-          style={{ objectFit: 'contain' }}
-        />
-      </div>
+      />
     </div>
   )
 }

@@ -36,13 +36,13 @@ export function CatalogoFiltros({
         position: 'sticky',
         top: isCompact ? 54 : 68,
         zIndex: 30,
-        backdropFilter: 'none',
-        WebkitBackdropFilter: 'none',
-        background: 'transparent',
-        borderBottom: 'none',
+        backdropFilter: 'blur(16px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+        background: 'rgba(6,8,15,0.75)',
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
         transform: visible ? 'translateY(0)' : 'translateY(-220px)',
         transition: 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), top 0.3s, padding 0.3s',
-        padding: isCompact ? '6px 0' : '12px 0',
+        padding: isCompact ? '8px 0' : '12px 0',
       }}
     >
       <div
@@ -52,7 +52,7 @@ export function CatalogoFiltros({
           padding: '0 var(--page-pad-x, 24px)',
           display: 'flex',
           flexDirection: 'column',
-          gap: isCompact ? 6 : 10,
+          gap: isCompact ? 8 : 10,
         }}
       >
         {/* Search input */}
@@ -60,17 +60,18 @@ export function CatalogoFiltros({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 8,
-            background: 'rgba(26,29,39,0.7)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.12)',
+            gap: 10,
+            background: 'linear-gradient(135deg, rgba(26,29,39,0.8) 0%, rgba(20,23,33,0.9) 100%)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 9999,
-            padding: isCompact ? '0 12px' : '0 14px',
-            height: isCompact ? 34 : 38,
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
-            transition: 'height 0.2s, padding 0.2s',
+            padding: isCompact ? '0 14px' : '0 16px',
+            height: isCompact ? 36 : 40,
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.04)',
+            transition: 'height 0.2s, padding 0.2s, border-color 0.2s',
           }}
+          className="focus-within:border-[rgba(255,209,0,0.3)]"
         >
           <Search size={isCompact ? 14 : 16} color="rgba(255,255,255,0.3)" style={{ flexShrink: 0 }} />
           <input
@@ -85,8 +86,31 @@ export function CatalogoFiltros({
               color: 'white',
               fontSize: isCompact ? 12 : 13,
               outline: 'none',
+              letterSpacing: '0.01em',
             }}
           />
+          {busqueda && (
+            <button
+              onClick={() => onBusqueda('')}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                color: 'rgba(255,255,255,0.5)',
+                fontSize: 12,
+                cursor: 'pointer',
+                width: 20,
+                height: 20,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                transition: 'background 0.15s',
+              }}
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Category pills + Sin TACC toggle */}
@@ -112,64 +136,66 @@ export function CatalogoFiltros({
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 3,
-                  padding: isCompact ? '4px 10px' : '5px 12px',
+                  gap: 4,
+                  padding: isCompact ? '5px 12px' : '6px 14px',
                   borderRadius: 9999,
                   fontSize: isCompact ? 11 : 12,
-                  fontWeight: 600,
+                  fontWeight: isActive ? 700 : 600,
                   whiteSpace: 'nowrap',
                   cursor: 'pointer',
-                  transition: 'all 0.15s',
+                  transition: 'all 0.2s ease',
                   background: isActive
-                    ? 'rgba(255,209,0,0.22)'
-                    : 'rgba(26,29,39,0.7)',
+                    ? 'linear-gradient(135deg, rgba(255,209,0,0.2) 0%, rgba(255,165,0,0.15) 100%)'
+                    : 'rgba(26,29,39,0.6)',
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
-                  color: isActive ? '#FFD100' : 'rgba(255,255,255,0.7)',
+                  color: isActive ? '#FFD100' : 'rgba(255,255,255,0.65)',
                   border: isActive
-                    ? '1px solid rgba(255,209,0,0.45)'
-                    : '1px solid rgba(255,255,255,0.12)',
+                    ? '1px solid rgba(255,209,0,0.4)'
+                    : '1px solid rgba(255,255,255,0.08)',
                   boxShadow: isActive
-                    ? '0 4px 10px rgba(255,209,0,0.15), 0 2px 4px rgba(0,0,0,0.3)'
-                    : '0 4px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+                    ? '0 4px 12px rgba(255,209,0,0.12), inset 0 1px 0 rgba(255,255,255,0.08)'
+                    : '0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)',
                 }}
               >
-                {emoji && <span style={{ fontSize: isCompact ? 10 : 12 }}>{emoji}</span>}
+                {emoji && <span style={{ fontSize: isCompact ? 11 : 13 }}>{emoji}</span>}
                 {label}
               </button>
             )
           })}
 
+          {/* Divider */}
+          <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.06)', flexShrink: 0, marginLeft: 4, marginRight: 4 }} />
+
           {/* Sin TACC toggle */}
-          <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.08)', flexShrink: 0, marginLeft: 2, marginRight: 2 }} />
           <button
             onClick={() => onCategoria(categoriaActiva === 'sin_tacc' ? 'todos' : 'sin_tacc')}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 4,
-              padding: isCompact ? '4px 10px' : '5px 12px',
+              gap: 5,
+              padding: isCompact ? '5px 12px' : '6px 14px',
               borderRadius: 9999,
               fontSize: isCompact ? 11 : 12,
-              fontWeight: 600,
+              fontWeight: categoriaActiva === 'sin_tacc' ? 700 : 600,
               whiteSpace: 'nowrap',
               cursor: 'pointer',
-              transition: 'all 0.15s',
+              transition: 'all 0.2s ease',
               background: categoriaActiva === 'sin_tacc'
-                ? 'rgba(255,209,0,0.22)'
-                : 'rgba(26,29,39,0.7)',
+                ? 'linear-gradient(135deg, rgba(34,197,94,0.2) 0%, rgba(22,163,74,0.15) 100%)'
+                : 'rgba(26,29,39,0.6)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
-              color: categoriaActiva === 'sin_tacc' ? '#FFD100' : 'rgba(255,255,255,0.7)',
+              color: categoriaActiva === 'sin_tacc' ? '#22c55e' : 'rgba(255,255,255,0.65)',
               border: categoriaActiva === 'sin_tacc'
-                ? '1px solid rgba(255,209,0,0.45)'
-                : '1px solid rgba(255,255,255,0.12)',
+                ? '1px solid rgba(34,197,94,0.4)'
+                : '1px solid rgba(255,255,255,0.08)',
               boxShadow: categoriaActiva === 'sin_tacc'
-                ? '0 4px 10px rgba(255,209,0,0.15), 0 2px 4px rgba(0,0,0,0.3)'
-                : '0 4px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+                ? '0 4px 12px rgba(34,197,94,0.12), inset 0 1px 0 rgba(255,255,255,0.08)'
+                : '0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)',
             }}
           >
-            <Wheat size={isCompact ? 11 : 13} />
+            <Wheat size={isCompact ? 12 : 14} />
             Sin TACC
           </button>
         </div>

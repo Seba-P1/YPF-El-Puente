@@ -79,20 +79,22 @@ export function FullProductCard({
       viewport={{ once: true, margin: '50px' }}
       variants={containerVariants}
       className={`flex flex-col items-center snap-center group pb-4 ${
-        isCarousel ? 'flex-shrink-0 w-[324px] md:w-[clamp(384px,21.6vw,480px)]' : 'w-full'
+        isCarousel ? 'flex-shrink-0 w-[280px] md:w-[clamp(320px,18vw,400px)]' : 'w-full'
       }`}
     >
-      {/* Image container — fixed height, aligned to bottom, overlaps card via negative margin */}
-      <div className="relative w-full h-[200px] md:h-[240px] flex items-end justify-center mb-[-40px]">
-        <div className="relative w-[min(92vw,280px)] h-[min(68vw,210px)] md:w-[clamp(280px,15vw,320px)] md:h-[clamp(198px,11vw,240px)] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2">
+      {/* Image container — increased height to h-[160px]/h-[190px] and shifted card overlap to mb-[-65px]/mb-[-85px] to lower card by 15px. Enlarged image and lowered it using bottom-[-55px]/bottom-[-75px]. */}
+      <div className="relative w-full h-[160px] md:h-[190px] flex items-end justify-center mb-[-65px] md:mb-[-85px]">
+        <div className="absolute bottom-[-55px] md:bottom-[-75px] w-[min(95vw,380px)] h-[min(90vw,360px)] md:w-[clamp(380px,25vw,460px)] md:h-[clamp(340px,22vw,420px)] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
           {!imgError && producto.imagen_url ? (
             <Image
-              src={producto.imagen_url}
+              src={producto.imagen_url.startsWith('http') ? producto.imagen_url : `${producto.imagen_url}?v=2`}
               alt={producto.nombre}
               fill
-              sizes="(max-width: 768px) 92vw, 320px"
+              sizes="(max-width: 768px) 380px, 460px"
+              quality={95}
               priority={index < 4}
               className="object-contain drop-shadow-2xl"
+              unoptimized={!producto.imagen_url.startsWith('http')}
               onError={() => setImgError(true)}
             />
           ) : (
@@ -109,7 +111,7 @@ export function FullProductCard({
       </div>
 
       {/* Glass product info card */}
-      <div className={`w-full flex flex-col items-center justify-between backdrop-blur-md border rounded-3xl p-5 shadow-xl transition-all duration-300 mt-[40px] min-h-[230px] md:min-h-[clamp(230px,14vw,280px)] ${glassCardBg}`}>
+      <div className={`w-full flex flex-col items-center justify-between backdrop-blur-md border rounded-3xl px-4 pt-[48px] pb-4 shadow-xl transition-all duration-300 mt-[65px] md:mt-[85px] min-h-[160px] md:min-h-[clamp(160px,10vw,200px)] ${glassCardBg}`}>
         <div className="text-center w-full flex flex-col items-center flex-grow">
           <h3 className={`text-[13px] lg:text-[14px] font-bold text-center px-1 ${nameClass}`}>
             {producto.nombre}

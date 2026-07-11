@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react'
 import { CatalogoFiltros } from '@/components/public/CatalogoFiltros'
 import { CatalogoProductCard } from '@/components/public/CatalogoProductCard'
 
@@ -111,38 +111,65 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
         background: '#06080F',
         color: 'white',
         minHeight: '100vh',
+        position: 'relative',
       }}
     >
-      {/* Header - Made significantly smaller and more proportionate */}
+      {/* Subtle ambient glow */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '60vw',
+          height: '40vh',
+          background: 'radial-gradient(ellipse at center, rgba(0,90,156,0.06) 0%, transparent 70%)',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+
+      {/* Header */}
       <header
         style={{
-          paddingTop: 'calc(68px + 16px)',
-          paddingBottom: 12,
+          paddingTop: 'calc(68px + 20px)',
+          paddingBottom: 16,
           textAlign: 'center',
+          position: 'relative',
+          zIndex: 1,
         }}
         className="px-4"
       >
-        <motion.h1
-          initial={{ opacity: 0, y: 10 }}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          style={{
-            fontSize: 'clamp(20px, 3.5vw, 30px)',
-            fontWeight: 900,
-            letterSpacing: '-0.02em',
-            color: 'white',
-          }}
+          transition={{ duration: 0.6 }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
         >
-          Menú Completo
-        </motion.h1>
+          <Sparkles size={18} color="#FFD100" style={{ opacity: 0.6 }} />
+          <h1
+            style={{
+              fontSize: 'clamp(22px, 3.5vw, 32px)',
+              fontWeight: 900,
+              letterSpacing: '-0.03em',
+              background: 'linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.75) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Menú Completo
+          </h1>
+          <Sparkles size={18} color="#FFD100" style={{ opacity: 0.6 }} />
+        </motion.div>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
           style={{
             fontSize: 'clamp(11px, 2vw, 13px)',
-            color: 'rgba(255,255,255,0.45)',
-            marginTop: 4,
+            color: 'rgba(255,255,255,0.4)',
+            marginTop: 6,
+            letterSpacing: '0.02em',
           }}
         >
           Todos nuestros productos, en un solo lugar
@@ -159,40 +186,64 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
         visible={showNav}
       />
 
-      {/* Product Grid - Maximum width optimized for BenQ / large monitors */}
+      {/* Product Grid */}
       <div
         style={{
           maxWidth: '1600px',
           margin: '0 auto',
-          padding: '16px var(--page-pad-x, 24px) 80px',
+          padding: '20px var(--page-pad-x, 24px) 80px',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
-        {/* Result count */}
-        <p
+        {/* Result count with subtle style */}
+        <div
           style={{
-            fontSize: 12,
-            color: 'rgba(255,255,255,0.3)',
-            marginBottom: 12,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 16,
           }}
         >
-          {filtrados.length}{' '}
-          {filtrados.length === 1 ? 'producto' : 'productos'}
-          {categoriaActiva !== 'todos' || busqueda.trim()
-            ? ' encontrados'
-            : ' disponibles'}
-        </p>
+          <p
+            style={{
+              fontSize: 12,
+              color: 'rgba(255,255,255,0.35)',
+              fontWeight: 500,
+              letterSpacing: '0.02em',
+            }}
+          >
+            {filtrados.length}{' '}
+            {filtrados.length === 1 ? 'producto' : 'productos'}
+            {categoriaActiva !== 'todos' || busqueda.trim()
+              ? ' encontrados'
+              : ' disponibles'}
+          </p>
+          {/* Page indicator when paginated */}
+          {totalPaginas > 1 && (
+            <p
+              style={{
+                fontSize: 11,
+                color: 'rgba(255,255,255,0.25)',
+                fontWeight: 500,
+              }}
+            >
+              Página {pagina}/{totalPaginas}
+            </p>
+          )}
+        </div>
 
         <AnimatePresence mode="wait">
           {paginados.length > 0 ? (
             <motion.div
               key={`page-${pagina}-${categoriaActiva}-${busqueda}`}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3 }}
               style={{
                 display: 'grid',
-                gap: 12,
+                gap: 14,
               }}
               className="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 3xl:grid-cols-9"
             >
@@ -205,23 +256,33 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
             </motion.div>
           ) : (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
               style={{
                 textAlign: 'center',
-                padding: '60px 24px',
-                background: 'rgba(255,255,255,0.02)',
-                borderRadius: 16,
+                padding: '80px 24px',
+                background: 'linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.005) 100%)',
+                borderRadius: 20,
                 border: '1px solid rgba(255,255,255,0.05)',
               }}
             >
               <p
                 style={{
-                  color: 'rgba(255,255,255,0.4)',
+                  color: 'rgba(255,255,255,0.3)',
                   fontSize: 14,
+                  fontWeight: 500,
                 }}
               >
                 No encontramos productos con esos filtros.
+              </p>
+              <p
+                style={{
+                  color: 'rgba(255,255,255,0.15)',
+                  fontSize: 12,
+                  marginTop: 8,
+                }}
+              >
+                Probá ajustando la búsqueda o los filtros
               </p>
             </motion.div>
           )}
@@ -234,8 +295,8 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 16,
-              marginTop: 40,
+              gap: 12,
+              marginTop: 48,
             }}
           >
             <button
@@ -245,36 +306,61 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
-                padding: '8px 16px',
-                borderRadius: 12,
-                border: 'none',
+                padding: '10px 20px',
+                borderRadius: 14,
+                border: '1px solid rgba(255,255,255,0.08)',
                 fontSize: 12,
                 fontWeight: 600,
                 cursor: pagina === 1 ? 'not-allowed' : 'pointer',
                 background:
                   pagina === 1
-                    ? 'rgba(255,255,255,0.03)'
-                    : 'rgba(255,255,255,0.08)',
+                    ? 'rgba(255,255,255,0.02)'
+                    : 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%)',
                 color:
                   pagina === 1
-                    ? 'rgba(255,255,255,0.2)'
+                    ? 'rgba(255,255,255,0.15)'
                     : 'rgba(255,255,255,0.7)',
-                transition: 'all 0.15s',
+                transition: 'all 0.2s',
+                backdropFilter: 'blur(8px)',
               }}
             >
               <ChevronLeft size={14} />
               Anterior
             </button>
 
-            <span
-              style={{
-                fontSize: 12,
-                color: 'rgba(255,255,255,0.45)',
-                fontWeight: 500,
-              }}
-            >
-              Página {pagina} de {totalPaginas}
-            </span>
+            {/* Page dots */}
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              {Array.from({ length: Math.min(totalPaginas, 7) }, (_, i) => {
+                let pageNum: number
+                if (totalPaginas <= 7) {
+                  pageNum = i + 1
+                } else if (pagina <= 4) {
+                  pageNum = i + 1
+                } else if (pagina >= totalPaginas - 3) {
+                  pageNum = totalPaginas - 6 + i
+                } else {
+                  pageNum = pagina - 3 + i
+                }
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setPagina(pageNum)}
+                    style={{
+                      width: pageNum === pagina ? 24 : 8,
+                      height: 8,
+                      borderRadius: 4,
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.25s',
+                      background:
+                        pageNum === pagina
+                          ? 'linear-gradient(135deg, #FFD100 0%, #FFA500 100%)'
+                          : 'rgba(255,255,255,0.12)',
+                    }}
+                  />
+                )
+              })}
+            </div>
 
             <button
               onClick={() =>
@@ -285,22 +371,23 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
-                padding: '8px 16px',
-                borderRadius: 12,
-                border: 'none',
+                padding: '10px 20px',
+                borderRadius: 14,
+                border: '1px solid rgba(255,255,255,0.08)',
                 fontSize: 12,
                 fontWeight: 600,
                 cursor:
                   pagina === totalPaginas ? 'not-allowed' : 'pointer',
                 background:
                   pagina === totalPaginas
-                    ? 'rgba(255,255,255,0.03)'
-                    : 'rgba(255,255,255,0.08)',
+                    ? 'rgba(255,255,255,0.02)'
+                    : 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%)',
                 color:
                   pagina === totalPaginas
-                    ? 'rgba(255,255,255,0.2)'
+                    ? 'rgba(255,255,255,0.15)'
                     : 'rgba(255,255,255,0.7)',
-                transition: 'all 0.15s',
+                transition: 'all 0.2s',
+                backdropFilter: 'blur(8px)',
               }}
             >
               Siguiente
@@ -313,16 +400,17 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
       {/* Footer */}
       <footer
         style={{
-          background: '#000',
-          borderTop: '1px solid rgba(255,255,255,0.05)',
-          padding: '32px 24px',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%)',
+          borderTop: '1px solid rgba(255,255,255,0.04)',
+          padding: '40px 24px',
           textAlign: 'center',
         }}
       >
         <p
           style={{
-            fontSize: 12,
-            color: 'rgba(255,255,255,0.25)',
+            fontSize: 11,
+            color: 'rgba(255,255,255,0.2)',
+            letterSpacing: '0.05em',
           }}
         >
           © YPF El Puente — Río Colorado, Patagonia Argentina

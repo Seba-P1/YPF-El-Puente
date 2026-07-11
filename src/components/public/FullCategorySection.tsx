@@ -70,7 +70,7 @@ export function FullCategorySection({
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        padding: 'clamp(50px, 8vw, 80px) 0',
+        padding: 'clamp(20px, 3vw, 45px) 0',
         borderTop: '1px solid rgba(255,255,255,0.05)',
       }}
     >
@@ -138,8 +138,8 @@ export function FullCategorySection({
             gap: 'clamp(16px, 2vw, 32px)',
             paddingLeft: 'clamp(24px, 5vw, 80px)',
             paddingRight: 'clamp(24px, 5vw, 80px)',
-            paddingBottom: 60,
-            paddingTop: 20,
+            paddingBottom: 40,
+            paddingTop: 'clamp(120px, 10vw, 180px)',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             WebkitOverflowScrolling: 'touch',
