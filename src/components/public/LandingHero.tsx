@@ -182,7 +182,7 @@ export function LandingHero() {
             href="/full"
             style={{
               height: 54,
-              padding: '0 32px',
+              padding: '0 24px',
               borderRadius: 9999,
               background: 'linear-gradient(135deg, #0070C0 0%, #005A9C 100%)',
               border: '1px solid rgba(255,255,255,0.1)',
@@ -198,9 +198,9 @@ export function LandingHero() {
               transition: 'all 0.25s ease',
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
-              width: '100%',
+              whiteSpace: 'nowrap',
             }}
-            className="hover:shadow-[0_8px_32px_rgba(0,112,192,0.5)] hover:scale-[1.02] active:scale-95 sm:w-auto"
+            className="hover:shadow-[0_8px_32px_rgba(0,112,192,0.5)] hover:scale-[1.02] active:scale-95 w-[220px]"
           >
             FULL
           </Link>
@@ -208,7 +208,7 @@ export function LandingHero() {
             href="#combustibles"
             style={{
               height: 54,
-              padding: '0 32px',
+              padding: '0 24px',
               borderRadius: 9999,
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(255,255,255,0.08)',
@@ -225,9 +225,9 @@ export function LandingHero() {
               transition: 'all 0.25s ease',
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
-              width: '100%',
+              whiteSpace: 'nowrap',
             }}
-            className="hover:bg-white/10 hover:border-white/20 active:scale-95 sm:w-auto"
+            className="hover:bg-white/10 hover:border-white/20 active:scale-95 w-[220px]"
           >
             Ver Combustibles
           </a>
@@ -237,8 +237,11 @@ export function LandingHero() {
       {/* 6. Scroll indicator */}
       <motion.div
         className="absolute bottom-10 hidden md:flex flex-col items-center gap-2.5"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: showScroll ? 1 : 0 }}
+        style={{
+          left: '50%',
+        }}
+        initial={{ opacity: 0, x: '-50%' }}
+        animate={{ opacity: showScroll ? 1 : 0, x: '-50%' }}
         transition={{ duration: 0.4 }}
       >
         <div
