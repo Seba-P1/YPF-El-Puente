@@ -38,12 +38,12 @@ export function MobileBottomBar() {
           style={{ color: isActive('/full') ? '#FFD100' : 'rgba(248,250,252,0.45)' }}
         >
           <UtensilsCrossed style={{ width: 22, height: 22 }} />
-          <span style={{ fontSize: 10, fontWeight: 600 }}>Menú Full</span>
+          <span style={{ fontSize: 10, fontWeight: 600 }}>Full</span>
         </Link>
         <Link
-          href="/boxes"
+          href="/#boxes"
           className="flex flex-col items-center justify-center w-full h-full space-y-1"
-          style={{ color: isActive('/boxes') ? '#FFD100' : 'rgba(248,250,252,0.45)' }}
+          style={{ color: 'rgba(248,250,252,0.45)' }}
         >
           <Car style={{ width: 22, height: 22 }} />
           <span style={{ fontSize: 10, fontWeight: 600 }}>Boxes</span>

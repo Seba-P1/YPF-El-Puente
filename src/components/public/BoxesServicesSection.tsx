@@ -50,6 +50,7 @@ export function BoxesServicesSection({ servicios }: BoxesServicesSectionProps) {
 
   return (
     <section
+      id="boxes"
       style={{
         background: 'var(--bg-base)',
         borderTop: '1px solid var(--border)',
@@ -73,11 +74,12 @@ export function BoxesServicesSection({ servicios }: BoxesServicesSectionProps) {
               display: 'inline-flex',
               alignItems: 'center',
               gap: 6,
-              background: 'var(--ypf-yellow-muted)',
-              border: '1px solid rgba(255,209,0,0.3)',
-              color: 'var(--ypf-yellow)',
+              background: 'rgba(0,90,156,0.1)',
+              border: '1px solid rgba(0,112,192,0.3)',
+              color: '#0070C0',
               fontSize: 11,
               fontWeight: 800,
+              fontFamily: 'var(--font-din-medium), sans-serif',
               letterSpacing: '0.15em',
               padding: '5px 14px',
               borderRadius: 999,
@@ -89,7 +91,8 @@ export function BoxesServicesSection({ servicios }: BoxesServicesSectionProps) {
           <h2
             style={{
               fontSize: 'clamp(26px, 4vw, 40px)',
-              fontWeight: 800,
+              fontWeight: 900,
+              fontFamily: 'var(--font-din-medium), sans-serif',
               color: 'var(--text-primary)',
               letterSpacing: '-0.02em',
               lineHeight: 1.15,
@@ -146,8 +149,10 @@ export function BoxesServicesSection({ servicios }: BoxesServicesSectionProps) {
                   <span
                     style={{
                       fontSize: 15,
-                      fontWeight: 600,
+                      fontWeight: 700,
+                      fontFamily: 'var(--font-din-medium), sans-serif',
                       color: 'var(--text-primary)',
+                      letterSpacing: '-0.01em',
                     }}
                   >
                     {s.nombre}
@@ -206,7 +211,7 @@ export function BoxesServicesSection({ servicios }: BoxesServicesSectionProps) {
               >
                 <Car style={{ width: 28, height: 28, color: 'var(--ypf-blue-bright)' }} />
               </div>
-              <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)' }}>
+              <span style={{ fontSize: 20, fontWeight: 900, fontFamily: 'var(--font-din-medium), sans-serif', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
                 Boxes YPF
               </span>
             </div>
@@ -215,10 +220,12 @@ export function BoxesServicesSection({ servicios }: BoxesServicesSectionProps) {
             <div className="relative z-10 mb-2">
               <span
                 style={{
-                  fontSize: 64,
+                  fontSize: 68,
                   fontWeight: 900,
+                  fontFamily: 'var(--font-din-medium), sans-serif',
                   color: 'var(--ypf-yellow)',
                   lineHeight: 1,
+                  letterSpacing: '-0.03em',
                 }}
               >
                 +{count}
@@ -227,11 +234,12 @@ export function BoxesServicesSection({ servicios }: BoxesServicesSectionProps) {
             <span
               className="relative z-10"
               style={{
-                fontSize: 12,
+                fontSize: 11,
                 color: 'var(--text-muted)',
                 textTransform: 'uppercase' as const,
-                letterSpacing: '0.1em',
-                fontWeight: 600,
+                letterSpacing: '0.12em',
+                fontWeight: 700,
+                fontFamily: 'var(--font-din-medium), sans-serif',
               }}
             >
               YPF BOXES en Argentina

@@ -9,9 +9,9 @@ import { useCartStore } from '@/stores/cart'
 
 const NAV_LINKS = [
   { href: '/', label: 'Inicio', exact: true },
-  { href: '/combustibles', label: 'Combustibles' },
-  { href: '/boxes', label: 'Boxes' },
-  { href: '/full', label: 'Menú FULL' },
+  { href: '/#combustibles', label: 'Combustibles', isHash: true },
+  { href: '/#boxes', label: 'Boxes', isHash: true },
+  { href: '/full', label: 'Full' },
 ]
 
 export function Navbar() {
@@ -29,8 +29,15 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const isActive = (link: typeof NAV_LINKS[number]) =>
-    link.exact ? pathname === link.href : pathname.startsWith(link.href)
+  const isActive = (link: typeof NAV_LINKS[number]) => {
+    if (link.href === '/') {
+      return pathname === '/'
+    }
+    if (link.isHash) {
+      return false
+    }
+    return pathname.startsWith(link.href)
+  }
 
   return (
     <header
