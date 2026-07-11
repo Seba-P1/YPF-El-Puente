@@ -14,15 +14,29 @@ interface FullProductCardProps {
   producto: Producto
   index: number
   layout?: 'carousel' | 'grid'
+  variant?: 'default' | 'mundial'
+  showDescription?: boolean
+  onAdd?: (producto: Producto) => void
 }
 
-export function FullProductCard({ producto, index, layout = 'carousel' }: FullProductCardProps) {
+export function FullProductCard({
+  producto,
+  index,
+  layout = 'carousel',
+  variant = 'default',
+  showDescription = false,
+  onAdd,
+}: FullProductCardProps) {
   const [imgError, setImgError] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
 
   const handleAdd = () => {
-    addItem(producto)
-    toast.success(`${producto.nombre} agregado`, { duration: 2000 })
+    if (onAdd) {
+      onAdd(producto)
+    } else {
+      addItem(producto)
+      toast.success(`${producto.nombre} agregado`, { duration: 2000 })
+    }
   }
 
   const containerVariants: Variants = {
@@ -39,6 +53,27 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
   }
 
   const isCarousel = layout === 'carousel'
+  const isMundial = variant === 'mundial'
+
+  // Variant glass card styles
+  const glassCardBg = isMundial
+    ? 'bg-white/20 border-[#005A9C]/10 shadow-[#005A9C]/5 group-hover:bg-white/40 group-hover:border-[#005A9C]/20'
+    : 'bg-white/5 border-white/10 shadow-black/10 group-hover:bg-white/10 group-hover:border-white/20'
+
+  const nameClass = isMundial
+    ? 'font-[family-name:var(--font-montserrat)] text-[#005A9C]'
+    : 'font-[family-name:var(--font-montserrat)] text-white/90'
+
+  const priceClass = isMundial
+    ? 'font-[family-name:var(--font-montserrat)] text-[14px] font-black text-[#005A9C] bg-[#005A9C]/5'
+    : 'text-[15px] font-black text-[#FFD100] bg-[#FFD100]/10'
+
+  const buttonClass = isMundial
+    ? 'bg-[#005A9C] hover:bg-[#004B82] border-transparent shadow-sm shadow-[#005A9C]/10'
+    : 'bg-white/10 hover:bg-[#0070C0] border-white/10 hover:border-transparent'
+
+  const cardMarginTop = isMundial ? 'mt-[20px]' : 'mt-0'
+  const cardFlex = isMundial ? 'flex flex-col items-center' : 'flex flex-col items-center justify-between'
 
   return (
     <motion.div
@@ -66,8 +101,8 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
           <ProductImagePlaceholder categoriaSlug={producto.categoria_slug} nombre={producto.nombre} fill />
         )}
 
-        {/* BADGE (Overlapping the image on top at z-20) */}
-        {producto.badge && (
+        {/* BADGE (Overlapping the image on top at z-20). Hidden for mundial variant. */}
+        {!isMundial && producto.badge && (
           <div className="absolute top-[clamp(50px,5.5vw,85px)] right-4 md:right-8 bg-[#FFD100] text-black text-[9px] font-extrabold px-2.5 py-0.5 rounded-md uppercase tracking-wider z-20 shadow-md pointer-events-auto">
             {producto.badge}
           </div>
@@ -75,16 +110,22 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
       </div>
 
       {/* 2. GLASS PRODUCT INFO CARD */}
-      <div className="w-full flex flex-col items-center justify-between bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/10 transition-all duration-300 group-hover:bg-white/10 group-hover:border-white/20 pt-[68px] md:pt-[clamp(72px,5vw,104px)] mt-0 min-h-[230px] md:min-h-[clamp(230px,14vw,280px)] relative z-0">
+      <div className={`w-full ${cardFlex} backdrop-blur-md border rounded-3xl p-5 shadow-xl transition-all duration-300 pt-[68px] md:pt-[clamp(72px,5vw,104px)] ${cardMarginTop} min-h-[230px] md:min-h-[clamp(230px,14vw,280px)] relative z-0 ${glassCardBg}`}>
         <div className="text-center w-full flex flex-col items-center flex-grow">
-          <h3 className="text-[13px] lg:text-[14px] font-bold text-white/90 text-center line-clamp-2 min-h-[36px] flex items-center justify-center px-1">
-            {producto.nombre}
-          </h3>
+            <h3 className={`text-[13px] lg:text-[14px] font-bold text-center px-1 ${nameClass}`}>
+              {producto.nombre}
+            </h3>
+
+            {showDescription && producto.descripcion && (
+              <p className={`font-[family-name:var(--font-montserrat)] text-[11px] ${isMundial ? 'text-[#005A9C]/70' : 'text-white/50'} mt-1 line-clamp-3 min-h-[40px] px-2 leading-relaxed`}>
+                {producto.descripcion}
+              </p>
+            )}
 
           {producto.precio && producto.precio > 0 ? (
-            <div className="text-[15px] font-black text-[#FFD100] mt-1.5 bg-[#FFD100]/10 px-2.5 py-0.5 rounded-full">
-              {formatearPrecioARS(producto.precio)}
-            </div>
+            <div className={`mt-1.5 px-2.5 py-0.5 rounded-full ${priceClass}`}>
+                {formatearPrecioARS(producto.precio)}
+              </div>
           ) : (
             <div className="text-[13px] font-semibold text-white/20 mt-1.5">
               ···
@@ -93,10 +134,10 @@ export function FullProductCard({ producto, index, layout = 'carousel' }: FullPr
         </div>
 
         {/* 3. ADD TO CART BUTTON */}
-        <button
-          onClick={handleAdd}
-          className="mt-4 w-full h-[36px] rounded-xl text-[11px] font-bold text-white bg-white/10 hover:bg-[#0070C0] border border-white/10 hover:border-transparent transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
-        >
+          <button
+            onClick={handleAdd}
+            className={`mt-4 w-full h-[36px] rounded-xl text-[11px] font-bold text-white transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer ${buttonClass}`}
+          >
           + Agregar
         </button>
       </div>

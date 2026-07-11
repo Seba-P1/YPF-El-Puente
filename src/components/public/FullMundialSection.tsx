@@ -1,13 +1,12 @@
 'use client'
 
 import React, { useRef } from 'react'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCartStore } from '@/stores/cart'
 import { toast } from 'sonner'
-import { formatearPrecioARS } from '@/lib/excel/parser'
 import type { Producto } from '@/lib/supabase/types'
+import { FullProductCard } from './FullProductCard'
 
 const MUNDIAL_PRODUCTS: Producto[] = [
   {
@@ -225,47 +224,15 @@ export function FullMundialSection() {
           </motion.div>
 
           {/* 2. PRODUCT CARDS */}
-          {MUNDIAL_PRODUCTS.map((producto) => (
-            <div
+          {MUNDIAL_PRODUCTS.map((producto, i) => (
+            <FullProductCard
               key={producto.id}
-              className="relative flex-shrink-0 w-[324px] md:w-[clamp(384px,21.6vw,480px)] snap-center flex flex-col items-center justify-end group pt-[175px] md:pt-[clamp(190px,15vw,260px)] pb-4"
-            >
-              {/* Product Image (Outside the card, overlapping) */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[min(92vw,562px)] h-[min(68vw,420px)] md:w-[clamp(562px,29.6vw,655px)] md:h-[clamp(396px,21.6vw,492px)] flex items-center justify-center z-10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
-                <Image
-                  src={producto.imagen_url || '/assets/placeholder.png'}
-                  alt={producto.nombre}
-                  fill
-                  sizes="(max-width: 768px) 92vw, 655px"
-                  className="object-contain drop-shadow-2xl"
-                  priority
-                />
-              </div>
-
-              {/* Glass Product Info Card */}
-              <div className="w-full flex flex-col items-center bg-white/20 backdrop-blur-md border border-[#005A9C]/10 rounded-3xl p-5 shadow-xl shadow-[#005A9C]/5 transition-all duration-300 group-hover:bg-white/40 group-hover:border-[#005A9C]/20 pt-[68px] md:pt-[clamp(72px,5vw,104px)] mt-[20px] min-h-[230px] md:min-h-[clamp(230px,14vw,280px)] relative z-0">
-                <h3 className="font-[family-name:var(--font-montserrat)] text-[13px] lg:text-[14px] font-bold text-[#005A9C] text-center line-clamp-2 min-h-[36px] flex items-center justify-center px-1">
-                  {producto.nombre}
-                </h3>
-                <p className="font-[family-name:var(--font-montserrat)] text-[11px] text-[#005A9C]/70 mt-1 line-clamp-3 min-h-[40px] px-2 leading-relaxed">
-                  {producto.descripcion}
-                </p>
-                
-                {producto.precio && (
-                  <span className="font-[family-name:var(--font-montserrat)] text-[14px] font-black text-[#005A9C] mt-2 bg-[#005A9C]/5 px-2.5 py-0.5 rounded-full">
-                    {formatearPrecioARS(producto.precio)}
-                  </span>
-                )}
-
-                {/* Add to order button */}
-                <button
-                  onClick={() => handleAdd(producto)}
-                  className="mt-4 w-full h-[36px] rounded-xl text-[11px] font-bold text-white bg-[#005A9C] hover:bg-[#004B82] border border-transparent transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-[#005A9C]/10"
-                >
-                  + Agregar
-                </button>
-              </div>
-            </div>
+              producto={producto}
+              index={i}
+              variant="mundial"
+              showDescription={true}
+              onAdd={handleAdd}
+            />
           ))}
         </div>
       </div>
