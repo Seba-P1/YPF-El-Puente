@@ -7,6 +7,14 @@ import { Info } from 'lucide-react'
 export const metadata: Metadata = {
   title: 'Combustibles — YPF El Puente | Río Colorado',
   description: 'Conocé los precios de nuestros combustibles YPF.',
+  alternates: { canonical: '/combustibles' },
+  openGraph: {
+    title: 'Combustibles — YPF El Puente | Río Colorado',
+    description: 'Conocé los precios de nuestros combustibles YPF.',
+    locale: 'es_AR',
+    type: 'website',
+    siteName: 'YPF El Puente',
+  },
 }
 
 export const revalidate = 60
