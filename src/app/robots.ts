@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next'
+import { CANONICAL_DOMAIN } from '@/lib/seo/constants'
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -7,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: ['/', '/full'],
       disallow: ['/admin/', '/api/'],
     },
-    sitemap: 'https://ypfelpuente.com/sitemap.xml',
+    sitemap: `${CANONICAL_DOMAIN}/sitemap.xml`,
   }
 }
