@@ -115,7 +115,7 @@ export function LandingHero() {
       />
 
       {/* Wrapper to align left and occupy full width in BenQ/ultra-wide screens */}
-      <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 md:px-16 lg:px-24 flex flex-col items-center md:items-start justify-center">
+      <div className="relative z-10 w-full max-w-[1920px] mx-auto px-6 md:px-16 lg:px-24 xl:px-32 flex flex-col items-center md:items-start justify-center">
         {/* Content */}
         <motion.div
           className="relative flex flex-col items-center md:items-start text-center md:text-left"
