@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { CANONICAL_DOMAIN } from '@/lib/seo/constants'
 import { Montserrat, Caveat } from 'next/font/google'
 import localFont from 'next/font/local'
 import '@fontsource-variable/inter'
@@ -26,6 +27,7 @@ const dinMedium = localFont({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(CANONICAL_DOMAIN),
   title: {
     default: 'YPF El Puente',
     template: '%s — YPF El Puente',
