@@ -1,5 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Home, Utensils } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Página no encontrada — YPF El Puente',
+  description:
+    'La página que buscás no existe. Volvé al menú FULL de YPF El Puente en Río Colorado.',
+  robots: { index: false },
+}
 
 export default function NotFound() {
   return (
