@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      { source: '/menu', destination: '/full' },
+    ]
+  },
   async headers() {
     return [
       {
