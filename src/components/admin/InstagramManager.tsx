@@ -99,7 +99,7 @@ export function InstagramManager() {
   }, [supabase])
 
   useEffect(() => {
-    ensureInstagramBucketPublic()
+    ensureInstagramBucketPublic({})
     recargarPosts().finally(() => setCargando(false))
   }, [recargarPosts])
 
@@ -334,8 +334,12 @@ export function InstagramManager() {
           </h3>
           <button
             onClick={async () => {
-              const res = await syncInstagramThumbnails()
-              toast.success(`Sincronizados ${res.synced} archivos`)
+              const res = await syncInstagramThumbnails({})
+              if (!res.ok) {
+                toast.error(res.error || 'Error al sincronizar')
+                return
+              }
+              toast.success(`Sincronizados ${res.data.synced} archivos`)
               await recargarPosts()
             }}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg border border-muted-foreground/20 hover:bg-muted/30"

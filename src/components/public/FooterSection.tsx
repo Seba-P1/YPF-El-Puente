@@ -1,12 +1,16 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { MessageCircle } from 'lucide-react'
+import { getWhatsAppConfig } from '@/lib/supabase/actions'
 
 /* ═══════════════════════════════════════════════════════════════
    SECTION 6 — FOOTER
    ═══════════════════════════════════════════════════════════════ */
 
-export function FooterSection() {
+export async function FooterSection() {
+  const config = await getWhatsAppConfig()
+  const whatsappNumber = config.numero || '5492920264433'
+
   return (
     <footer
       style={{
@@ -107,7 +111,7 @@ export function FooterSection() {
             Contacto
           </span>
           <a
-            href="https://wa.me/5492920000000"
+            href={`https://wa.me/${whatsappNumber}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 hover:!text-[#F8FAFC]"

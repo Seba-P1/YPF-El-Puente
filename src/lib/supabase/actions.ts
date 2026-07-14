@@ -835,55 +835,67 @@ export const deleteInstagramPost = withAdminAction(
 )
 
 // ── Ensure bucket is public ──
-export async function ensureInstagramBucketPublic() {
-  const supabase = (await createClient()) as any
-  try {
-    await supabase.storage.updateBucket('instagram-thumbnails', { public: true })
-  } catch (e: any) {
-    console.warn('[instagram] Bucket update:', e?.message)
-  }
-}
+const ensureBucketSchema = z.object({})
+
+export const ensureInstagramBucketPublic = withAdminAction(
+  ensureBucketSchema,
+  async () => {
+    const supabase = (await createClient()) as any
+    try {
+      await supabase.storage.updateBucket('instagram-thumbnails', { public: true })
+    } catch (e: any) {
+      console.warn('[instagram] Bucket update:', e?.message)
+    }
+  },
+  { rateLimitKey: 'ensure-bucket-public', maxPerMinute: 10 }
+)
 
 // ── Sync storage files with DB posts ──
-export async function syncInstagramThumbnails() {
-  const supabase = (await createClient()) as any
+const syncThumbnailsSchema = z.object({})
 
-  const { data: posts, error: postsError } = await supabase
-    .from('instagram_posts')
-    .select('id, thumbnail_url, thumbnail_path, orden')
-    .order('orden', { ascending: true })
+export const syncInstagramThumbnails = withAdminAction(
+  syncThumbnailsSchema,
+  async () => {
+    const supabase = (await createClient()) as any
 
-  const { data: files, error: filesError } = await supabase.storage
-    .from('instagram-thumbnails')
-    .list('', { limit: 100, sortBy: { column: 'created_at', order: 'asc' } })
-
-  if (!posts || posts.length === 0) return { synced: 0 }
-  if (!files || files.length === 0) return { synced: 0 }
-
-  const { data: { publicUrl } } = supabase.storage
-    .from('instagram-thumbnails')
-    .getPublicUrl('test')
-
-  const baseUrl = publicUrl.replace(/test$/, '')
-
-  let synced = 0
-  for (let i = 0; i < posts.length; i++) {
-    const post = posts[i]
-    if (post.thumbnail_url) continue
-
-    const file = files[i]
-    if (!file) continue
-
-    const fileUrl = `${baseUrl}${file.name}`
-    const { error } = await supabase
+    const { data: posts, error: postsError } = await supabase
       .from('instagram_posts')
-      .update({ thumbnail_url: fileUrl, thumbnail_path: file.name, updated_at: new Date().toISOString() })
-      .eq('id', post.id)
+      .select('id, thumbnail_url, thumbnail_path, orden')
+      .order('orden', { ascending: true })
 
-    if (!error) synced++
-  }
+    const { data: files, error: filesError } = await supabase.storage
+      .from('instagram-thumbnails')
+      .list('', { limit: 100, sortBy: { column: 'created_at', order: 'asc' } })
 
-  revalidatePath('/admin/instagram')
-  revalidatePath('/full')
-  return { synced }
-}
+    if (!posts || posts.length === 0) return { synced: 0 }
+    if (!files || files.length === 0) return { synced: 0 }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('instagram-thumbnails')
+      .getPublicUrl('test')
+
+    const baseUrl = publicUrl.replace(/test$/, '')
+
+    let synced = 0
+    for (let i = 0; i < posts.length; i++) {
+      const post = posts[i]
+      if (post.thumbnail_url) continue
+
+      const file = files[i]
+      if (!file) continue
+
+      const fileUrl = `${baseUrl}${file.name}`
+      const { error } = await supabase
+        .from('instagram_posts')
+        .update({ thumbnail_url: fileUrl, thumbnail_path: file.name, updated_at: new Date().toISOString() })
+        .eq('id', post.id)
+
+      if (!error) synced++
+    }
+
+    revalidatePath('/admin/instagram')
+    revalidatePath('/full')
+    return { synced }
+  },
+  { rateLimitKey: 'sync-thumbnails', maxPerMinute: 10 }
+)

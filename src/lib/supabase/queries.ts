@@ -12,6 +12,10 @@ import type {
   InstagramPost,
 } from './types'
 
+const PRODUCTO_PUBLIC_SELECT = 'id, codigo_plu, nombre, descripcion, categoria_slug, precio, imagen_url, disponible, destacado, badge, orden, es_sin_tacc'
+
+const COMBUSTIBLE_PUBLIC_SELECT = 'id, nombre, descripcion, precio, octanaje, color_hex, disponible, orden'
+
 // ── PRODUCTOS ──
 
 export async function getProductosByCategoria(
@@ -20,13 +24,13 @@ export async function getProductosByCategoria(
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase
     .from('productos')
-    .select('*')
+    .select(PRODUCTO_PUBLIC_SELECT)
     .eq('categoria_slug', categoriaSlug)
     .eq('disponible', true)
     .order('orden', { ascending: true })
 
   if (error) throw new Error(`Error fetching productos: ${error.message}`)
-  return data ?? []
+  return (data ?? []) as unknown as Producto[]
 }
 
 export async function getProductoById(id: string): Promise<Producto | null> {
@@ -57,13 +61,13 @@ export async function getProductosDestacados(): Promise<Producto[]> {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase
     .from('productos')
-    .select('*')
+    .select(PRODUCTO_PUBLIC_SELECT)
     .eq('disponible', true)
     .eq('destacado', true)
     .order('orden', { ascending: true })
 
   if (error) throw new Error(`Error fetching productos destacados: ${error.message}`)
-  return data ?? []
+  return (data ?? []) as unknown as Producto[]
 }
 
 export async function getProductosPorCategoriaAdmin(
@@ -85,13 +89,13 @@ export async function getCatalogoCompleto(): Promise<Producto[]> {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase
     .from('productos')
-    .select('*')
+    .select(PRODUCTO_PUBLIC_SELECT)
     .eq('disponible', true)
     .order('categoria_slug', { ascending: true })
     .order('nombre', { ascending: true })
 
   if (error) throw new Error(`Error fetching catalogo completo: ${error.message}`)
-  return data ?? []
+  return (data ?? []) as unknown as Producto[]
 }
 
 // ── CATEGORÍAS ──
@@ -114,12 +118,12 @@ export async function getCombustibles(): Promise<Combustible[]> {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase
     .from('combustibles')
-    .select('*')
+    .select(COMBUSTIBLE_PUBLIC_SELECT)
     .eq('disponible', true)
     .order('orden', { ascending: true })
 
   if (error) throw new Error(`Error fetching combustibles: ${error.message}`)
-  return data ?? []
+  return (data ?? []) as unknown as Combustible[]
 }
 
 // ── BOXES SERVICES ──

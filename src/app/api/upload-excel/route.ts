@@ -60,6 +60,9 @@ export async function POST(request: NextRequest) {
     }
 
     const MAX_ROWS = 2000
+    const MAX_NOMBRE_LENGTH = 200
+    const MAX_CODIGO_LENGTH = 50
+    const MAX_PRECIO = 100_000_000
     if (rows.length > MAX_ROWS) {
       return NextResponse.json(
         { error: `Demasiadas filas (máximo ${MAX_ROWS}).` },
@@ -91,6 +94,24 @@ export async function POST(request: NextRequest) {
       if (!row.categoria_slug || typeof row.categoria_slug !== 'string') {
         return NextResponse.json(
           { error: `Fila ${i + 1}: categoria_slug es obligatorio.` },
+          { status: 400 }
+        )
+      }
+      if (row.nombre.length > MAX_NOMBRE_LENGTH) {
+        return NextResponse.json(
+          { error: `Fila ${i + 1}: el nombre supera los ${MAX_NOMBRE_LENGTH} caracteres.` },
+          { status: 400 }
+        )
+      }
+      if (row.codigo_plu.length > MAX_CODIGO_LENGTH) {
+        return NextResponse.json(
+          { error: `Fila ${i + 1}: el código supera los ${MAX_CODIGO_LENGTH} caracteres.` },
+          { status: 400 }
+        )
+      }
+      if (row.precio > MAX_PRECIO) {
+        return NextResponse.json(
+          { error: `Fila ${i + 1}: el precio parece incorrecto (demasiado alto).` },
           { status: 400 }
         )
       }

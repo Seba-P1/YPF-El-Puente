@@ -307,7 +307,7 @@ function CombustibleCard({
       {/* Price with interactive scaling */}
       <div 
         style={{ 
-          marginTop: 20,
+          marginTop: 28,
           position: 'relative',
           zIndex: 1,
           display: 'inline-block',
@@ -331,10 +331,10 @@ function CombustibleCard({
               fontFamily: 'var(--font-din-medium), sans-serif',
             }}
           >
-            <span style={{ fontSize: 16, color: '#FFD100', fontWeight: 700 }}>$</span>
+            <span style={{ fontSize: 14, color: '#FFD100', fontWeight: 700 }}>$</span>
             <span
               style={{
-                fontSize: 38,
+                fontSize: 30,
                 fontWeight: 900,
                 color: '#FFD100',
                 lineHeight: 1,
@@ -344,7 +344,7 @@ function CombustibleCard({
             >
               {combustible.precio.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
             </span>
-            <span style={{ fontSize: 16, color: '#FFD100', opacity: 0.7, marginLeft: 2, fontWeight: 700 }}>/L</span>
+            <span style={{ fontSize: 13, color: '#FFD100', opacity: 0.7, marginLeft: 2, fontWeight: 700 }}>/L</span>
           </div>
         )}
       </div>

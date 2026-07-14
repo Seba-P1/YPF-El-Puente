@@ -29,6 +29,8 @@ import {
 
 type UploaderState = 'idle' | 'parsing' | 'preview' | 'uploading' | 'success' | 'error'
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
 interface ExcelUploaderProps {
   modo: 'actualizar' | 'catalogo_completo'
 }
@@ -90,13 +92,18 @@ export function ExcelUploader({ modo }: ExcelUploaderProps) {
     'Sin TACC': 'Sin TACC',
   }
 
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
   const onDrop = useCallback(
     async (acceptedFiles: File[], rejectedFiles: any[]) => {
       if (rejectedFiles.length > 0) {
         setState('error')
-        setErrorMessage(
-          'El formato del archivo no es válido. Solo se permiten .xlsx, .xls o .csv'
-        )
+        const reason = rejectedFiles[0].errors[0]?.code
+        if (reason === 'file-too-large') {
+          setErrorMessage(`El archivo supera el límite de ${MAX_FILE_SIZE / 1024 / 1024}MB.`)
+        } else {
+          setErrorMessage('El formato del archivo no es válido. Solo se permiten .xlsx, .xls o .csv')
+        }
         return
       }
 
@@ -126,6 +133,7 @@ export function ExcelUploader({ modo }: ExcelUploaderProps) {
       'application/vnd.ms-excel': ['.xls'],
       'text/csv': ['.csv'],
     },
+    maxSize: MAX_FILE_SIZE,
     maxFiles: 1,
     multiple: false,
   })
