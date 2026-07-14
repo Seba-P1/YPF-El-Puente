@@ -171,7 +171,7 @@ export function FullCategorySection({
           >
             {/* Tag */}
             <p className="font-[family-name:var(--font-caveat)] text-2xl md:text-3xl text-white/55 font-bold mb-2 tracking-wide">
-              {categoria?.nombre?.toLowerCase() ?? id}
+              {categoria?.nombre?.toUpperCase() ?? id.toUpperCase()}
             </p>
             {/* Title */}
 <h2 className="font-[family-name:var(--font-din-medium)] font-black text-4xl md:text-6xl text-white leading-none mb-3 tracking-tight">
