@@ -45,7 +45,7 @@ export function LandingHero() {
     <section
       className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden"
       style={{
-        background: 'radial-gradient(circle at 50% 30%, #002D5A 0%, #001224 60%, #000810 100%)',
+        background: '#000000',
       }}
     >
       {/* Background Video */}
@@ -60,7 +60,7 @@ export function LandingHero() {
           poster={videoSources.poster}
           onPlay={() => setIsVideoLoaded(true)}
           className={`absolute inset-0 w-full h-full object-cover z-0 pointer-events-none transition-opacity duration-1000 ${
-            isVideoLoaded ? 'opacity-35' : 'opacity-0'
+            isVideoLoaded ? 'opacity-60' : 'opacity-0'
           }`}
         >
           <source src={videoSources.webm} type="video/webm" />
@@ -73,7 +73,7 @@ export function LandingHero() {
         <img
           src={videoSources.poster}
           alt="Hero background"
-          className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none opacity-35"
+          className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none opacity-60"
         />
       )}
       {/* Grid lines overlay (YPF technical engineering vibe) */}
@@ -81,11 +81,11 @@ export function LandingHero() {
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(0, 112, 192, 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 112, 192, 0.05) 1px, transparent 1px)
+            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
           `,
           backgroundSize: '40px 40px',
-          opacity: 0.8,
+          opacity: 0.5,
         }}
       />
 
@@ -96,7 +96,7 @@ export function LandingHero() {
           width: '80vw',
           height: '40vh',
           top: '20%',
-          background: 'radial-gradient(ellipse at center, rgba(0, 112, 192, 0.15) 0%, transparent 65%)',
+          background: 'radial-gradient(ellipse at center, rgba(0, 0, 0, 0.08) 0%, transparent 65%)',
           filter: 'blur(40px)',
           zIndex: 1,
         }}
