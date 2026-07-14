@@ -432,7 +432,7 @@ export default function FullClient({
               id="hamburguesas"
               categoria={catHamb}
               productos={fullHamburguesas}
-              colorFondo="#1A0E00"
+              colorFondo="#DEB23B"
               imagenBack="/assets/ypf imagenes/back-4.webp"
               mandalaPosition="bottom-right"
               mandalaScale={0.6}
@@ -446,11 +446,11 @@ export default function FullClient({
               id="cafeteria"
               categoria={catCaf}
               productos={fullCafeteria}
-              colorFondo="#0D0800"
+              colorFondo="#8A4A39"
               imagenBack="/assets/ypf imagenes/back-2.webp"
               mandalaPosition="top-left"
               mandalaScale={0.6}
-              sectionBgImage="/assets/ypf imagenes/bg.svg"
+              fullScreenBgImage="/assets/ypf imagenes/full_cafeteria/bg.svg"
             />
           </div>
 
@@ -460,7 +460,7 @@ export default function FullClient({
               id="productos-full"
               categoria={catFull}
               productos={productosFullProducts}
-              colorFondo="#060810"
+              colorFondo="#CA7E31"
               imagenBack="/assets/ypf imagenes/back-5.webp"
               mandalaPosition="top-right"
               mandalaScale={0.6}
@@ -552,7 +552,7 @@ export default function FullClient({
               id="hamburguesas"
               categoria={catHamb}
               productos={fullHamburguesas}
-              colorFondo="#1A0E00"
+              colorFondo="#DEB23B"
               imagenBack="/assets/ypf imagenes/back-4.webp"
               mandalaPosition="bottom-right"
               mandalaScale={0.6}
@@ -562,17 +562,17 @@ export default function FullClient({
               id="cafeteria"
               categoria={catCaf}
               productos={fullCafeteria}
-              colorFondo="#0D0800"
+              colorFondo="#8A4A39"
               imagenBack="/assets/ypf imagenes/back-2.webp"
               mandalaPosition="top-left"
               mandalaScale={0.6}
-              sectionBgImage="/assets/ypf imagenes/bg.svg"
+              fullScreenBgImage="/assets/ypf imagenes/full_cafeteria/bg.svg"
             />
             <FullCategorySection
               id="productos-full"
               categoria={catFull}
               productos={productosFullProducts}
-              colorFondo="#060810"
+              colorFondo="#CA7E31"
               imagenBack="/assets/ypf imagenes/back-5.webp"
               mandalaPosition="top-right"
               mandalaScale={0.6}

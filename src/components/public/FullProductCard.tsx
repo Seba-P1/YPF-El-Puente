@@ -78,22 +78,22 @@ export function FullProductCard({
       whileInView="visible"
       viewport={{ once: true, margin: '50px' }}
       variants={containerVariants}
-      className={`flex flex-col items-center snap-center group pb-4 ${
+      className={`flex flex-col items-center snap-center group pb-4 overflow-visible ${
         isCarousel ? 'flex-shrink-0 w-[280px] md:w-[clamp(320px,18vw,400px)]' : 'w-full'
       }`}
     >
-      {/* Image container — optimized size to prevent pixelation while maintaining proper overlap and spacing */}
-      <div className="relative w-full h-[150px] md:h-[170px] flex items-end justify-center mb-[-50px] md:mb-[-60px]">
-        <div className="absolute bottom-[-35px] md:bottom-[-45px] w-[240px] h-[220px] md:w-[280px] md:h-[260px] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
+      {/* Image container — tall enough to avoid clipping */}
+      <div className="relative w-full h-[340px] md:h-[400px] flex items-end justify-center overflow-visible">
+        <div className="absolute bottom-[-10px] md:bottom-[-15px] w-[408px] h-[374px] md:w-[476px] md:h-[442px] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
           {!imgError && producto.imagen_url ? (
             <Image
               src={producto.imagen_url.startsWith('http') ? producto.imagen_url : `${producto.imagen_url}?v=2`}
               alt={producto.nombre}
               fill
-              sizes="(max-width: 768px) 240px, 280px"
+              sizes="(max-width: 768px) 408px, 476px"
               quality={100}
               priority={index < 4}
-              className="object-contain drop-shadow-2xl"
+              className="object-contain"
               unoptimized={true}
               onError={() => setImgError(true)}
             />
@@ -110,8 +110,8 @@ export function FullProductCard({
         </div>
       </div>
 
-      {/* Glass product info card */}
-      <div className={`w-full flex flex-col items-center justify-between backdrop-blur-md border rounded-3xl px-4 pt-[40px] pb-4 shadow-xl transition-all duration-300 mt-[50px] md:mt-[60px] min-h-[150px] md:min-h-[170px] ${glassCardBg}`}>
+      {/* Invisible card — no background, border or shadow */}
+      <div className="w-full flex flex-col items-center justify-between px-4 pt-2 pb-4 transition-all duration-300 min-h-[120px] md:min-h-[140px]">
         <div className="text-center w-full flex flex-col items-center flex-grow">
           <h3 className={`text-[13px] lg:text-[14px] font-bold text-center px-1 ${nameClass}`}>
             {producto.nombre}
@@ -134,10 +134,10 @@ export function FullProductCard({
           )}
         </div>
 
-        {/* Add to cart button */}
+        {/* Smaller add to cart button */}
         <button
           onClick={handleAdd}
-          className={`mt-4 w-full h-[36px] rounded-xl text-[11px] font-bold text-white transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer ${buttonClass}`}
+          className={`mt-3 px-5 h-[28px] rounded-lg text-[10px] font-bold text-white transition-all duration-200 active:scale-95 flex items-center justify-center gap-1 cursor-pointer ${buttonClass}`}
         >
           + Agregar
         </button>

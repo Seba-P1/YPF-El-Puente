@@ -37,6 +37,7 @@ interface FullCategorySectionProps {
   mandalaPosition?: 'top-right' | 'bottom-right' | 'top-left' | 'bottom-left'
   mandalaScale?: number
   sectionBgImage?: string
+  fullScreenBgImage?: string
   extraSubtitle?: string
 }
 
@@ -49,6 +50,7 @@ export function FullCategorySection({
   mandalaPosition = 'top-right',
   mandalaScale = 1,
   sectionBgImage,
+  fullScreenBgImage,
   extraSubtitle,
 }: FullCategorySectionProps) {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null)
@@ -83,6 +85,20 @@ export function FullCategorySection({
             backgroundSize: '600px',
             backgroundRepeat: 'repeat',
             opacity: 0.05
+          }}
+        />
+      )}
+
+      {/* FULL SCREEN BACKGROUND IMAGE (100% quality cover) */}
+      {fullScreenBgImage && (
+        <div 
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{
+            backgroundImage: `url('${fullScreenBgImage}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 1
           }}
         />
       )}
