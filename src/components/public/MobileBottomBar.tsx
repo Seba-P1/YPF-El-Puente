@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, UtensilsCrossed, Car, ShoppingCart } from 'lucide-react'
+import { Home, UtensilsCrossed, Car, ShoppingCart, BookOpen } from 'lucide-react'
 import { useCartStore } from '@/stores/cart'
 
 export function MobileBottomBar() {
@@ -40,14 +40,25 @@ export function MobileBottomBar() {
           <UtensilsCrossed style={{ width: 22, height: 22 }} />
           <span style={{ fontSize: 10, fontWeight: 600 }}>Full</span>
         </Link>
-        <Link
-          href="/#boxes"
-          className="flex flex-col items-center justify-center w-full h-full space-y-1"
-          style={{ color: 'rgba(248,250,252,0.45)' }}
-        >
-          <Car style={{ width: 22, height: 22 }} />
-          <span style={{ fontSize: 10, fontWeight: 600 }}>Boxes</span>
-        </Link>
+        {pathname.startsWith('/full') ? (
+          <Link
+            href="/full/menu"
+            className="flex flex-col items-center justify-center w-full h-full space-y-1"
+            style={{ color: isActive('/full/menu') ? '#FFD100' : 'rgba(248,250,252,0.45)' }}
+          >
+            <BookOpen style={{ width: 22, height: 22 }} />
+            <span style={{ fontSize: 10, fontWeight: 600, textAlign: 'center', whiteSpace: 'nowrap' }}>Full Completo</span>
+          </Link>
+        ) : (
+          <Link
+            href="/#boxes"
+            className="flex flex-col items-center justify-center w-full h-full space-y-1"
+            style={{ color: 'rgba(248,250,252,0.45)' }}
+          >
+            <Car style={{ width: 22, height: 22 }} />
+            <span style={{ fontSize: 10, fontWeight: 600 }}>Boxes</span>
+          </Link>
+        )}
         <button
           onClick={openCart}
           className="flex flex-col items-center justify-center w-full h-full space-y-1 cursor-pointer"

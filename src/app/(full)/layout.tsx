@@ -3,6 +3,7 @@ import { FullNavbar } from '@/components/public/FullNavbar'
 import { CartSidebar } from '@/components/public/CartSidebar'
 import { MobileBottomBar } from '@/components/public/MobileBottomBar'
 import { Toaster } from '@/components/ui/sonner'
+import { WhatsAppFloatingButton } from '@/components/public/WhatsAppFloatingButton'
 
 export const metadata: Metadata = {
   title: 'Menú FULL — YPF El Puente | Río Colorado',
@@ -23,6 +24,7 @@ export default function FullMenuLayout({
       </div>
       <MobileBottomBar />
       <CartSidebar />
+      <WhatsAppFloatingButton />
       <Toaster position="bottom-right" />
     </>
   )

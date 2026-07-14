@@ -1,15 +1,13 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { MessageCircle } from 'lucide-react'
-import { getWhatsAppConfig } from '@/lib/supabase/actions'
 
 /* ═══════════════════════════════════════════════════════════════
    SECTION 6 — FOOTER
    ═══════════════════════════════════════════════════════════════ */
 
-export async function FooterSection() {
-  const config = await getWhatsAppConfig()
-  const whatsappNumber = config.numero || '5492920264433'
+export function FooterSection() {
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5492920264433'
 
   return (
     <footer

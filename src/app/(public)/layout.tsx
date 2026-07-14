@@ -3,6 +3,7 @@ import { Navbar } from '@/components/public/Navbar'
 import { CartSidebar } from '@/components/public/CartSidebar'
 import { MobileBottomBar } from '@/components/public/MobileBottomBar'
 import { Toaster } from '@/components/ui/sonner'
+import { WhatsAppFloatingButton } from '@/components/public/WhatsAppFloatingButton'
 
 export default function PublicLayout({
   children,
@@ -24,6 +25,7 @@ export default function PublicLayout({
 
       <MobileBottomBar />
       <CartSidebar />
+      <WhatsAppFloatingButton />
       <Toaster position="bottom-center" />
     </div>
     </ThemeProvider>

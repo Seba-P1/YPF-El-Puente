@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRef, useEffect, useState } from 'react'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -574,6 +575,50 @@ export function CartSidebar() {
                     >
                       Se abrirá WhatsApp con tu pedido listo para enviar
                     </p>
+
+                    <div
+                      style={{
+                        marginTop: 20,
+                        paddingTop: 16,
+                        borderTop: '1px dashed rgba(255,255,255,0.1)',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontSize: 13,
+                          color: 'rgba(255,255,255,0.7)',
+                          marginBottom: 8,
+                          fontFamily: 'var(--font-montserrat), sans-serif',
+                        }}
+                      >
+                        ¿Querés agregar algo más a tu compra?
+                      </p>
+                      <Link
+                        href="/full/menu"
+                        onClick={handleCerrar}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          height: 38,
+                          padding: '0 16px',
+                          borderRadius: 8,
+                          background: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#FFD100',
+                          textDecoration: 'none',
+                          transition: 'all 0.25s ease',
+                          fontFamily: 'var(--font-din-medium), sans-serif',
+                          letterSpacing: '0.03em',
+                        }}
+                        className="hover:bg-white/10 hover:text-white hover:scale-[1.02] active:scale-95"
+                      >
+                        Ir al Menú FULL completo
+                      </Link>
+                    </div>
                   </div>
                 </motion.div>
               )}
