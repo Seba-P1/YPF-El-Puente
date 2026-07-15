@@ -239,7 +239,7 @@ function InstagramCard({ post, index }: { post: InstagramPost; index: number }) 
         >
           <Image
             src={post.thumbnail_url!}
-            alt="Publicación de Instagram"
+            alt="Post de Instagram — @YPF.ELPUENTE"
             fill
             sizes="(max-width: 768px) 33vw, 16vw"
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"

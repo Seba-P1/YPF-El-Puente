@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import {
   containerVariants,
@@ -15,7 +16,16 @@ export function LandingHero() {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => setShowScroll(window.scrollY < 100)
+    let ticking = false
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setShowScroll(window.scrollY < 100)
+          ticking = false
+        })
+        ticking = true
+      }
+    }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -70,10 +80,12 @@ export function LandingHero() {
 
       {/* Fallback image when prefers reduced motion is enabled */}
       {prefersReducedMotion && (
-        <img
+        <Image
           src={videoSources.poster}
           alt="Hero background"
+          fill
           className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none opacity-60"
+          preload={true}
         />
       )}
       {/* Grid lines overlay (YPF technical engineering vibe) */}

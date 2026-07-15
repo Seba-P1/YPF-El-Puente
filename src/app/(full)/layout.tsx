@@ -7,7 +7,25 @@ import { WhatsAppFloatingButton } from '@/components/public/WhatsAppFloatingButt
 
 export const metadata: Metadata = {
   title: 'Menú FULL — YPF El Puente | Río Colorado',
-  description: 'Hamburguesas, cafetería y productos exclusivos Full. YPF El Puente, Río Colorado.',
+  description:
+    'Hamburguesas, cafetería y productos exclusivos Full. YPF El Puente, Río Colorado.',
+  alternates: { canonical: '/full' },
+  openGraph: {
+    title: 'Menú FULL — YPF El Puente | Río Colorado',
+    description:
+      'Hamburguesas, cafetería y productos exclusivos Full. YPF El Puente, Río Colorado.',
+    locale: 'es_AR',
+    type: 'website',
+    siteName: 'YPF El Puente',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'YPF El Puente — Río Colorado',
+      },
+    ],
+  },
 }
 
 export default function FullMenuLayout({

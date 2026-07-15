@@ -56,7 +56,6 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog'
-import { motion, AnimatePresence } from 'framer-motion'
 
 interface ProductTableProps {
   productos: Producto[]
@@ -362,7 +361,7 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
         </div>
       </GlassCard>
 
-      <GlassCard className="overflow-hidden">
+      <GlassCard className="overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -377,21 +376,17 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
               </TableRow>
             </TableHeader>
             <TableBody>
-              <AnimatePresence mode="popLayout">
                 {paginatedProducts.length > 0 ? (
                   paginatedProducts.map((p) => (
-                    <motion.tr
-                      layout
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: p.disponible ? 1 : 0.6, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
+                    <tr
                       key={p.id}
-                      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                      className="border-b transition-opacity duration-200 hover:bg-muted/50 data-[state=selected]:bg-muted"
+                      style={{ opacity: p.disponible ? 1 : 0.6 }}
                     >
                       <TableCell>
                         <div className="w-12 h-12 rounded-md overflow-hidden relative flex items-center justify-center border bg-muted">
                           {p.imagen_url ? (
-                            <Image src={p.imagen_url} alt={p.nombre} fill className="object-cover" sizes="48px" />
+                            <Image src={p.imagen_url} alt={p.nombre} fill className="object-cover" sizes="48px" loading="lazy" />
                           ) : (
                             <ImageOff className="h-4 w-4 text-muted-foreground" />
                           )}
@@ -562,7 +557,7 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
-                    </motion.tr>
+                    </tr>
                   ))
                 ) : (
                   <TableRow>
@@ -571,7 +566,6 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
                     </TableCell>
                   </TableRow>
                 )}
-              </AnimatePresence>
             </TableBody>
           </Table>
         </div>
