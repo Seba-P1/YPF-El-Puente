@@ -5,6 +5,13 @@
    system instead of the in-app theme toggle. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ── Prevent horizontal overflow on mobile ── */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* ── Modo claro (por defecto) ── */
 :root {
   --font-caveat: 'Caveat', cursive;

@@ -9,7 +9,7 @@ export const metadata = {
 }
 
 export default async function AdminProductosPage() {
-  const productos = await getAllProductos()
+  const { data: productos, count } = await getAllProductos({ page: 1, limit: 20 })
 
   return (
     <div className="space-y-6">

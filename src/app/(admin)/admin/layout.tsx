@@ -23,8 +23,8 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { getAllProductos } = await import('@/lib/supabase/queries')
-  const productos = await getAllProductos()
+  const { getProductosForSearch } = await import('@/lib/supabase/queries')
+  const productos = await getProductosForSearch()
 
   if (!user) {
     redirect('/login')

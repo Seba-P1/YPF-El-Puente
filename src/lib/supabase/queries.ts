@@ -1,4 +1,5 @@
 import 'server-only'
+import { cache } from 'react'
 import { createClient as createServerSupabaseClient } from './server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import type { Database } from './types'
@@ -45,17 +46,30 @@ export async function getProductoById(id: string): Promise<Producto | null> {
   return data ?? null
 }
 
-export async function getAllProductos(): Promise<Producto[]> {
+export const getAllProductos = cache(async (options?: { page?: number; limit?: number }): Promise<{ data: Producto[]; count: number }> => {
+  const page = options?.page ?? 1
+  const limit = options?.limit ?? 20
+
   const supabase = await createServerSupabaseClient()
-  const { data, error } = await supabase
+  const { data, count, error } = await supabase
     .from('productos')
-    .select('*')
+    .select('id, codigo_plu, nombre, categoria_slug, precio, imagen_url, disponible, badge, orden', { count: 'exact' })
     .order('categoria_slug')
     .order('orden', { ascending: true })
+    .range((page - 1) * limit, page * limit - 1)
 
   if (error) throw new Error(`Error fetching all productos: ${error.message}`)
+  return { data: data ?? [], count: count ?? 0 }
+})
+
+export const getProductosForSearch = cache(async () => {
+  const supabase = await createServerSupabaseClient()
+  const { data } = await supabase
+    .from('productos')
+    .select('id, nombre, codigo_plu, precio')
+    .order('nombre')
   return data ?? []
-}
+})
 
 export async function getProductosDestacados(): Promise<Producto[]> {
   const supabase = await createServerSupabaseClient()

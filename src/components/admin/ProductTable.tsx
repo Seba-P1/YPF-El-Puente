@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -26,7 +27,6 @@ import {
 import { formatearPrecioARS } from '@/lib/excel/parser'
 import type { Producto } from '@/types'
 import { toast } from 'sonner'
-import { ImageUploader } from './ImageUploader'
 import { GlassCard } from '@/components/admin/ui/glass-card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -40,22 +40,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from '@/components/ui/dialog'
+
+const ImageUploader = dynamic(() => import('./ImageUploader').then((m) => m.ImageUploader), { ssr: false })
+
+const DropdownMenu = dynamic(() => import('@/components/ui/dropdown-menu').then((m) => m.DropdownMenu), { ssr: false })
+const DropdownMenuTrigger = dynamic(() => import('@/components/ui/dropdown-menu').then((m) => m.DropdownMenuTrigger), { ssr: false })
+const DropdownMenuContent = dynamic(() => import('@/components/ui/dropdown-menu').then((m) => m.DropdownMenuContent), { ssr: false })
+const DropdownMenuItem = dynamic(() => import('@/components/ui/dropdown-menu').then((m) => m.DropdownMenuItem), { ssr: false })
+const DropdownMenuSeparator = dynamic(() => import('@/components/ui/dropdown-menu').then((m) => m.DropdownMenuSeparator), { ssr: false })
+
+const DeleteProductDialog = dynamic(() => import('./DeleteProductDialog').then((m) => m.DeleteProductDialog), { ssr: false })
 
 interface ProductTableProps {
   productos: Producto[]
@@ -607,41 +601,15 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
         />
       )}
 
-      <Dialog
+      <DeleteProductDialog
+        producto={confirmDelete}
         open={confirmDelete !== null}
+        deleting={deleting}
         onOpenChange={(open) => {
-          if (!open && !deleting) setConfirmDelete(null)
+          if (!open) setConfirmDelete(null)
         }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Eliminar producto</DialogTitle>
-            <DialogDescription>
-              ¿Seguro que querés eliminar{' '}
-              <span className="font-semibold text-foreground">
-                {confirmDelete?.nombre}
-              </span>
-              ? Esta acción no se puede deshacer.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline" type="button" disabled={deleting}>
-                Cancelar
-              </Button>
-            </DialogClose>
-            <Button
-              variant="destructive"
-              type="button"
-              onClick={handleConfirmDelete}
-              disabled={deleting}
-            >
-              {deleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
-              Eliminar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }
