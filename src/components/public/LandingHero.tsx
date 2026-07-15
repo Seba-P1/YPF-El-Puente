@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import {
   containerVariants,
@@ -70,10 +71,12 @@ export function LandingHero() {
 
       {/* Fallback image when prefers reduced motion is enabled */}
       {prefersReducedMotion && (
-        <img
+        <Image
           src={videoSources.poster}
           alt="Hero background"
+          fill
           className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none opacity-60"
+          preload={true}
         />
       )}
       {/* Grid lines overlay (YPF technical engineering vibe) */}
