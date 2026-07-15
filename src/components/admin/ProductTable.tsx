@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
-import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -24,9 +23,10 @@ import {
   deleteProducto,
   bulkUpdateDisponible,
 } from '@/lib/supabase/actions'
-import { formatearPrecioARS } from '@/lib/format'
+import { formatearPrecioARS } from '@/lib/excel/parser'
 import type { Producto } from '@/types'
 import { toast } from 'sonner'
+import { ImageUploader } from './ImageUploader'
 import { GlassCard } from '@/components/admin/ui/glass-card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -40,20 +40,25 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-
-const ImageUploader = dynamic(() => import('./ImageUploader').then((m) => m.ImageUploader), { ssr: false })
-
-const DropdownMenu = dynamic(() => import('@/components/ui/dropdown-menu').then((m) => m.DropdownMenu), { ssr: false })
-const DropdownMenuTrigger = dynamic(() => import('@/components/ui/dropdown-menu').then((m) => m.DropdownMenuTrigger), { ssr: false })
-const DropdownMenuContent = dynamic(() => import('@/components/ui/dropdown-menu').then((m) => m.DropdownMenuContent), { ssr: false })
-const DropdownMenuItem = dynamic(() => import('@/components/ui/dropdown-menu').then((m) => m.DropdownMenuItem), { ssr: false })
-const DropdownMenuSeparator = dynamic(() => import('@/components/ui/dropdown-menu').then((m) => m.DropdownMenuSeparator), { ssr: false })
-
-const DeleteProductDialog = dynamic(() => import('./DeleteProductDialog').then((m) => m.DeleteProductDialog), { ssr: false })
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
 
 interface ProductTableProps {
   productos: Producto[]
-  productosBusquedaForSearch?: { id: string; nombre: string; codigo_plu: string; precio: number }[]
 }
 
 const ITEMS_POR_PAGINA = 20
@@ -78,7 +83,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   sin_categoria: 'Sin Categoría',
 }
 
-export function ProductTable({ productos: initialProductos, productosBusquedaForSearch }: ProductTableProps) {
+export function ProductTable({ productos: initialProductos }: ProductTableProps) {
   const [productos, setProductos] = useState(initialProductos)
   const [filtroNombre, setFiltroNombre] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState<string>('all')
@@ -110,33 +115,10 @@ export function ProductTable({ productos: initialProductos, productosBusquedaFor
   }, [editandoPrecio?.id])
 
   const filteredProducts = useMemo(() => {
-    // Si hay búsqueda activa, filtrar sobre la lista completa
-    if (filtroNombre) {
-      const idsFiltrados = productosBusquedaForSearch
-        ?.filter(p => 
-          p.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) ||
-          p.codigo_plu.toLowerCase().includes(filtroNombre.toLowerCase())
-        )
-        .map(p => p.id) ?? []
-      
-      // Mostrar solo los que matchean (sin paginación cuando hay búsqueda)
-      const buscados = productos.filter(p => idsFiltrados.includes(p.id))
-      
-      // Aplicar filtros de categoría y estado sobre los resultados de búsqueda
-      return buscados.filter((p) => {
-        const matchesCat =
-          filtroCategoria === 'all' || p.categoria_slug === filtroCategoria
-        const matchesState =
-          filtroEstado === 'all' ||
-          (filtroEstado === 'active' && p.disponible) ||
-          (filtroEstado === 'inactive' && !p.disponible) ||
-          (filtroEstado === 'noprice' && (!p.precio || p.precio === 0))
-        return matchesCat && matchesState
-      })
-    }
-    
-    // Si no hay búsqueda, usar filtros de categoría/estado sobre la página actual
     return productos.filter((p) => {
+      const matchesSearch =
+        p.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) ||
+        p.codigo_plu.toLowerCase().includes(filtroNombre.toLowerCase())
       const matchesCat =
         filtroCategoria === 'all' || p.categoria_slug === filtroCategoria
       const matchesState =
@@ -144,17 +126,15 @@ export function ProductTable({ productos: initialProductos, productosBusquedaFor
         (filtroEstado === 'active' && p.disponible) ||
         (filtroEstado === 'inactive' && !p.disponible) ||
         (filtroEstado === 'noprice' && (!p.precio || p.precio === 0))
-      return matchesCat && matchesState
+      return matchesSearch && matchesCat && matchesState
     })
-  }, [productos, filtroNombre, filtroCategoria, filtroEstado, productosBusquedaForSearch])
+  }, [productos, filtroNombre, filtroCategoria, filtroEstado])
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_POR_PAGINA)
-  const paginatedProducts = filtroNombre
-    ? filteredProducts
-    : filteredProducts.slice(
-        (paginaActual - 1) * ITEMS_POR_PAGINA,
-        paginaActual * ITEMS_POR_PAGINA
-      )
+  const paginatedProducts = filteredProducts.slice(
+    (paginaActual - 1) * ITEMS_POR_PAGINA,
+    paginaActual * ITEMS_POR_PAGINA
+  )
 
   const handleGuardarPrecio = useCallback(
     async (id: string, valorString: string) => {
@@ -590,7 +570,7 @@ export function ProductTable({ productos: initialProductos, productosBusquedaFor
           </Table>
         </div>
 
-        {totalPages > 1 && !filtroNombre && (
+        {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t">
             <span className="text-xs text-muted-foreground">
               Página {paginaActual} de {totalPages}
@@ -627,15 +607,41 @@ export function ProductTable({ productos: initialProductos, productosBusquedaFor
         />
       )}
 
-      <DeleteProductDialog
-        producto={confirmDelete}
+      <Dialog
         open={confirmDelete !== null}
-        deleting={deleting}
         onOpenChange={(open) => {
-          if (!open) setConfirmDelete(null)
+          if (!open && !deleting) setConfirmDelete(null)
         }}
-        onConfirm={handleConfirmDelete}
-      />
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar producto</DialogTitle>
+            <DialogDescription>
+              ¿Seguro que querés eliminar{' '}
+              <span className="font-semibold text-foreground">
+                {confirmDelete?.nombre}
+              </span>
+              ? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" type="button" disabled={deleting}>
+                Cancelar
+              </Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              type="button"
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+            >
+              {deleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
