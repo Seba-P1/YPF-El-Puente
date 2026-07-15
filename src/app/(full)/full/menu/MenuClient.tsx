@@ -233,6 +233,8 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
           )}
         </div>
 
+        <h2 className="sr-only">Productos</h2>
+
         <AnimatePresence mode="wait">
           {paginados.length > 0 ? (
             <motion.div

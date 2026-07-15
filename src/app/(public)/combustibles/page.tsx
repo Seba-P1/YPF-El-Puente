@@ -82,6 +82,7 @@ export default async function CombustiblesPage() {
       </section>
 
       {/* Grid (shared component) */}
+      <h2 className="sr-only">Listado de combustibles</h2>
       <CombustiblesGrid combustibles={combustibles} />
 
       {/* Infinia info — inline, structurally unique */}
