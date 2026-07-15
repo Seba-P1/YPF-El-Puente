@@ -59,6 +59,7 @@ import {
 
 interface ProductTableProps {
   productos: Producto[]
+  productosBusquedaForSearch?: Producto[]
 }
 
 const ITEMS_POR_PAGINA = 20
@@ -83,7 +84,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   sin_categoria: 'Sin Categoría',
 }
 
-export function ProductTable({ productos: initialProductos }: ProductTableProps) {
+export function ProductTable({ productos: initialProductos, productosBusquedaForSearch }: ProductTableProps) {
   const [productos, setProductos] = useState(initialProductos)
   const [filtroNombre, setFiltroNombre] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState<string>('all')
@@ -570,7 +571,7 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
           </Table>
         </div>
 
-        {totalPages > 1 && (
+        {totalPages > 1 && !filtroNombre && (
           <div className="flex items-center justify-between px-4 py-3 border-t">
             <span className="text-xs text-muted-foreground">
               Página {paginaActual} de {totalPages}
