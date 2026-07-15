@@ -17,6 +17,7 @@ export const metadata: Metadata = createPageMetadata({
     'Patagonia',
   ],
   canonical: '/',
+  image: '/opengraph-image',
 })
 
 export const revalidate = 60
