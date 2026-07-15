@@ -23,7 +23,7 @@ import {
   deleteProducto,
   bulkUpdateDisponible,
 } from '@/lib/supabase/actions'
-import { formatearPrecioARS } from '@/lib/excel/parser'
+import { formatearPrecioARS } from '@/lib/format'
 import type { Producto } from '@/types'
 import { toast } from 'sonner'
 import { ImageUploader } from './ImageUploader'
