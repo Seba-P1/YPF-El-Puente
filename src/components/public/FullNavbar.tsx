@@ -125,10 +125,9 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
       }}
     >
       <div
-        className="flex justify-between items-center h-full mx-auto transition-all duration-300"
+        className="w-full flex justify-between items-center h-full mx-auto px-4 md:px-8 transition-all duration-300"
         style={{
           maxWidth: 'var(--page-max, 1920px)',
-          padding: '0 var(--page-pad-x, 32px)',
           opacity: isSearchExpanded ? 0 : 1,
           pointerEvents: isSearchExpanded ? 'none' : 'auto',
           transform: isSearchExpanded ? 'scale(0.98)' : 'scale(1)'

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { parseExcelFile } from '@/lib/excel/parser'
-import { formatearPrecioARS } from '@/lib/excel/parser'
+import { formatearPrecioARS } from '@/lib/format'
 import type { ExcelRow, UploadResult } from '@/types'
 import { useRouter } from 'next/navigation'
 import { GlassCard } from '@/components/admin/ui/glass-card'

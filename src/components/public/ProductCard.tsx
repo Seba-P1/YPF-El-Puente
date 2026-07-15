@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { ShoppingCart } from 'lucide-react'
 import { toast } from 'sonner'
 import { useCartStore } from '@/stores/cart'
-import { formatearPrecioARS } from '@/lib/excel/parser'
+import { formatearPrecioARS } from '@/lib/format'
 import type { Producto } from '@/types'
 
 interface ProductCardProps {
@@ -57,6 +57,7 @@ export function ProductCard({ producto }: ProductCardProps) {
             className="object-contain"
             sizes="(max-width: 768px) 192px, 224px"
             priority={producto.destacado}
+            loading={producto.destacado ? undefined : "lazy"}
           />
         ) : (
           <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center opacity-50">

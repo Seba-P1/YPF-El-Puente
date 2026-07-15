@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
 import { toast } from 'sonner'
 import { useCartStore } from '@/stores/cart'
-import { formatearPrecioARS } from '@/lib/excel/parser'
+import { formatearPrecioARS } from '@/lib/format'
 import { ProductImagePlaceholder } from '@/components/public/ProductImagePlaceholder'
 import type { Producto } from '@/lib/supabase/types'
 
@@ -93,6 +93,7 @@ export function FullProductCard({
               sizes="(max-width: 768px) 408px, 476px"
               quality={100}
               priority={index < 4}
+              loading={index < 4 ? undefined : "lazy"}
               className="object-contain"
               unoptimized={true}
               onError={() => setImgError(true)}

@@ -58,8 +58,7 @@ export function BoxesServicesSection({ servicios }: BoxesServicesSectionProps) {
       className="py-[72px] md:py-[100px]"
     >
       <div
-        className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16"
-        style={{ maxWidth: 'min(1280px, 92vw)', margin: '0 auto', padding: '0 24px' }}
+        className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 w-full max-w-[1280px] mx-auto px-6"
       >
         {/* Left column — text */}
         <motion.div

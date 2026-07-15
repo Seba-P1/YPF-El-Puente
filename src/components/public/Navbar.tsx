@@ -51,7 +51,7 @@ export function Navbar() {
         transition: 'background 0.4s ease, backdrop-filter 0.4s ease, border-color 0.4s ease',
       }}
     >
-      <div className="h-full max-w-[1920px] mx-auto px-6 md:px-16 lg:px-24 xl:px-32 flex items-center justify-between">
+      <div className="w-full h-full max-w-[1920px] mx-auto px-4 md:px-16 lg:px-24 xl:px-32 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <Image

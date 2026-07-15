@@ -11,7 +11,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { getAllProductos, getUploadsHistorial, getCombustibles } from '@/lib/supabase/queries'
-import { formatearPrecioARS } from '@/lib/excel/parser'
+import { formatearPrecioARS } from '@/lib/format'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { CurrentDateTime } from './CurrentDateTime'
@@ -22,11 +22,13 @@ export const metadata = {
 }
 
 export default async function AdminDashboardPage() {
-  const [productos, historial, combustibles] = await Promise.all([
+  const [result, historial, combustibles] = await Promise.all([
     getAllProductos(),
     getUploadsHistorial(5),
     getCombustibles(),
   ])
+
+  const productos = result.data
 
   const activos = productos.filter((p) => p.disponible).length
   const sinPrecio = productos.filter((p) => !p.precio || p.precio === 0).length

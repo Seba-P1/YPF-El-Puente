@@ -5,6 +5,13 @@
    system instead of the in-app theme toggle. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ── Prevent horizontal overflow on mobile ── */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* ── Modo claro (por defecto) ── */
 :root {
   --font-caveat: 'Caveat', cursive;
@@ -280,10 +287,11 @@
 
   .glass-card {
     background: rgba(255, 255, 255, 0.45);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
     border: 1px solid rgba(0, 0, 0, 0.05);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    will-change: auto;
   }
 
   .dark .glass-card {
@@ -317,8 +325,12 @@
     animation: rotate-border 4s linear infinite;
     opacity: 0;
     transition: opacity 200ms;
+    will-change: opacity;
   }
-  .glow-border:hover::before { opacity: 0.6; }
+  .glow-border:hover::before { 
+    opacity: 0.6;
+    will-change: opacity, transform;
+  }
 
   @keyframes rotate-border { to { --angle: 360deg; } }
   @property --angle {
@@ -359,12 +371,13 @@ html {
 
 /* ── Marquee animation ── */
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
 }
 
 .marquee-track {
   animation: marquee 22s linear infinite;
+  will-change: transform;
 }
 
 .marquee-wrapper:hover .marquee-track {
@@ -527,7 +540,7 @@ html {
     flex-direction: column;
     height: 100%;
     width: 100%;
-    will-change: transform;
+    /* will-change se agrega dinámicamente via JS solo durante la animación */
   }
 
   /* Each fullpage section takes exactly 100% of the viewport */
@@ -542,6 +555,24 @@ html {
     overflow-y: auto !important;
     height: 100svh !important;
     -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Performance: pause animations when not visible ── */
+@media (prefers-reduced-motion: no-preference) {
+  .marquee-track,
+  .shimmer,
+  .glow-border::before,
+  .animate-pulse-dot {
+    animation-play-state: running;
+  }
+  
+  /* Pause when tab is not active */
+  :root:not(:focus-within) .marquee-track,
+  :root:not(:focus-within) .shimmer,
+  :root:not(:focus-within) .glow-border::before,
+  :root:not(:focus-within) .animate-pulse-dot {
+    animation-play-state: paused;
   }
 }
 

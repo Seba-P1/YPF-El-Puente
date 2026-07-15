@@ -18,8 +18,7 @@ export function FooterSection() {
       }}
     >
       <div
-        className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8 text-center md:text-left"
-        style={{ maxWidth: 'min(1280px, 92vw)', margin: '0 auto', padding: '0 24px' }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8 text-center md:text-left w-full max-w-[1280px] mx-auto px-6"
       >
         {/* Column 1 — Brand */}
         <div className="flex flex-col items-center md:items-start gap-4">
@@ -128,10 +127,10 @@ export function FooterSection() {
 
       {/* Bottom line */}
       <div
+        className="w-full max-w-[1280px] mx-auto px-6"
         style={{
-          maxWidth: 'min(1280px, 92vw)',
-          margin: '32px auto 0',
-          padding: '24px 24px 0',
+          marginTop: '32px',
+          paddingTop: '24px',
           borderTop: '1px solid var(--border)',
           textAlign: 'center',
           fontSize: 12,

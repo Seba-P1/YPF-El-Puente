@@ -14,8 +14,11 @@ export function MobileBottomBar() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50"
+      className="md:hidden fixed bottom-0 left-0 z-50"
       style={{
+        width: '100%',
+        maxWidth: '100vw',
+        overflowX: 'hidden',
         background: 'rgba(6,8,15,0.92)',
         backdropFilter: 'blur(20px) saturate(180%)',
         WebkitBackdropFilter: 'blur(20px) saturate(180%)',
@@ -23,45 +26,45 @@ export function MobileBottomBar() {
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      <div className="flex items-center justify-around h-16 px-2">
+      <div className="flex items-center justify-around h-16 px-1" style={{ width: '100%', maxWidth: '100vw' }}>
         <Link
           href="/"
-          className="flex flex-col items-center justify-center w-full h-full space-y-1"
+          className="flex flex-col items-center justify-center flex-1 min-w-0 h-full space-y-1"
           style={{ color: isActive('/', true) ? '#FFD100' : 'rgba(248,250,252,0.45)' }}
         >
-          <Home style={{ width: 22, height: 22 }} />
+          <Home style={{ width: 22, height: 22, flexShrink: 0 }} />
           <span style={{ fontSize: 10, fontWeight: 600 }}>Inicio</span>
         </Link>
         <Link
           href="/full"
-          className="flex flex-col items-center justify-center w-full h-full space-y-1"
+          className="flex flex-col items-center justify-center flex-1 min-w-0 h-full space-y-1"
           style={{ color: isActive('/full') ? '#FFD100' : 'rgba(248,250,252,0.45)' }}
         >
-          <UtensilsCrossed style={{ width: 22, height: 22 }} />
+          <UtensilsCrossed style={{ width: 22, height: 22, flexShrink: 0 }} />
           <span style={{ fontSize: 10, fontWeight: 600 }}>Full</span>
         </Link>
         {pathname.startsWith('/full') ? (
           <Link
             href="/full/menu"
-            className="flex flex-col items-center justify-center w-full h-full space-y-1"
+            className="flex flex-col items-center justify-center flex-1 min-w-0 h-full space-y-1"
             style={{ color: isActive('/full/menu') ? '#FFD100' : 'rgba(248,250,252,0.45)' }}
           >
-            <BookOpen style={{ width: 22, height: 22 }} />
-            <span style={{ fontSize: 10, fontWeight: 600, textAlign: 'center', whiteSpace: 'nowrap' }}>Full Completo</span>
+            <BookOpen style={{ width: 22, height: 22, flexShrink: 0 }} />
+            <span style={{ fontSize: 10, fontWeight: 600, textAlign: 'center', lineHeight: 1.2 }}>Full Completo</span>
           </Link>
         ) : (
           <Link
             href="/#boxes"
-            className="flex flex-col items-center justify-center w-full h-full space-y-1"
+            className="flex flex-col items-center justify-center flex-1 min-w-0 h-full space-y-1"
             style={{ color: 'rgba(248,250,252,0.45)' }}
           >
-            <Car style={{ width: 22, height: 22 }} />
+            <Car style={{ width: 22, height: 22, flexShrink: 0 }} />
             <span style={{ fontSize: 10, fontWeight: 600 }}>Boxes</span>
           </Link>
         )}
         <button
           onClick={openCart}
-          className="flex flex-col items-center justify-center w-full h-full space-y-1 cursor-pointer"
+          className="flex flex-col items-center justify-center flex-1 min-w-0 h-full space-y-1 cursor-pointer"
           style={{ color: 'rgba(248,250,252,0.45)' }}
         >
           <div className="relative">

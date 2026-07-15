@@ -188,10 +188,10 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
 
       {/* Product Grid */}
       <div
+        className="w-full max-w-[1600px] mx-auto px-4 md:px-8"
         style={{
-          maxWidth: '1600px',
-          margin: '0 auto',
-          padding: '20px var(--page-pad-x, 24px) 80px',
+          paddingTop: '20px',
+          paddingBottom: '80px',
           position: 'relative',
           zIndex: 1,
         }}

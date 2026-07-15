@@ -46,10 +46,8 @@ export function CatalogoFiltros({
       }}
     >
       <div
+        className="w-full max-w-[1280px] mx-auto px-4 md:px-6"
         style={{
-          maxWidth: 'var(--page-max, 1280px)',
-          margin: '0 auto',
-          padding: '0 var(--page-pad-x, 24px)',
           display: 'flex',
           flexDirection: 'column',
           gap: isCompact ? 8 : 10,
