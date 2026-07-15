@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { useCartStore } from '@/stores/cart'
-import { formatearPrecioARS } from '@/lib/excel/parser'
+import { formatearPrecioARS } from '@/lib/format'
 import { ProductImagePlaceholder } from '@/components/public/ProductImagePlaceholder'
 import type { Producto } from '@/lib/supabase/types'
 

@@ -24,7 +24,7 @@ import {
   deleteProducto,
   bulkUpdateDisponible,
 } from '@/lib/supabase/actions'
-import { formatearPrecioARS } from '@/lib/excel/parser'
+import { formatearPrecioARS } from '@/lib/format'
 import type { Producto } from '@/types'
 import { toast } from 'sonner'
 import { GlassCard } from '@/components/admin/ui/glass-card'
@@ -53,6 +53,7 @@ const DeleteProductDialog = dynamic(() => import('./DeleteProductDialog').then((
 
 interface ProductTableProps {
   productos: Producto[]
+  productosBusquedaForSearch?: { id: string; nombre: string; codigo_plu: string; precio: number }[]
 }
 
 const ITEMS_POR_PAGINA = 20
@@ -77,7 +78,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   sin_categoria: 'Sin Categoría',
 }
 
-export function ProductTable({ productos: initialProductos }: ProductTableProps) {
+export function ProductTable({ productos: initialProductos, productosBusquedaForSearch }: ProductTableProps) {
   const [productos, setProductos] = useState(initialProductos)
   const [filtroNombre, setFiltroNombre] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState<string>('all')
@@ -109,10 +110,33 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
   }, [editandoPrecio?.id])
 
   const filteredProducts = useMemo(() => {
+    // Si hay búsqueda activa, filtrar sobre la lista completa
+    if (filtroNombre) {
+      const idsFiltrados = productosBusquedaForSearch
+        ?.filter(p => 
+          p.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) ||
+          p.codigo_plu.toLowerCase().includes(filtroNombre.toLowerCase())
+        )
+        .map(p => p.id) ?? []
+      
+      // Mostrar solo los que matchean (sin paginación cuando hay búsqueda)
+      const buscados = productos.filter(p => idsFiltrados.includes(p.id))
+      
+      // Aplicar filtros de categoría y estado sobre los resultados de búsqueda
+      return buscados.filter((p) => {
+        const matchesCat =
+          filtroCategoria === 'all' || p.categoria_slug === filtroCategoria
+        const matchesState =
+          filtroEstado === 'all' ||
+          (filtroEstado === 'active' && p.disponible) ||
+          (filtroEstado === 'inactive' && !p.disponible) ||
+          (filtroEstado === 'noprice' && (!p.precio || p.precio === 0))
+        return matchesCat && matchesState
+      })
+    }
+    
+    // Si no hay búsqueda, usar filtros de categoría/estado sobre la página actual
     return productos.filter((p) => {
-      const matchesSearch =
-        p.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) ||
-        p.codigo_plu.toLowerCase().includes(filtroNombre.toLowerCase())
       const matchesCat =
         filtroCategoria === 'all' || p.categoria_slug === filtroCategoria
       const matchesState =
@@ -120,15 +144,17 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
         (filtroEstado === 'active' && p.disponible) ||
         (filtroEstado === 'inactive' && !p.disponible) ||
         (filtroEstado === 'noprice' && (!p.precio || p.precio === 0))
-      return matchesSearch && matchesCat && matchesState
+      return matchesCat && matchesState
     })
-  }, [productos, filtroNombre, filtroCategoria, filtroEstado])
+  }, [productos, filtroNombre, filtroCategoria, filtroEstado, productosBusquedaForSearch])
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_POR_PAGINA)
-  const paginatedProducts = filteredProducts.slice(
-    (paginaActual - 1) * ITEMS_POR_PAGINA,
-    paginaActual * ITEMS_POR_PAGINA
-  )
+  const paginatedProducts = filtroNombre
+    ? filteredProducts
+    : filteredProducts.slice(
+        (paginaActual - 1) * ITEMS_POR_PAGINA,
+        paginaActual * ITEMS_POR_PAGINA
+      )
 
   const handleGuardarPrecio = useCallback(
     async (id: string, valorString: string) => {
@@ -564,7 +590,7 @@ export function ProductTable({ productos: initialProductos }: ProductTableProps)
           </Table>
         </div>
 
-        {totalPages > 1 && (
+        {totalPages > 1 && !filtroNombre && (
           <div className="flex items-center justify-between px-4 py-3 border-t">
             <span className="text-xs text-muted-foreground">
               Página {paginaActual} de {totalPages}

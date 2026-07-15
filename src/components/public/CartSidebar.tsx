@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X, ChevronLeft, ShoppingCart, Minus, Plus, Trash2 } from 'lucide-react'
 import { useCartStore } from '@/stores/cart'
-import { formatearPrecioARS } from '@/lib/excel/parser'
+import { formatearPrecioARS } from '@/lib/format'
 import { generateWhatsAppURL, openWhatsApp } from '@/lib/whatsapp/formatter'
 import { getWhatsAppConfig } from '@/lib/supabase/actions'
 
@@ -103,10 +103,9 @@ export function CartSidebar() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed top-0 right-0 bottom-0 w-full md:w-[420px] z-50 flex flex-col"
+            className="fixed top-0 bottom-0 left-0 md:left-auto right-0 w-full md:w-[420px] z-50 flex flex-col border-l-0 md:border-l border-white/10"
             style={{
               background: '#0A0A0F',
-              borderLeft: '1px solid rgba(255,255,255,0.07)',
             }}
           >
             <AnimatePresence mode="wait">
@@ -124,6 +123,7 @@ export function CartSidebar() {
                     className="flex items-center justify-between flex-shrink-0"
                     style={{
                       padding: '20px 20px 16px',
+                      paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))',
                       borderBottom: '1px solid rgba(255,255,255,0.07)',
                     }}
                   >
@@ -317,6 +317,7 @@ export function CartSidebar() {
                       className="flex-shrink-0"
                       style={{
                         padding: '16px 20px 24px',
+                        paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))',
                         borderTop: '1px solid rgba(255,255,255,0.07)',
                       }}
                     >
@@ -377,6 +378,7 @@ export function CartSidebar() {
                     className="flex items-center gap-3 flex-shrink-0"
                     style={{
                       padding: '20px 20px 16px',
+                      paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))',
                       borderBottom: '1px solid rgba(255,255,255,0.07)',
                     }}
                   >
@@ -541,6 +543,7 @@ export function CartSidebar() {
                     className="flex-shrink-0"
                     style={{
                       padding: '16px 20px 28px',
+                      paddingBottom: 'calc(28px + env(safe-area-inset-bottom, 0px))',
                       borderTop: '1px solid rgba(255,255,255,0.07)',
                       marginTop: 16,
                     }}

@@ -225,16 +225,3 @@ export async function parseExcelFile(file: File): Promise<ExcelRow[]> {
 
   return Array.from(codigosVistos.values())
 }
-
-/**
- * Format a number as Argentine Peso currency string.
- * Example: 2500 → "$2.500,00"
- */
-export function formatearPrecioARS(precio: number): string {
-  return new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: 'ARS',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(precio)
-}

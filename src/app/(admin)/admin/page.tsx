@@ -11,7 +11,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { getAllProductos, getUploadsHistorial, getCombustibles } from '@/lib/supabase/queries'
-import { formatearPrecioARS } from '@/lib/excel/parser'
+import { formatearPrecioARS } from '@/lib/format'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { CurrentDateTime } from './CurrentDateTime'

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { ShoppingCart } from 'lucide-react'
 import { toast } from 'sonner'
 import { useCartStore } from '@/stores/cart'
-import { formatearPrecioARS } from '@/lib/excel/parser'
+import { formatearPrecioARS } from '@/lib/format'
 import type { Producto } from '@/types'
 
 interface ProductCardProps {

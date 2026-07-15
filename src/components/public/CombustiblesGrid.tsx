@@ -113,11 +113,8 @@ export function CombustiblesGrid({ combustibles }: CombustiblesGridProps) {
 
       {/* Cards grid - Optimized height for notebook viewports */}
       <div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 xl:gap-8"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 xl:gap-8 w-full max-w-[1200px] mx-auto px-6"
         style={{
-          maxWidth: 'min(1200px, 92vw)',
-          margin: '0 auto',
-          padding: '0 24px',
           position: 'relative',
           zIndex: 1,
         }}

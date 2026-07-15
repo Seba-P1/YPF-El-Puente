@@ -127,11 +127,10 @@ export function LandingHero() {
       />
 
       {/* Wrapper to align left and occupy full width in BenQ/ultra-wide screens */}
-      <div className="relative z-10 w-full max-w-[1920px] mx-auto px-6 md:px-16 lg:px-24 xl:px-32 flex flex-col items-center md:items-start justify-center">
-        {/* Content */}
+      <div className="relative z-10 w-full max-w-[1920px] mx-auto px-6 md:px-16 lg:px-24 xl:px-32 flex flex-col justify-between items-center md:items-start min-h-[calc(100vh-80px)] mt-[80px]">
+        {/* Content Top: Badge and Title (cercano al header) */}
         <motion.div
-          className="relative flex flex-col items-center md:items-start text-center md:text-left"
-          style={{ paddingTop: 80, maxWidth: 'min(780px, 92vw)' }}
+          className="relative flex flex-col items-center md:items-start text-center md:text-left pt-4 w-full"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -147,7 +146,7 @@ export function LandingHero() {
               WebkitBackdropFilter: 'blur(8px)',
               padding: '6px 18px',
               borderRadius: 999,
-              marginBottom: 24,
+              marginBottom: 16,
               boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
             }}
           >
@@ -176,7 +175,7 @@ export function LandingHero() {
           </motion.div>
 
           {/* 2. Brand Identity Block */}
-          <motion.div variants={itemVariants} className="flex flex-col items-center md:items-start mb-6">
+          <motion.div variants={itemVariants} className="flex flex-col items-center md:items-start">
             <h1
               style={{
                 fontFamily: 'var(--font-din-medium), sans-serif',
@@ -211,7 +210,16 @@ export function LandingHero() {
               </span>
             </h1>
           </motion.div>
+        </motion.div>
 
+        {/* Content Center: Tagline, Description, CTA Buttons (en el centro de la pantalla) */}
+        <motion.div
+          className="relative flex flex-col items-center md:items-start text-center md:text-left my-auto py-8 w-full"
+          style={{ maxWidth: 'min(780px, 92vw)' }}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {/* 3. Section Taglines */}
           <motion.p
             variants={itemVariants}
@@ -305,6 +313,9 @@ export function LandingHero() {
             </a>
           </motion.div>
         </motion.div>
+
+        {/* Spacer at the bottom to balance the top area and allow perfect my-auto centering */}
+        <div className="h-[60px] md:h-[80px] w-full pointer-events-none flex-shrink-0" />
       </div>
 
       {/* 6. Scroll indicator */}

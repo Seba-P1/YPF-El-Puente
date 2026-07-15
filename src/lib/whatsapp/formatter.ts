@@ -1,4 +1,4 @@
-import { formatearPrecioARS } from '@/lib/excel/parser'
+import { formatearPrecioARS } from '@/lib/format'
 import type { CartItem, WhatsAppConfig } from '@/types'
 
 export function calculateTotal(items: CartItem[]): number {
