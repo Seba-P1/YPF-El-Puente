@@ -363,6 +363,8 @@ export default function FullClient({
         </div>
       </motion.div>
 
+      <h1 className="sr-only">Menú FULL — YPF El Puente</h1>
+
       {!scrollScrolled && (
         <motion.button
           onClick={handleScrollToStart}
