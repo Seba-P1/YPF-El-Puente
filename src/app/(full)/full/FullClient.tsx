@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
-import Image from 'next/image'
+import Image, { getImageProps } from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 
@@ -325,7 +325,28 @@ export default function FullClient({
   }
 
   // Hero section component
-  const renderHeroSection = () => (
+  const renderHeroSection = () => {
+    const common = { alt: 'RDP7 YPF FULL', sizes: '100vw' }
+
+    const {
+      props: { srcSet: desktop, ...rest },
+    } = getImageProps({
+      ...common,
+      src: '/assets/ypf%20imagenes/RDP7.webp',
+      width: 1920,
+      height: 1080,
+    })
+
+    const {
+      props: { srcSet: mobile },
+    } = getImageProps({
+      ...common,
+      src: '/assets/ypf%20imagenes/RDP7-mobile.webp',
+      width: 768,
+      height: 1024,
+    })
+
+    return (
     <section 
       id="home-hero"
       className="relative flex flex-col items-center justify-center w-full overflow-hidden"
@@ -337,10 +358,10 @@ export default function FullClient({
     >
       <div className="absolute inset-0 z-0 bg-black">
         <picture>
-          <source media="(max-width: 768px)" srcSet="/assets/ypf%20imagenes/RDP7-mobile.webp" />
-          <img 
-            src="/assets/ypf%20imagenes/RDP7.webp" 
-            alt="RDP7 YPF FULL"
+          <source media="(max-width: 768px)" srcSet={mobile} />
+          <img
+            {...rest}
+            srcSet={desktop}
             className="w-full h-full object-cover object-center opacity-100"
           />
         </picture>
@@ -378,7 +399,7 @@ export default function FullClient({
         </motion.button>
       )}
     </section>
-  )
+  )}
 
   // Footer component
   const renderFooter = () => (
