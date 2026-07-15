@@ -93,6 +93,7 @@ export function FullProductCard({
               sizes="(max-width: 768px) 408px, 476px"
               quality={100}
               priority={index < 4}
+              loading={index < 4 ? undefined : "lazy"}
               className="object-contain"
               unoptimized={true}
               onError={() => setImgError(true)}

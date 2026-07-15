@@ -57,6 +57,7 @@ export function ProductCard({ producto }: ProductCardProps) {
             className="object-contain"
             sizes="(max-width: 768px) 192px, 224px"
             priority={producto.destacado}
+            loading={producto.destacado ? undefined : "lazy"}
           />
         ) : (
           <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center opacity-50">
