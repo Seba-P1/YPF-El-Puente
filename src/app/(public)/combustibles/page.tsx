@@ -14,6 +14,14 @@ export const metadata: Metadata = {
     locale: 'es_AR',
     type: 'website',
     siteName: 'YPF El Puente',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'YPF El Puente — Río Colorado',
+      },
+    ],
   },
 }
 
