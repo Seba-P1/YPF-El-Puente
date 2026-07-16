@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, UtensilsCrossed, Car, ShoppingCart, BookOpen } from 'lucide-react'
@@ -9,13 +10,37 @@ export function MobileBottomBar() {
   const pathname = usePathname()
   const { totalItems, openCart } = useCartStore()
 
+  // Fix: mantener visible por encima del browser chrome dinámico en mobile
+  const [bottomOffset, setBottomOffset] = useState(0)
+
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+
+    const update = () => {
+      // La diferencia entre innerHeight y visualViewport.height es el browser chrome
+      const chrome = window.innerHeight - vv.height
+      setBottomOffset(Math.max(0, chrome - vv.offsetTop))
+    }
+
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    update()
+
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+    }
+  }, [])
+
   const isActive = (path: string, exact = false) =>
     exact ? pathname === path : pathname.startsWith(path)
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 z-50"
+      className="md:hidden fixed left-0 z-50"
       style={{
+        bottom: bottomOffset,
         width: '100%',
         maxWidth: '100vw',
         overflowX: 'hidden',
