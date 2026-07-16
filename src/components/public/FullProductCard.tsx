@@ -84,7 +84,7 @@ export function FullProductCard({
     >
       {/* Image container — tall enough to avoid clipping */}
       <div className="relative w-full h-[400px] md:h-[460px] flex items-end justify-center overflow-visible">
-        <div className="absolute bottom-[-60px] md:bottom-[-80px] w-[408px] h-[374px] md:w-[476px] md:h-[442px] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
+        <div className="absolute bottom-[-40px] md:bottom-[-50px] w-[408px] h-[374px] md:w-[476px] md:h-[442px] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
           {!imgError && producto.imagen_url ? (
             <Image
               src={producto.imagen_url.startsWith('http') ? producto.imagen_url : `${producto.imagen_url}?v=2`}
@@ -113,7 +113,7 @@ export function FullProductCard({
       </div>
 
       {/* Invisible card — no background, border or shadow */}
-      <div className="w-full flex flex-col items-center justify-between px-4 pt-1 pb-2 transition-all duration-300 min-h-[80px] md:min-h-[100px] -mt-[40px] md:-mt-[60px]">
+      <div className="w-full flex flex-col items-center justify-between px-4 pt-1 pb-2 transition-all duration-300 min-h-[80px] md:min-h-[100px] -mt-[20px] md:-mt-[30px]">
         <div className="text-center w-full flex flex-col items-center flex-grow">
           <h3 className={`text-[13px] lg:text-[14px] font-bold text-center px-1 ${nameClass}`}>
             {producto.nombre}

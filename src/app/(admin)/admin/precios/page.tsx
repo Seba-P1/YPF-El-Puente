@@ -1,6 +1,11 @@
 import { format } from 'date-fns'
+import dynamic from 'next/dynamic'
 import { getUploadsHistorial } from '@/lib/supabase/queries'
-import { ExcelUploader } from '@/components/admin/ExcelUploader'
+
+const ExcelUploader = dynamic(
+  () => import('@/components/admin/ExcelUploader').then((m) => ({ default: m.ExcelUploader })),
+  { loading: () => <div className="animate-pulse h-20 bg-white/5 rounded" /> }
+)
 import { FileUp, FileDown, AlertTriangle } from 'lucide-react'
 import { GlassCard } from '@/components/admin/ui/glass-card'
 import {

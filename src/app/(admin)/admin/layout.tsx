@@ -23,7 +23,7 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { getProductosForSearch } = await import('@/lib/supabase/queries')
+  const { getProductosForSearch } = await import('@/lib/admin/actions')
   const productos = await getProductosForSearch()
 
   if (!user) {

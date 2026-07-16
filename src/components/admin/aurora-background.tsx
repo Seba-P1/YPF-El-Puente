@@ -31,7 +31,7 @@ export function AuroraBackground({ children }: { children?: React.ReactNode }) {
             filter: 'blur(80px)',
           }}
         />
-        <div className="absolute inset-0 bg-background/60 dark:bg-[hsl(228,36%,6%)]/40 backdrop-blur-3xl" />
+        <div className="absolute inset-0 bg-background/80 dark:bg-[hsl(228,36%,6%)]/70" />
       </div>
       {children}
     </>

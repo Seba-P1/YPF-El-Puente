@@ -15,16 +15,17 @@ const SECCIONES = [
 ] as const
 
 export default async function FullPrincipalPage() {
-  const seccionesData: Record<string, Producto[]> = {}
-
-  for (const slug of SECCIONES) {
-    try {
-      seccionesData[slug] = await getProductosPorCategoriaAdmin(slug)
-    } catch (err) {
-      console.error(`Error fetching ${slug}:`, err)
-      seccionesData[slug] = []
-    }
-  }
+  const results = await Promise.all(
+    SECCIONES.map(async (slug) => {
+      try {
+        return [slug, await getProductosPorCategoriaAdmin(slug)] as const
+      } catch (err) {
+        console.error(`Error fetching ${slug}:`, err)
+        return [slug, []] as const
+      }
+    })
+  )
+  const seccionesData: Record<string, Producto[]> = Object.fromEntries(results)
 
   // Fetch categories to know which sections are active
   const categorias = await getAllCategorias()
