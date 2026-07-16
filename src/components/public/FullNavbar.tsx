@@ -114,7 +114,7 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+      className="fixed top-0 left-0 right-0 z-50 w-full max-w-[100vw] transition-all duration-300"
       style={{
         height: isScrolled ? '54px' : '68px',
         background: transparent ? 'transparent' : (isScrolled ? 'rgba(6,8,15,0.4)' : 'transparent'),
@@ -146,7 +146,7 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
               width={120}
               height={38}
               priority
-              className="h-10 w-auto"
+              className="h-8 md:h-10 w-auto"
               onError={() => setImgError(true)}
             />
           ) : (
@@ -207,7 +207,7 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
           {/* BOTÓN CARRITO */}
           <button
             onClick={openCart}
-            className="flex items-center gap-2 rounded-full py-2 px-4 transition-colors"
+            className="flex items-center gap-1.5 md:gap-2 rounded-full py-1.5 px-3 md:py-2 md:px-4 transition-colors"
             style={{
               background: 'rgba(255,255,255,0.08)',
               border: '1px solid rgba(255,255,255,0.12)'
