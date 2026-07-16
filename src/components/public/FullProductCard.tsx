@@ -83,7 +83,7 @@ export function FullProductCard({
       }`}
     >
       {/* Image container — tall enough to avoid clipping */}
-      <div className="relative w-full h-[400px] md:h-[460px] flex items-end justify-center overflow-visible">
+      <div className="relative w-full h-[440px] md:h-[500px] flex items-end justify-center overflow-visible">
         <div className="absolute bottom-[-20px] md:bottom-[-30px] w-[408px] h-[374px] md:w-[476px] md:h-[442px] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
           {!imgError && producto.imagen_url ? (
             <Image
@@ -95,6 +95,7 @@ export function FullProductCard({
               priority={index < 4}
               loading={index < 4 ? undefined : "lazy"}
               className="object-contain"
+              style={{ objectPosition: 'bottom' }}
               unoptimized={true}
               onError={() => setImgError(true)}
             />

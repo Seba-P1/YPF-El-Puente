@@ -36,7 +36,7 @@ export function MobileBottomBar() {
         <Link
           href="/full"
           className="flex flex-col items-center justify-center flex-1 min-w-0 h-full space-y-1"
-          style={{ color: isActive('/full') ? '#FFD100' : 'rgba(248,250,252,0.45)' }}
+          style={{ color: isActive('/full', true) ? '#FFD100' : 'rgba(248,250,252,0.45)' }}
         >
           <UtensilsCrossed style={{ width: 22, height: 22, flexShrink: 0 }} />
           <span style={{ fontSize: 10, fontWeight: 600 }}>Full</span>
