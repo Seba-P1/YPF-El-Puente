@@ -23,6 +23,7 @@ import {
   deleteProducto,
   bulkUpdateDisponible,
 } from '@/lib/supabase/actions'
+import { getProductosForSearch } from '@/lib/admin/actions'
 import { formatearPrecioARS } from '@/lib/format'
 import type { Producto } from '@/types'
 import { toast } from 'sonner'
@@ -59,7 +60,7 @@ import {
 
 interface ProductTableProps {
   productos: Producto[]
-  productosBusquedaForSearch?: Producto[]
+  totalCount?: number
 }
 
 const ITEMS_POR_PAGINA = 20
@@ -84,8 +85,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   sin_categoria: 'Sin Categoría',
 }
 
-export function ProductTable({ productos: initialProductos, productosBusquedaForSearch }: ProductTableProps) {
+export function ProductTable({ productos: initialProductos, totalCount }: ProductTableProps) {
   const [productos, setProductos] = useState(initialProductos)
+  const [productosParaBuscar, setProductosParaBuscar] = useState<{ id: string; nombre: string; codigo_plu: string; precio: number }[]>([])
+  const [busquedaCargada, setBusquedaCargada] = useState(false)
   const [filtroNombre, setFiltroNombre] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState<string>('all')
   const [filtroEstado, setFiltroEstado] = useState<
@@ -116,10 +119,48 @@ export function ProductTable({ productos: initialProductos, productosBusquedaFor
   }, [editandoPrecio?.id])
 
   const filteredProducts = useMemo(() => {
+    // Si hay búsqueda activa y ya se cargó la lista completa
+    if (filtroNombre && busquedaCargada) {
+      const idsFiltrados = productosParaBuscar
+        .filter(p => 
+          p.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) ||
+          p.codigo_plu.toLowerCase().includes(filtroNombre.toLowerCase())
+        )
+        .map(p => p.id)
+      
+      // Mostrar productos de la tabla que matcheen, manteniendo filtros de categoría y estado
+      return productos.filter(p => {
+        if (!idsFiltrados.includes(p.id)) return false
+        const matchesCat =
+          filtroCategoria === 'all' || p.categoria_slug === filtroCategoria
+        const matchesState =
+          filtroEstado === 'all' ||
+          (filtroEstado === 'active' && p.disponible) ||
+          (filtroEstado === 'inactive' && !p.disponible) ||
+          (filtroEstado === 'noprice' && (!p.precio || p.precio === 0))
+        return matchesCat && matchesState
+      })
+    }
+    
+    // Si hay búsqueda pero aún no cargó, mostrar la página actual filtrada (fallback)
+    if (filtroNombre && !busquedaCargada) {
+      return productos.filter((p) => {
+        const matchesSearch =
+          p.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) ||
+          p.codigo_plu.toLowerCase().includes(filtroNombre.toLowerCase())
+        const matchesCat =
+          filtroCategoria === 'all' || p.categoria_slug === filtroCategoria
+        const matchesState =
+          filtroEstado === 'all' ||
+          (filtroEstado === 'active' && p.disponible) ||
+          (filtroEstado === 'inactive' && !p.disponible) ||
+          (filtroEstado === 'noprice' && (!p.precio || p.precio === 0))
+        return matchesSearch && matchesCat && matchesState
+      })
+    }
+    
+    // Sin búsqueda: filtros de categoría y estado con paginación normal
     return productos.filter((p) => {
-      const matchesSearch =
-        p.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) ||
-        p.codigo_plu.toLowerCase().includes(filtroNombre.toLowerCase())
       const matchesCat =
         filtroCategoria === 'all' || p.categoria_slug === filtroCategoria
       const matchesState =
@@ -127,9 +168,9 @@ export function ProductTable({ productos: initialProductos, productosBusquedaFor
         (filtroEstado === 'active' && p.disponible) ||
         (filtroEstado === 'inactive' && !p.disponible) ||
         (filtroEstado === 'noprice' && (!p.precio || p.precio === 0))
-      return matchesSearch && matchesCat && matchesState
+      return matchesCat && matchesState
     })
-  }, [productos, filtroNombre, filtroCategoria, filtroEstado])
+  }, [productos, filtroNombre, filtroCategoria, filtroEstado, productosParaBuscar, busquedaCargada])
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_POR_PAGINA)
   const paginatedProducts = filteredProducts.slice(
@@ -289,6 +330,17 @@ export function ProductTable({ productos: initialProductos, productosBusquedaFor
                 setFiltroNombre(e.target.value)
                 setPaginaActual(1)
               }}
+              onFocus={async () => {
+                if (!busquedaCargada) {
+                  try {
+                    const productos = await getProductosForSearch()
+                    setProductosParaBuscar(productos)
+                    setBusquedaCargada(true)
+                  } catch (error) {
+                    console.error('Error cargando productos para búsqueda:', error)
+                  }
+                }
+              }}
               className="pl-9 h-9"
             />
           </div>
@@ -357,7 +409,7 @@ export function ProductTable({ productos: initialProductos, productosBusquedaFor
             </Button>
           </div>
           <span className="text-xs lg:text-sm text-muted-foreground whitespace-nowrap">
-            {filteredProducts.length} de {productos.length}
+            {filteredProducts.length} de {totalCount ?? productos.length}
           </span>
         </div>
       </GlassCard>

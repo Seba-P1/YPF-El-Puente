@@ -212,9 +212,8 @@ export function LandingHero() {
           </motion.div>
         </motion.div>
 
-        {/* Content Center: Tagline, Description, CTA Buttons (en el centro de la pantalla) */}
         <motion.div
-          className="relative flex flex-col items-center md:items-start text-center md:text-left my-auto py-8 w-full"
+          className="relative flex flex-col items-center md:items-start text-center md:text-left mt-16 md:mt-[15vh] lg:mt-[20vh] mb-12 md:mb-16 py-8 w-full"
           style={{ maxWidth: 'min(780px, 92vw)' }}
           variants={containerVariants}
           initial="hidden"

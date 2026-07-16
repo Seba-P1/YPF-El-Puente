@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
-import { getAllProductos, getProductosForSearch } from '@/lib/supabase/queries'
+import { getAllProductos } from '@/lib/supabase/queries'
 import { ProductTable } from '@/components/admin/ProductTable'
 import { Button } from '@/components/ui/button'
 
@@ -9,10 +9,7 @@ export const metadata = {
 }
 
 export default async function AdminProductosPage() {
-  const [{ data: productos, count }, productosBusquedaForSearch] = await Promise.all([
-    getAllProductos({ page: 1, limit: 20 }),
-    getProductosForSearch(),
-  ])
+  const { data: productos, count } = await getAllProductos({ page: 1, limit: 20 })
 
   return (
     <div className="space-y-6">
@@ -33,7 +30,7 @@ export default async function AdminProductosPage() {
         </Button>
       </div>
 
-      <ProductTable productos={productos} productosBusquedaForSearch={productosBusquedaForSearch} />
+      <ProductTable productos={productos} totalCount={count} />
     </div>
   )
 }
