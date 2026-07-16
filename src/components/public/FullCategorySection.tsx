@@ -155,7 +155,7 @@ export function FullCategorySection({
             paddingLeft: 'clamp(24px, 5vw, 80px)',
             paddingRight: 'clamp(24px, 5vw, 80px)',
             paddingBottom: 40,
-            paddingTop: 'clamp(60px, 6vw, 100px)',
+            paddingTop: 'clamp(30px, 4vw, 60px)',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             WebkitOverflowScrolling: 'touch',
