@@ -134,8 +134,7 @@ export function FullSearchBar() {
                 onClick={() => handlePillClick(pill.id)}
                 className="relative px-4 py-1.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-200"
                 style={!isActive ? {
-                  background: 'rgba(0,0,0,0.5)',
-                  backdropFilter: 'blur(10px)',
+                  background: 'rgba(0,0,0,0.75)',
                   border: '1px solid rgba(255,255,255,0.1)',
                   color: 'rgba(255,255,255,0.6)'
                 } : {

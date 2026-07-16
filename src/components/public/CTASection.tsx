@@ -80,11 +80,9 @@ export function CTASection() {
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.03)'
-              e.currentTarget.style.boxShadow = '0 12px 36px rgba(255,209,0,0.35)'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)'
-              e.currentTarget.style.boxShadow = '0 4px 20px rgba(255,209,0,0.15)'
             }}
           >
             Ver Menú FULL →

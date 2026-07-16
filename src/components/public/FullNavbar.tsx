@@ -10,12 +10,7 @@ import { useSearchStore } from '@/stores/search'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useFullPageStore } from '@/stores/fullpage'
 
-interface FullNavbarProps {
-  visible?: boolean
-  transparent?: boolean
-}
-
-export function FullNavbar({ visible = true, transparent = false }: FullNavbarProps = {}) {
+export function FullNavbar({ transparent = false }: { transparent?: boolean } = {}) {
   const [activeSection, setActiveSection] = useState<string>('home')
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
@@ -117,11 +112,8 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
       className="fixed top-0 left-0 right-0 z-50 w-full max-w-[100vw] transition-all duration-300"
       style={{
         height: isScrolled ? '54px' : '68px',
-        background: transparent ? 'transparent' : (isScrolled ? 'rgba(6,8,15,0.4)' : 'transparent'),
-        backdropFilter: transparent ? 'none' : (isScrolled ? 'blur(12px)' : 'none'),
-        WebkitBackdropFilter: transparent ? 'none' : (isScrolled ? 'blur(12px)' : 'none'),
+        background: transparent ? 'transparent' : (isScrolled ? 'rgba(6,8,15,0.96)' : 'transparent'),
         borderBottom: transparent ? 'none' : (isScrolled ? '1px solid rgba(255,255,255,0.04)' : '1px solid transparent'),
-        transform: visible ? 'translateY(0)' : 'translateY(-100%)',
       }}
     >
       <div
@@ -233,7 +225,7 @@ export function FullNavbar({ visible = true, transparent = false }: FullNavbarPr
             animate={{ opacity: 1, scale: 1, y: '-50%' }}
             exit={{ opacity: 0, scale: 0.95, y: '-50%' }}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
-            className="absolute left-4 right-4 md:left-6 md:right-6 lg:left-[calc(50%-350px)] lg:right-[calc(50%-350px)] top-1/2 z-50 flex items-center h-12 px-4 rounded-full backdrop-blur-xl"
+            className="absolute left-4 right-4 md:left-6 md:right-6 lg:left-[calc(50%-350px)] lg:right-[calc(50%-350px)] top-1/2 z-50 flex items-center h-12 px-4 rounded-full"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
               border: '1px solid rgba(255, 255, 255, 0.12)',

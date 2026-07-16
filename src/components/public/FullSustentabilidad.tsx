@@ -307,7 +307,7 @@ export function FullSustentabilidad() {
                 fontWeight: 700,
                 fontFamily: 'var(--font-montserrat)',
                 textDecoration: 'none',
-                transition: 'background 0.2s, transform 0.2s, box-shadow 0.2s',
+                transition: 'background 0.2s, transform 0.2s',
                 boxShadow: '0 0 0 rgba(0,112,192,0)',
                 marginBottom: 8,
               }}
@@ -315,13 +315,11 @@ export function FullSustentabilidad() {
                 const el = e.currentTarget
                 el.style.background = '#0070C0'
                 el.style.transform = 'scale(1.03)'
-                el.style.boxShadow = '0 8px 32px rgba(0,112,192,0.35)'
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget
                 el.style.background = '#005A9C'
                 el.style.transform = 'scale(1)'
-                el.style.boxShadow = '0 0 0 rgba(0,112,192,0)'
               }}
             >
               <Navigation size={18} />

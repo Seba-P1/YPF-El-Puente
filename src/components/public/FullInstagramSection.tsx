@@ -129,7 +129,7 @@ function InstagramCard({ post, index }: { post: InstagramPost; index: number }) 
             className={`w-full h-full rounded-2xl bg-gradient-to-br ${CARD_BG[index % CARD_BG.length]} 
               flex flex-col items-center justify-center gap-2
               shadow-[8px_8px_30px_-5px_rgba(0,0,0,0.6),-4px_-4px_20px_-5px_rgba(255,255,255,0.02),0_0_0_1px_rgba(255,255,255,0.05)]
-              transition-all duration-500 group-hover:shadow-[12px_12px_40px_-5px_rgba(0,0,0,0.7),-6px_-6px_25px_-5px_rgba(255,255,255,0.03),0_0_0_1px_rgba(255,255,255,0.1)]
+              transition-all duration-500
               group-hover:-translate-y-1.5`}
           >
             <Instagram size={28} className="text-white/20" />
@@ -167,7 +167,6 @@ function InstagramCard({ post, index }: { post: InstagramPost; index: number }) 
             className="relative w-full h-full rounded-2xl overflow-hidden bg-neutral-900
               shadow-[8px_8px_30px_-5px_rgba(0,0,0,0.6),-6px_-6px_25px_-5px_rgba(255,255,255,0.03),0_0_0_1px_rgba(255,255,255,0.06)]
               transition-all duration-500 ease-out
-              group-hover:shadow-[12px_12px_40px_-5px_rgba(0,0,0,0.75),-8px_-8px_30px_-5px_rgba(255,255,255,0.04),0_0_0_1px_rgba(255,255,255,0.1)]
               group-hover:-translate-y-1.5
             "
           >
@@ -233,7 +232,6 @@ function InstagramCard({ post, index }: { post: InstagramPost; index: number }) 
           className="relative w-full h-full rounded-2xl overflow-hidden bg-neutral-900
             shadow-[8px_8px_30px_-5px_rgba(0,0,0,0.6),-6px_-6px_25px_-5px_rgba(255,255,255,0.03),0_0_0_1px_rgba(255,255,255,0.06)]
             transition-all duration-500 ease-out
-            group-hover:shadow-[12px_12px_40px_-5px_rgba(0,0,0,0.75),-8px_-8px_30px_-5px_rgba(255,255,255,0.04),0_0_0_1px_rgba(255,255,255,0.1)]
             group-hover:-translate-y-1.5
           "
         >

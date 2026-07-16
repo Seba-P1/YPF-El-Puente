@@ -152,16 +152,8 @@ function CombustibleCard({
   color: string
   index: number
 }) {
-  const isDiesel = combustible.nombre.toLowerCase().includes('diesel') || combustible.nombre.toLowerCase().includes('d5')
-  const isInfinia = combustible.nombre.toLowerCase().includes('infinia')
-  
   // Clean name dynamically: e.g. "Nafta Super" -> "Super"
   const displayNombre = combustible.nombre.replace(/Nafta\s+/gi, '')
-
-  // Generate a customized glow color based on the actual brand fuel color
-  const glowShadow = `0 12px 36px rgba(${
-    isInfinia ? '0,112,192' : isDiesel ? '34,197,94' : '234,88,12'
-  }, 0.15)`
 
   return (
     <motion.div
@@ -177,13 +169,12 @@ function CombustibleCard({
         padding: '24px 28px',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
-        transition: 'transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
+        transition: 'transform 0.3s ease, border-color 0.3s ease',
         cursor: 'default',
       }}
       whileHover={{
         y: -4,
         borderColor: `${color}4D`, // 30% opacity of actual color
-        boxShadow: `${glowShadow}, inset 0 1px 0 rgba(255, 255, 255, 0.05)`,
       }}
     >
       {/* Top fluid colored light strip */}

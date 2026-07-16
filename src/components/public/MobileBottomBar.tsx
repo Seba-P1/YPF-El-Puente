@@ -19,9 +19,7 @@ export function MobileBottomBar() {
         width: '100%',
         maxWidth: '100vw',
         overflowX: 'hidden',
-        background: 'rgba(6,8,15,0.92)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        background: 'rgba(6,8,15,0.98)',
         borderTop: '1px solid rgba(255,255,255,0.06)',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}

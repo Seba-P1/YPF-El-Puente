@@ -32,19 +32,9 @@ export function ProductCard({ producto }: ProductCardProps) {
         </span>
       )}
 
-      {/* Flotating Image with Framer Motion hover effect */}
-      <motion.div
-        className="relative w-48 h-48 md:w-56 md:h-56 mb-4 mt-8"
-        whileHover={{
-          y: -10,
-          scale: 1.05,
-          filter: 'drop-shadow(0px 25px 35px rgba(0,0,0,0.25))',
-        }}
-        transition={{
-          type: 'spring',
-          stiffness: 300,
-          damping: 20,
-        }}
+      {/* Floating Image — CSS hover, no filter animation to avoid repaint */}
+      <div
+        className="relative w-48 h-48 md:w-56 md:h-56 mb-4 mt-8 transition-transform duration-300 ease-out hover:-translate-y-[10px] hover:scale-105"
         style={{
           filter: 'drop-shadow(0px 15px 30px rgba(0,0,0,0.18))',
         }}
@@ -64,7 +54,7 @@ export function ProductCard({ producto }: ProductCardProps) {
             <span className="text-gray-400 text-sm">Sin imagen</span>
           </div>
         )}
-      </motion.div>
+      </div>
 
       {/* Product Info */}
       <div className="flex flex-col items-center text-center w-full mt-auto space-y-2">

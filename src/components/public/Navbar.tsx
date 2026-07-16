@@ -45,10 +45,8 @@ export function Navbar() {
       style={{
         height: '68px',
         background: scrolled ? 'var(--navbar-bg)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
-        WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
         borderBottom: scrolled ? '1px solid var(--nav-border)' : '1px solid transparent',
-        transition: 'background 0.4s ease, backdrop-filter 0.4s ease, border-color 0.4s ease',
+        transition: 'background 0.4s ease, border-color 0.4s ease',
       }}
     >
       <div className="w-full h-full max-w-[1920px] mx-auto px-4 md:px-16 lg:px-24 xl:px-32 flex items-center justify-between">

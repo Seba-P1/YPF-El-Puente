@@ -30,10 +30,10 @@ export function CatalogoProductCard({ producto }: CatalogoProductCardProps) {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'border-color 0.3s, transform 0.25s, box-shadow 0.3s',
+         transition: 'border-color 0.3s, transform 0.25s',
         position: 'relative',
       }}
-      className="hover:border-white/15 hover:scale-[1.03] hover:shadow-[0_8px_32px_rgba(0,90,156,0.15)] group"
+      className="hover:border-white/15 hover:scale-[1.03] group"
     >
       {/* Image area */}
       <div
@@ -157,7 +157,7 @@ export function CatalogoProductCard({ producto }: CatalogoProductCardProps) {
               transition: 'all 0.2s',
               boxShadow: '0 2px 8px rgba(0,90,156,0.25)',
             }}
-            className="hover:!bg-[#0070C0] hover:shadow-[0_4px_16px_rgba(0,112,192,0.4)] active:scale-90"
+            className="hover:!bg-[#0070C0] hover:scale-105 active:scale-90"
           >
             <Plus size={15} color="white" />
           </button>

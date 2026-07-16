@@ -213,7 +213,7 @@ export function LandingHero() {
         </motion.div>
 
         <motion.div
-          className="relative flex flex-col items-center md:items-start text-center md:text-left mt-16 md:mt-[25vh] lg:mt-[32vh] mb-12 md:mb-16 py-8 w-full"
+          className="relative flex flex-col items-center md:items-start text-center md:text-left mt-16 md:mt-[20vh] lg:mt-[25vh] mb-12 md:mb-16 py-8 w-full"
           style={{ maxWidth: 'min(780px, 92vw)' }}
           variants={containerVariants}
           initial="hidden"
@@ -279,7 +279,7 @@ export function LandingHero() {
                 textTransform: 'uppercase',
                 whiteSpace: 'nowrap',
               }}
-              className="hover:shadow-[0_8px_32px_rgba(0,112,192,0.5)] hover:scale-[1.02] active:scale-95 w-[220px]"
+              className="hover:scale-[1.02] active:scale-95 w-[220px]"
             >
               FULL
             </Link>
