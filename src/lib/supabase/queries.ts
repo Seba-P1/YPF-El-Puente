@@ -62,13 +62,13 @@ export const getAllProductos = cache(async (options?: { page?: number; limit?: n
   return { data: data ?? [], count: count ?? 0 }
 })
 
-export const getProductosForSearch = cache(async () => {
+export const getProductosForSearch = cache(async (): Promise<Producto[]> => {
   const supabase = await createServerSupabaseClient()
   const { data } = await supabase
     .from('productos')
-    .select('id, nombre, codigo_plu, precio')
+    .select('*')
     .order('nombre')
-  return data ?? []
+  return (data ?? []) as unknown as Producto[]
 })
 
 export async function getProductosDestacados(): Promise<Producto[]> {
