@@ -83,7 +83,7 @@ export function FullProductCard({
       }`}
     >
       {/* Image container — tall enough to avoid clipping */}
-      <div className="relative w-full h-[340px] md:h-[400px] flex items-end justify-center overflow-visible">
+      <div className="relative w-full h-[260px] md:h-[300px] flex items-end justify-center overflow-visible">
         <div className="absolute bottom-[-10px] md:bottom-[-15px] w-[408px] h-[374px] md:w-[476px] md:h-[442px] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
           {!imgError && producto.imagen_url ? (
             <Image
@@ -112,7 +112,7 @@ export function FullProductCard({
       </div>
 
       {/* Invisible card — no background, border or shadow */}
-      <div className="w-full flex flex-col items-center justify-between px-4 pt-2 pb-4 transition-all duration-300 min-h-[120px] md:min-h-[140px]">
+      <div className="w-full flex flex-col items-center justify-between px-4 pt-1 pb-2 transition-all duration-300 min-h-[80px] md:min-h-[100px]">
         <div className="text-center w-full flex flex-col items-center flex-grow">
           <h3 className={`text-[13px] lg:text-[14px] font-bold text-center px-1 ${nameClass}`}>
             {producto.nombre}
@@ -125,7 +125,7 @@ export function FullProductCard({
           )}
 
           {producto.precio && producto.precio > 0 ? (
-            <div className={`mt-1.5 px-2.5 py-0.5 rounded-full ${priceClass}`}>
+            <div className={`mt-1 px-2.5 py-0.5 rounded-full ${priceClass}`}>
               {formatearPrecioARS(producto.precio)}
             </div>
           ) : (
@@ -138,7 +138,7 @@ export function FullProductCard({
         {/* Smaller add to cart button */}
         <button
           onClick={handleAdd}
-          className={`mt-3 px-5 h-[28px] rounded-lg text-[10px] font-bold text-white transition-all duration-200 active:scale-95 flex items-center justify-center gap-1 cursor-pointer ${buttonClass}`}
+          className={`mt-2 px-5 h-[26px] rounded-lg text-[10px] font-bold text-white transition-all duration-200 active:scale-95 flex items-center justify-center gap-1 cursor-pointer ${buttonClass}`}
         >
           + Agregar
         </button>
