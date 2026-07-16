@@ -137,7 +137,7 @@ export function FullMundialSection() {
   }
 
   return (
-    <section id="mundial" className="relative bg-[#F4F9FC] overflow-hidden border-y border-[#005A9C]/10 min-h-[100svh] py-[clamp(56px,7svh,96px)] md:py-[clamp(72px,8svh,120px)] flex flex-col justify-center">
+    <section id="mundial" className="relative bg-[#F4F9FC] overflow-hidden border-y border-[#005A9C]/10 min-h-[100svh] py-[clamp(24px,4svh,48px)] md:py-[clamp(32px,5svh,64px)] flex flex-col justify-center">
       {/* Background doodles on desktop — animated entrance from right */}
       <motion.div 
         className="absolute inset-0 pointer-events-none z-0 bg-no-repeat bg-right bg-cover"
@@ -184,8 +184,8 @@ export function FullMundialSection() {
             gap: 'clamp(16px, 2vw, 32px)',
             paddingLeft: 'clamp(24px, 5vw, 80px)',
             paddingRight: 'clamp(24px, 5vw, 80px)',
-            paddingTop: 'clamp(24px, 4svh, 56px)',
-            paddingBottom: 'clamp(24px, 4svh, 56px)',
+            paddingTop: 'clamp(12px, 2svh, 24px)',
+            paddingBottom: 'clamp(12px, 2svh, 24px)',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             WebkitOverflowScrolling: 'touch',
