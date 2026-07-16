@@ -213,7 +213,7 @@ export function LandingHero() {
         </motion.div>
 
         <motion.div
-          className="relative flex flex-col items-center md:items-start text-center md:text-left mt-16 md:mt-[15vh] lg:mt-[20vh] mb-12 md:mb-16 py-8 w-full"
+          className="relative flex flex-col items-center md:items-start text-center md:text-left mt-16 md:mt-[25vh] lg:mt-[32vh] mb-12 md:mb-16 py-8 w-full"
           style={{ maxWidth: 'min(780px, 92vw)' }}
           variants={containerVariants}
           initial="hidden"
