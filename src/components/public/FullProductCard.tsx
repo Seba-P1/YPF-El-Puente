@@ -83,8 +83,8 @@ export function FullProductCard({
       }`}
     >
       {/* Image container — tall enough to avoid clipping */}
-      <div className="relative w-full h-[260px] md:h-[300px] flex items-end justify-center overflow-visible">
-        <div className="absolute bottom-[-10px] md:bottom-[-15px] w-[408px] h-[374px] md:w-[476px] md:h-[442px] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
+      <div className="relative w-full h-[400px] md:h-[460px] flex items-end justify-center overflow-visible">
+        <div className="absolute bottom-[-20px] md:bottom-[-30px] w-[408px] h-[374px] md:w-[476px] md:h-[442px] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
           {!imgError && producto.imagen_url ? (
             <Image
               src={producto.imagen_url.startsWith('http') ? producto.imagen_url : `${producto.imagen_url}?v=2`}

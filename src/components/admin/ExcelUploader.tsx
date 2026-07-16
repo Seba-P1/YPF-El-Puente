@@ -222,7 +222,7 @@ export function ExcelUploader({ modo }: ExcelUploaderProps) {
             }`}
           >
             <Loader2
-              className={`w-10 h-10 animate-spin ${
+              className={`w-10 h-10 ${
                 isCatalogo ? 'text-orange-500' : 'text-primary'
               }`}
             />
@@ -377,7 +377,7 @@ export function ExcelUploader({ modo }: ExcelUploaderProps) {
             }`}
           >
             <Upload
-              className={`w-10 h-10 animate-bounce ${
+              className={`w-10 h-10 ${
                 isCatalogo ? 'text-orange-500' : 'text-primary'
               }`}
             />
@@ -393,7 +393,7 @@ export function ExcelUploader({ modo }: ExcelUploaderProps) {
           </p>
           <div className="w-full max-w-xs h-2 bg-muted rounded-full overflow-hidden relative">
             <div
-              className={`absolute top-0 bottom-0 left-0 w-1/2 rounded-full animate-[progress_1s_ease-in-out_infinite_alternate] ${
+              className={`absolute top-0 bottom-0 left-0 w-1/2 rounded-full ${
                 isCatalogo ? 'bg-orange-500' : 'bg-primary'
               }`}
             />
@@ -403,7 +403,7 @@ export function ExcelUploader({ modo }: ExcelUploaderProps) {
 
       {/* State: SUCCESS */}
       {state === 'success' && uploadResult && (
-        <div className="p-8 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-300">
+        <div className="p-8 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-5 text-green-600 dark:text-green-500">
             <CheckCircle2 className="w-8 h-8" />
           </div>
@@ -520,7 +520,7 @@ export function ExcelUploader({ modo }: ExcelUploaderProps) {
 
       {/* State: ERROR */}
       {state === 'error' && (
-        <div className="p-12 flex flex-col items-center justify-center text-center animate-in slide-in-from-bottom-4">
+        <div className="p-12 flex flex-col items-center justify-center text-center">
           <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mb-6 text-destructive">
             <XCircle className="w-10 h-10" />
           </div>
