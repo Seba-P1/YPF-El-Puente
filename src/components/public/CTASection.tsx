@@ -17,23 +17,25 @@ export function CTASection() {
       }}
       className="py-20 md:py-[120px] px-6"
     >
-      <div className="max-w-3xl mx-auto flex flex-col items-center text-center">
+      <div className="max-w-6xl mx-auto flex flex-col items-center justify-center text-center px-4 w-full">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           style={{
-            fontSize: 'clamp(38px, 6vw, 72px)',
+            fontSize: 'clamp(18px, 3.8vw, 54px)',
             fontWeight: 900,
             fontFamily: 'var(--font-din-medium), sans-serif',
             color: 'white',
-            letterSpacing: '-0.03em',
-            lineHeight: 1.05,
+            letterSpacing: '-0.02em',
+            lineHeight: 1.1,
             textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
           }}
+          className="w-full text-center whitespace-nowrap overflow-visible"
         >
-          ¿Tenés{' '}
-          <span style={{ color: '#FFD100' }}>hambre</span>
+          ¿Querés ver nuestros{' '}
+          <span style={{ color: '#FFD100' }}>productos</span>
           ?
         </motion.h2>
 

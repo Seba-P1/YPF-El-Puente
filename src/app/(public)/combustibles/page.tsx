@@ -85,68 +85,6 @@ export default async function CombustiblesPage() {
       <h2 className="sr-only">Listado de combustibles</h2>
       <CombustiblesGrid combustibles={combustibles} />
 
-      {/* Infinia info — inline, structurally unique */}
-      <section
-        style={{
-          background: 'var(--bg-elevated)',
-          borderTop: '1px solid var(--border)',
-        }}
-        className="py-[72px] md:py-[100px] px-4"
-      >
-        <div
-          style={{
-            maxWidth: 'min(900px, 92vw)',
-            margin: '0 auto',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-xl)',
-            padding: 32,
-            display: 'flex',
-            gap: 20,
-            alignItems: 'flex-start',
-          }}
-        >
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              background: 'rgba(0,90,156,0.15)',
-              border: '1px solid rgba(0,90,156,0.25)',
-              borderRadius: 14,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <Info style={{ width: 24, height: 24, color: 'var(--ypf-blue-bright)' }} />
-          </div>
-          <div>
-            <h3
-              style={{
-                fontSize: 20,
-                fontWeight: 700,
-                color: 'var(--text-primary)',
-                marginBottom: 8,
-              }}
-            >
-              Tecnología Infinia
-            </h3>
-            <p
-              style={{
-                fontSize: 15,
-                color: 'var(--text-secondary)',
-                lineHeight: 1.7,
-              }}
-            >
-              Nuestros combustibles premium (Infinia e Infinia Diesel) cuentan
-              con tecnología inteligente que limpia y protege los inyectores,
-              reduciendo el desgaste del motor y optimizando el consumo.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
       <FooterSection />
     </div>

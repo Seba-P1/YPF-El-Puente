@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { getCombustibles, getBoxesServices } from '@/lib/supabase/queries'
+import { getCombustibles, getBoxesServices, getConfiguracion } from '@/lib/supabase/queries'
 import { LandingClient } from './LandingClient'
 import { createPageMetadata } from '@/lib/seo/metadata'
 import LocalBusinessSchema from '@/components/seo/LocalBusinessSchema'
@@ -24,15 +24,17 @@ export const metadata: Metadata = createPageMetadata({
 export const revalidate = 60
 
 export default async function LandingPage() {
-  const [combustibles, servicios] = await Promise.all([
+  const [combustibles, servicios, config] = await Promise.all([
     getCombustibles(),
     getBoxesServices(),
+    getConfiguracion(),
   ])
 
   return (
     <>
       <LocalBusinessSchema />
-      <LandingClient combustibles={combustibles} servicios={servicios} />
+      <LandingClient combustibles={combustibles} servicios={servicios} config={config} />
     </>
   )
 }
+

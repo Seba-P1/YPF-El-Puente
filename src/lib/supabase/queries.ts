@@ -15,7 +15,7 @@ import type {
 
 const PRODUCTO_PUBLIC_SELECT = 'id, codigo_plu, nombre, descripcion, categoria_slug, precio, imagen_url, disponible, destacado, badge, orden, es_sin_tacc'
 
-const COMBUSTIBLE_PUBLIC_SELECT = 'id, nombre, descripcion, precio, octanaje, color_hex, disponible, orden'
+const COMBUSTIBLE_PUBLIC_SELECT = 'id, nombre, descripcion, descripcion_extendida, precio, octanaje, color_hex, disponible, orden'
 
 // ── PRODUCTOS ──
 

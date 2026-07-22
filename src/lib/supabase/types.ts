@@ -50,6 +50,7 @@ export interface Database {
           id: string
           nombre: string
           descripcion: string | null
+          descripcion_extendida: string | null
           precio: number | null
           octanaje: string | null
           color_hex: string

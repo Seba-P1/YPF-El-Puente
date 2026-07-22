@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Settings, Save, Loader2, MessageSquare } from 'lucide-react'
+import { Settings, Save, Loader2, MessageSquare, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { GlassCard } from '@/components/admin/ui/glass-card'
@@ -16,6 +16,7 @@ interface ConfigFields {
   msg_separator: string
   msg_footer: string
   instagram_url: string
+  seccion_boxes_visible: string
 }
 
 const DEFAULT_CONFIG: ConfigFields = {
@@ -26,6 +27,7 @@ const DEFAULT_CONFIG: ConfigFields = {
   msg_separator: '---',
   msg_footer: '¡Gracias por tu pedido!',
   instagram_url: 'https://www.instagram.com/ypffull/',
+  seccion_boxes_visible: 'true',
 }
 
 export default function AdminConfiguracionPage() {
@@ -59,6 +61,7 @@ export default function AdminConfiguracionPage() {
           msg_separator: mapped['msg_separator'] || DEFAULT_CONFIG.msg_separator,
           msg_footer: mapped['msg_footer'] || DEFAULT_CONFIG.msg_footer,
           instagram_url: mapped['instagram_url'] || DEFAULT_CONFIG.instagram_url,
+          seccion_boxes_visible: mapped['seccion_boxes_visible'] ?? DEFAULT_CONFIG.seccion_boxes_visible,
         }
         setConfig(loaded)
         setOriginalConfig(loaded)
@@ -84,8 +87,7 @@ export default function AdminConfiguracionPage() {
         if (valor !== originalConfig[clave]) {
           const { error } = await supabase
             .from('configuracion_tienda')
-            .update({ valor })
-            .eq('clave', clave)
+            .upsert({ clave, valor }, { onConflict: 'clave' })
 
           if (error) {
             throw new Error(`Error actualizando "${clave}": ${error.message}`)
@@ -173,6 +175,46 @@ export default function AdminConfiguracionPage() {
             onChange={(v) => setConfig({ ...config, instagram_url: v })}
             placeholder="https://www.instagram.com/ypffull/"
           />
+
+          <div className="pt-4 border-t">
+            <h2 className="text-lg font-bold mb-4 text-foreground">
+              Secciones de la Landing
+            </h2>
+
+            <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50 border">
+              <div className="flex items-center gap-3">
+                {config.seccion_boxes_visible === 'true' ? (
+                  <Eye className="w-5 h-5 text-emerald-500" />
+                ) : (
+                  <EyeOff className="w-5 h-5 text-rose-500" />
+                )}
+                <div>
+                  <span className="text-sm font-bold text-foreground block">Sección Boxes</span>
+                  <span className="text-xs text-muted-foreground">
+                    {config.seccion_boxes_visible === 'true' ? 'Visible en la landing' : 'Oculta de la landing'}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setConfig({
+                    ...config,
+                    seccion_boxes_visible: config.seccion_boxes_visible === 'true' ? 'false' : 'true',
+                  })
+                }
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                  config.seccion_boxes_visible === 'true' ? 'bg-emerald-500' : 'bg-muted-foreground/30'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                    config.seccion_boxes_visible === 'true' ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
 
           <div className="pt-4 border-t">
             <h2 className="text-lg font-bold mb-4 text-foreground">

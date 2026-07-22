@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ShoppingCart } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { useCartStore } from '@/stores/cart'
 
 const NAV_LINKS = [
@@ -16,8 +17,28 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
+  const [showBoxes, setShowBoxes] = useState(true)
   const pathname = usePathname()
   const { totalItems, openCart } = useCartStore()
+
+  useEffect(() => {
+    async function checkBoxesConfig() {
+      try {
+        const supabase = createClient() as any
+        const { data } = await supabase
+          .from('configuracion_tienda')
+          .select('valor')
+          .eq('clave', 'seccion_boxes_visible')
+          .single()
+        if (data && data.valor === 'false') {
+          setShowBoxes(false)
+        }
+      } catch (err) {
+        // keep true on error
+      }
+    }
+    checkBoxesConfig()
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,6 +49,8 @@ export function Navbar() {
     handleScroll()
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  const navLinks = NAV_LINKS.filter((link) => showBoxes || link.href !== '/#boxes')
 
   const isActive = (link: typeof NAV_LINKS[number]) => {
     if (link.href === '/') {
@@ -70,7 +93,7 @@ export function Navbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
-          {NAV_LINKS.map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}

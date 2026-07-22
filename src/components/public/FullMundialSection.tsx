@@ -212,11 +212,12 @@ export function FullMundialSection() {
               Jugá siempre de local con estos productos.
             </p>
             {/* Indicator */}
-            <div className="flex items-center gap-2 text-[#E2B007] text-sm font-bold tracking-wider uppercase">
-              <span className="font-[family-name:var(--font-caveat)] text-xl">Scrolleá para ver más</span>
+            <div className="flex items-center gap-2.5 text-[#E2B007] text-base md:text-lg font-extrabold tracking-wider uppercase mt-2">
+              <span className="font-[family-name:var(--font-caveat)] text-2xl md:text-3xl text-[#FFD100]">Mirá nuestros productos</span>
               <motion.span
-                animate={{ x: [0, 5, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                animate={{ x: [0, 8, 0], scale: [1, 1.25, 1] }}
+                transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
+                className="text-2xl md:text-3xl font-black text-[#FFD100] inline-block"
               >
                 →
               </motion.span>

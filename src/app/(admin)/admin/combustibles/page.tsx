@@ -7,6 +7,7 @@ import {
   updateCombustiblePrecio,
   updateCombustibleDisponible,
   updateCombustibleNombre,
+  updateCombustibleDescripcionExtendida,
   createCombustible,
   deleteCombustible,
 } from '@/lib/supabase/actions'
@@ -25,6 +26,7 @@ export default function AdminCombustiblesPage() {
   const [loading, setLoading] = useState(true)
   const [savingId, setSavingId] = useState<string | null>(null)
   const [editedPrices, setEditedPrices] = useState<Record<string, string>>({})
+  const [editedDescriptions, setEditedDescriptions] = useState<Record<string, string>>({})
 
   // Name editing
   const [editingNameId, setEditingNameId] = useState<string | null>(null)
@@ -60,10 +62,13 @@ export default function AdminCombustiblesPage() {
         const combustiblesData = data as Combustible[] | null
         setCombustibles(combustiblesData ?? [])
         const prices: Record<string, string> = {}
+        const descs: Record<string, string> = {}
         combustiblesData?.forEach((c) => {
           prices[c.id] = c.precio?.toString() ?? '0'
+          descs[c.id] = c.descripcion_extendida ?? ''
         })
         setEditedPrices(prices)
+        setEditedDescriptions(descs)
       }
       setLoading(false)
     }
@@ -99,6 +104,26 @@ export default function AdminCombustiblesPage() {
       toast.success(`Precio actualizado`)
     } catch (error: any) {
       toast.error(error.message || 'Error al actualizar el precio')
+    } finally {
+      setSavingId(null)
+    }
+  }
+
+  const handleSaveDescripcionExtendida = async (combustible: Combustible) => {
+    const newDesc = editedDescriptions[combustible.id] ?? ''
+    setSavingId(combustible.id)
+    try {
+      const res = await updateCombustibleDescripcionExtendida({
+        id: combustible.id,
+        descripcion_extendida: newDesc.trim() || null,
+      })
+      if (!res.ok) throw new Error(res.error)
+      setCombustibles((prev) =>
+        prev.map((c) => (c.id === combustible.id ? { ...c, descripcion_extendida: newDesc.trim() || null } : c))
+      )
+      toast.success('Descripción extendida actualizada')
+    } catch (error: any) {
+      toast.error(error.message || 'Error al actualizar la descripción extendida')
     } finally {
       setSavingId(null)
     }
@@ -481,8 +506,44 @@ export default function AdminCombustiblesPage() {
                   ) : (
                     <Save className="w-4 h-4" />
                   )}
-                  <span className="hidden sm:inline">Guardar</span>
+                  <span className="hidden sm:inline">Guardar Precio</span>
                 </Button>
+              </div>
+
+              {/* Row 3: Extended Description ("Leer más") */}
+              <div className="pl-6 pt-2 space-y-1.5 border-t border-border/40 mt-1">
+                <label className="text-[11px] font-semibold text-muted-foreground block">
+                  Descripción Extendida ("Leer más"):
+                </label>
+                <div className="flex gap-2 items-start">
+                  <textarea
+                    rows={2}
+                    value={editedDescriptions[combustible.id] ?? ''}
+                    onChange={(e) =>
+                      setEditedDescriptions((prev) => ({
+                        ...prev,
+                        [combustible.id]: e.target.value,
+                      }))
+                    }
+                    placeholder="Texto al desplegar 'Leer más'..."
+                    className="flex-1 p-2 rounded-lg text-xs font-medium outline-none bg-muted/50 border focus:border-primary focus:ring-1 focus:ring-primary text-foreground resize-y"
+                    disabled={savingId === combustible.id}
+                  />
+                  <Button
+                    onClick={() => handleSaveDescripcionExtendida(combustible)}
+                    disabled={savingId === combustible.id}
+                    size="sm"
+                    variant="outline"
+                    className="rounded-lg font-bold px-3 h-8 text-xs gap-1 self-start"
+                  >
+                    {savingId === combustible.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Save className="w-3.5 h-3.5" />
+                    )}
+                    <span>Guardar Texto</span>
+                  </Button>
+                </div>
               </div>
             </div>
           </GlassCard>

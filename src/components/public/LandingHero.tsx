@@ -219,23 +219,7 @@ export function LandingHero() {
           initial="hidden"
           animate="visible"
         >
-          {/* 3. Section Taglines */}
-          <motion.p
-            variants={itemVariants}
-            className="text-[12px] md:text-[14px] mb-6"
-            style={{
-              fontFamily: 'var(--font-din-medium), sans-serif',
-              color: 'rgba(255, 255, 255, 0.5)',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-            }}
-          >
-            Combustibles{' '}
-            <span style={{ color: '#FFD100', opacity: 0.8 }}>/</span>{' '}
-            Full{' '}
-            <span style={{ color: '#FFD100', opacity: 0.8 }}>/</span>{' '}
-            Boxes
-          </motion.p>
+
 
           {/* 4. Description */}
           <motion.p
@@ -252,64 +236,31 @@ export function LandingHero() {
             Una parada estratégica en tu viaje. Tecnología de combustibles premium, servicio de lubricación experta y el mejor café de la Patagonia.
           </motion.p>
 
-          {/* 5. CTA Buttons */}
+          {/* 5. CTA Button — Circular Full Logo */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-col sm:flex-row justify-center md:justify-start items-center gap-4 w-full sm:w-auto"
+            className="flex justify-center md:justify-start w-full sm:w-auto"
           >
             <Link
               href="/full"
+              className="group relative rounded-full overflow-hidden hover:scale-105 active:scale-95 transition-transform duration-300"
               style={{
-                height: 54,
-                padding: '0 24px',
-                borderRadius: 9999,
-                background: 'linear-gradient(135deg, #0070C0 0%, #005A9C 100%)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                boxShadow: '0 4px 20px rgba(0,112,192,0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: 'var(--font-din-medium), sans-serif',
-                fontSize: 14,
-                fontWeight: 700,
-                color: 'white',
-                textDecoration: 'none',
-                transition: 'all 0.25s ease',
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-                whiteSpace: 'nowrap',
+                width: 90,
+                height: 90,
+                boxShadow: '0 4px 24px rgba(0,112,192,0.35), 0 0 60px rgba(0,112,192,0.1)',
+                border: '2px solid rgba(255,255,255,0.15)',
               }}
-              className="hover:scale-[1.02] active:scale-95 w-[220px]"
             >
-              FULL
+              <Image
+                src="/assets/ypf imagenes/logo-circular-full.png"
+                alt="Ver Full"
+                fill
+                sizes="90px"
+                className="object-cover rounded-full"
+              />
+              {/* Glow ring on hover */}
+              <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-[#0080FF]/50 transition-colors duration-300" />
             </Link>
-            <a
-              href="#combustibles"
-              style={{
-                height: 54,
-                padding: '0 24px',
-                borderRadius: 9999,
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: 'var(--font-din-medium), sans-serif',
-                fontSize: 13,
-                fontWeight: 700,
-                color: 'rgba(255,255,255,0.85)',
-                textDecoration: 'none',
-                transition: 'all 0.25s ease',
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-                whiteSpace: 'nowrap',
-              }}
-              className="hover:bg-white/10 hover:border-white/20 active:scale-95 w-[220px]"
-            >
-              Ver Combustibles
-            </a>
           </motion.div>
         </motion.div>
 

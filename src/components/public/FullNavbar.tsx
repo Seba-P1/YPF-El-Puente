@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { ShoppingCart, Search, X } from 'lucide-react'
+import { ShoppingCart, Search, X, Home } from 'lucide-react'
 import { useCartStore } from '@/stores/cart'
 import { useSearchStore } from '@/stores/search'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -125,26 +125,36 @@ export function FullNavbar({ transparent = false }: { transparent?: boolean } = 
           transform: isSearchExpanded ? 'scale(0.98)' : 'scale(1)'
         }}
       >
-        {/* LOGO */}
-        <Link
-          href="#home"
-          onClick={(e) => handleScroll(e, 'home')}
-          className="flex-shrink-0"
-        >
-          {!imgError ? (
-            <Image
-              src="/assets/ypf imagenes/full-logomodooscuro.png"
-              alt="YPF FULL"
-              width={120}
-              height={38}
-              priority
-              className="h-8 md:h-10 w-auto"
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <span className="text-white font-black text-lg">YPF FULL</span>
-          )}
-        </Link>
+        {/* LOGO & INICIO LINK */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-slate-200 hover:text-white bg-white/10 hover:bg-white/20 border border-white/15 transition-all shadow-sm"
+          >
+            <Home size={14} className="text-[#FFD100]" />
+            <span className="hidden sm:inline">Inicio</span>
+          </Link>
+
+          <Link
+            href="#home"
+            onClick={(e) => handleScroll(e, 'home')}
+            className="flex-shrink-0"
+          >
+            {!imgError ? (
+              <Image
+                src="/assets/ypf imagenes/full-logomodooscuro.png"
+                alt="YPF FULL"
+                width={120}
+                height={38}
+                priority
+                className="h-7 md:h-9 w-auto"
+                onError={() => setImgError(true)}
+              />
+            ) : (
+              <span className="text-white font-black text-lg">YPF FULL</span>
+            )}
+          </Link>
+        </div>
 
         {/* LINKS DE SECCIÓN (Desktop) — flows naturally between logo and right actions */}
         <div className="hidden md:flex items-center gap-6 flex-1 justify-center">

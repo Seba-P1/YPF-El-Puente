@@ -196,21 +196,43 @@ export const updateCombustibleNombre = withAdminAction(
   { rateLimitKey: 'update-combustible-nombre', maxPerMinute: 60 }
 )
 
+const updateCombustibleDescripcionExtendidaSchema = z.object({
+  id: z.string().uuid(),
+  descripcion_extendida: z.string().nullable(),
+})
+
+export const updateCombustibleDescripcionExtendida = withAdminAction(
+  updateCombustibleDescripcionExtendidaSchema,
+  async ({ id, descripcion_extendida }) => {
+    const supabase = (await createClient()) as any
+    const { error } = await supabase
+      .from('combustibles')
+      .update({ descripcion_extendida })
+      .eq('id', id)
+
+    if (error) throw new Error(`Error updating descripcion extendida combustible: ${error.message}`)
+    revalidatePath('/admin/combustibles')
+    return { id, descripcion_extendida }
+  },
+  { rateLimitKey: 'update-combustible-descripcion-extendida', maxPerMinute: 60 }
+)
+
 const createCombustibleSchema = z.object({
   nombre: z.string().min(1).max(100),
   octanaje: z.string().max(20).optional(),
   color_hex: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   precio: z.number().nonnegative().default(0),
   orden: z.number().int().nonnegative().default(0),
+  descripcion_extendida: z.string().optional(),
 })
 
 export const createCombustible = withAdminAction(
   createCombustibleSchema,
-  async ({ nombre, octanaje, color_hex, precio, orden }) => {
+  async ({ nombre, octanaje, color_hex, precio, orden, descripcion_extendida }) => {
     const supabase = (await createClient()) as any
     const { data, error } = await supabase
       .from('combustibles')
-      .insert({ nombre, octanaje: octanaje ?? null, color_hex, precio, orden, disponible: true, descripcion: null })
+      .insert({ nombre, octanaje: octanaje ?? null, color_hex, precio, orden, disponible: true, descripcion: null, descripcion_extendida: descripcion_extendida ?? null })
       .select()
       .single()
 

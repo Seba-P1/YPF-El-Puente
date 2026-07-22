@@ -2,61 +2,44 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react'
+import { Sparkles, LayoutList, LayoutGrid, Plus, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+
 import { CatalogoFiltros } from '@/components/public/CatalogoFiltros'
 import { CatalogoProductCard } from '@/components/public/CatalogoProductCard'
-
+import { useCartStore } from '@/stores/cart'
+import { formatearPrecioARS } from '@/lib/format'
 import type { Producto } from '@/lib/supabase/types'
 
 interface MenuClientProps {
   initialProductos: Producto[]
 }
 
-const ITEMS_POR_PAGINA = 48
+const INITIAL_BATCH_SIZE = 35
 
 export default function MenuClient({ initialProductos }: MenuClientProps) {
   const [busqueda, setBusqueda] = useState('')
   const [categoriaActiva, setCategoriaActiva] = useState<string>('todos')
-  const [pagina, setPagina] = useState(1)
+  const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH_SIZE)
   const [isCompact, setIsCompact] = useState(false)
   const [showNav, setShowNav] = useState(true)
 
+  // Vista predeterminada: 'lista' (sin tarjetas/imágenes)
+  const [modoVista, setModoVista] = useState<'lista' | 'cuadricula'>('lista')
+
   const lastScrollYRef = React.useRef(0)
 
-  // Scroll listener to detect direction and set compact mode
+  const addItem = useCartStore((state) => state.addItem)
+
+  // Reset visible count when search or category filter changes
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      const lastScrollY = lastScrollYRef.current
-
-      // Only trigger hide/show if scrolled past a small threshold
-      if (Math.abs(currentScrollY - lastScrollY) > 5) {
-        if (currentScrollY > lastScrollY && currentScrollY > 80) {
-          // Scrolling down - hide
-          setShowNav(false)
-        } else {
-          // Scrolling up - show
-          setShowNav(true)
-        }
-      }
-
-      setIsCompact(currentScrollY > 40)
-      lastScrollYRef.current = currentScrollY
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  // Reset page when any filter changes
-  useEffect(() => {
-    setPagina(1)
+    setVisibleCount(INITIAL_BATCH_SIZE)
   }, [busqueda, categoriaActiva])
 
   // Chained filtering
   const filtrados = useMemo(() => {
     let result = initialProductos
 
-    // Bypass category filter when search query is active (search globally)
     if (categoriaActiva !== 'todos' && !busqueda.trim()) {
       if (categoriaActiva === 'sin_tacc') {
         result = result.filter((p) => {
@@ -98,12 +81,51 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
     return result
   }, [initialProductos, categoriaActiva, busqueda])
 
-  // Pagination
-  const totalPaginas = Math.ceil(filtrados.length / ITEMS_POR_PAGINA)
-  const paginados = filtrados.slice(
-    (pagina - 1) * ITEMS_POR_PAGINA,
-    pagina * ITEMS_POR_PAGINA
-  )
+  // Products currently loaded in infinite scroll
+  const paginados = useMemo(() => {
+    return filtrados.slice(0, visibleCount)
+  }, [filtrados, visibleCount])
+
+  const hasMore = visibleCount < filtrados.length
+
+  const handleLoadMore = useCallback(() => {
+    setVisibleCount((prev) => Math.min(filtrados.length, prev + INITIAL_BATCH_SIZE))
+  }, [filtrados.length])
+
+  // Scroll listener for sticky navbar & infinite scroll trigger
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      const lastScrollY = lastScrollYRef.current
+
+      if (Math.abs(currentScrollY - lastScrollY) > 5) {
+        if (currentScrollY > lastScrollY && currentScrollY > 80) {
+          setShowNav(false)
+        } else {
+          setShowNav(true)
+        }
+      }
+
+      setIsCompact(currentScrollY > 40)
+      lastScrollYRef.current = currentScrollY
+
+      // Infinite scroll check: trigger when user scrolls near the bottom (within 450px)
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 450
+      ) {
+        handleLoadMore()
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [handleLoadMore])
+
+  const handleAdd = (producto: Producto) => {
+    addItem(producto)
+    toast.success(`${producto.nombre} agregado`, { duration: 2000 })
+  }
 
   return (
     <main
@@ -176,7 +198,7 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
         </motion.p>
       </header>
 
-      {/* Filters - Sticky with compact mode toggle */}
+      {/* Filters - Sticky */}
       <CatalogoFiltros
         busqueda={busqueda}
         onBusqueda={setBusqueda}
@@ -186,9 +208,9 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
         visible={showNav}
       />
 
-      {/* Product Grid */}
+      {/* Product List / Grid Content */}
       <div
-        className="w-full max-w-[1600px] mx-auto px-4 md:px-8"
+        className="w-full max-w-[1280px] mx-auto px-4 md:px-8"
         style={{
           paddingTop: '20px',
           paddingBottom: '80px',
@@ -196,21 +218,14 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
           zIndex: 1,
         }}
       >
-        {/* Result count with subtle style */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 16,
-          }}
-        >
+        {/* Result count & View Switcher */}
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
           <p
             style={{
-              fontSize: 12,
-              color: 'rgba(255,255,255,0.35)',
+              fontSize: 13,
+              color: 'rgba(255,255,255,0.5)',
               fontWeight: 500,
-              letterSpacing: '0.02em',
+              letterSpacing: '0.01em',
             }}
           >
             {filtrados.length}{' '}
@@ -219,43 +234,109 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
               ? ' encontrados'
               : ' disponibles'}
           </p>
-          {/* Page indicator when paginated */}
-          {totalPaginas > 1 && (
-            <p
-              style={{
-                fontSize: 11,
-                color: 'rgba(255,255,255,0.25)',
-                fontWeight: 500,
-              }}
+
+          {/* View Mode Toggle Switcher */}
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10">
+            <button
+              onClick={() => setModoVista('lista')}
+              title="Vista de Lista"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                modoVista === 'lista'
+                  ? 'bg-[#0070C0] text-white shadow-md'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
             >
-              Página {pagina}/{totalPaginas}
-            </p>
-          )}
+              <LayoutList size={15} />
+              <span className="hidden sm:inline">Lista</span>
+            </button>
+            <button
+              onClick={() => setModoVista('cuadricula')}
+              title="Vista de Cuadrícula"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                modoVista === 'cuadricula'
+                  ? 'bg-[#0070C0] text-white shadow-md'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <LayoutGrid size={15} />
+              <span className="hidden sm:inline">Tarjetas</span>
+            </button>
+          </div>
         </div>
 
         <h2 className="sr-only">Productos</h2>
 
         <AnimatePresence mode="wait">
           {paginados.length > 0 ? (
-            <motion.div
-              key={`page-${pagina}-${categoriaActiva}-${busqueda}`}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.3 }}
-              style={{
-                display: 'grid',
-                gap: 14,
-              }}
-              className="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 3xl:grid-cols-9"
-            >
-              {paginados.map((producto) => (
-                <CatalogoProductCard
-                  key={producto.id}
-                  producto={producto}
-                />
-              ))}
-            </motion.div>
+            modoVista === 'lista' ? (
+              /* ── LIST VIEW MODE (Frameless, sleek full-width rows with refined typography) ── */
+              <motion.div
+                key={`list-${categoriaActiva}-${busqueda}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="w-full divide-y divide-white/10 border-t border-b border-white/10"
+              >
+                {paginados.map((producto) => (
+                  <div
+                    key={producto.id}
+                    className="flex items-center justify-between py-3 sm:py-3.5 px-2 hover:bg-white/[0.04] transition-colors group"
+                  >
+                    {/* Left: Name, Description & Badges */}
+                    <div className="flex items-center gap-3 min-w-0 pr-4">
+                      <div className="flex flex-col">
+                        <span className="text-xs sm:text-sm font-medium text-slate-200 group-hover:text-white transition-colors line-clamp-1">
+                          {producto.nombre}
+                        </span>
+                        {producto.descripcion && (
+                          <span className="text-[11px] text-slate-400 font-normal line-clamp-1 hidden sm:block mt-0.5">
+                            {producto.descripcion}
+                          </span>
+                        )}
+                      </div>
+
+                      {producto.es_sin_tacc && (
+                        <span className="shrink-0 px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-semibold uppercase">
+                          SIN TACC
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Right: Price & Add Button */}
+                    <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                      <span className="text-xs sm:text-sm font-semibold text-[#FFD100]">
+                        {formatearPrecioARS(producto.precio)}
+                      </span>
+                      <button
+                        onClick={() => handleAdd(producto)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 sm:px-3 rounded-lg bg-[#0070C0] hover:bg-[#0080FF] text-white text-xs font-medium transition-all active:scale-95 cursor-pointer shadow-sm"
+                      >
+                        <Plus size={13} />
+                        <span>Agregar</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            ) : (
+              /* ── GRID VIEW MODE (Cards with Images) ── */
+              <motion.div
+                key={`grid-${categoriaActiva}-${busqueda}`}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3 }}
+                className="grid gap-3.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+              >
+                {paginados.map((producto) => (
+                  <CatalogoProductCard
+                    key={producto.id}
+                    producto={producto}
+                  />
+                ))}
+              </motion.div>
+            )
           ) : (
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
@@ -290,110 +371,15 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
           )}
         </AnimatePresence>
 
-        {/* Pagination */}
-        {totalPaginas > 1 && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 12,
-              marginTop: 48,
-            }}
-          >
+        {/* Infinite Scroll Indicator / Manual trigger fallback */}
+        {hasMore && (
+          <div className="flex flex-col items-center justify-center pt-8 pb-4">
             <button
-              onClick={() => setPagina((p) => Math.max(1, p - 1))}
-              disabled={pagina === 1}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '10px 20px',
-                borderRadius: 14,
-                border: '1px solid rgba(255,255,255,0.08)',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: pagina === 1 ? 'not-allowed' : 'pointer',
-                background:
-                  pagina === 1
-                    ? 'rgba(255,255,255,0.02)'
-                    : 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%)',
-                color:
-                  pagina === 1
-                    ? 'rgba(255,255,255,0.15)'
-                    : 'rgba(255,255,255,0.7)',
-                transition: 'all 0.2s',
-                backdropFilter: 'blur(8px)',
-              }}
+              onClick={handleLoadMore}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-300 transition-all cursor-pointer"
             >
-              <ChevronLeft size={14} />
-              Anterior
-            </button>
-
-            {/* Page dots */}
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              {Array.from({ length: Math.min(totalPaginas, 7) }, (_, i) => {
-                let pageNum: number
-                if (totalPaginas <= 7) {
-                  pageNum = i + 1
-                } else if (pagina <= 4) {
-                  pageNum = i + 1
-                } else if (pagina >= totalPaginas - 3) {
-                  pageNum = totalPaginas - 6 + i
-                } else {
-                  pageNum = pagina - 3 + i
-                }
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setPagina(pageNum)}
-                    style={{
-                      width: pageNum === pagina ? 24 : 8,
-                      height: 8,
-                      borderRadius: 4,
-                      border: 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.25s',
-                      background:
-                        pageNum === pagina
-                          ? 'linear-gradient(135deg, #FFD100 0%, #FFA500 100%)'
-                          : 'rgba(255,255,255,0.12)',
-                    }}
-                  />
-                )
-              })}
-            </div>
-
-            <button
-              onClick={() =>
-                setPagina((p) => Math.min(totalPaginas, p + 1))
-              }
-              disabled={pagina === totalPaginas}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '10px 20px',
-                borderRadius: 14,
-                border: '1px solid rgba(255,255,255,0.08)',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor:
-                  pagina === totalPaginas ? 'not-allowed' : 'pointer',
-                background:
-                  pagina === totalPaginas
-                    ? 'rgba(255,255,255,0.02)'
-                    : 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%)',
-                color:
-                  pagina === totalPaginas
-                    ? 'rgba(255,255,255,0.15)'
-                    : 'rgba(255,255,255,0.7)',
-                transition: 'all 0.2s',
-                backdropFilter: 'blur(8px)',
-              }}
-            >
-              Siguiente
-              <ChevronRight size={14} />
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FFD100]" />
+              <span>Cargando más productos... ({paginados.length} de {filtrados.length})</span>
             </button>
           </div>
         )}

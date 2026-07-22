@@ -392,7 +392,7 @@ export default function FullClient({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/40 animate-bounce"
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/50 hover:text-white transition-colors animate-bounce p-2 rounded-full bg-black/40 border border-white/10 backdrop-blur-sm"
           aria-label="Scroll down"
         >
           <ChevronDown size={32} />
@@ -473,7 +473,6 @@ export default function FullClient({
               imagenBack="/assets/ypf imagenes/back-2.webp"
               mandalaPosition="top-left"
               mandalaScale={0.6}
-              fullScreenBgImage="/assets/ypf imagenes/full_cafeteria/bg.svg"
             />
           </div>
 
@@ -589,7 +588,6 @@ export default function FullClient({
               imagenBack="/assets/ypf imagenes/back-2.webp"
               mandalaPosition="top-left"
               mandalaScale={0.6}
-              fullScreenBgImage="/assets/ypf imagenes/full_cafeteria/bg.svg"
             />
             <FullCategorySection
               id="productos-full"
