@@ -9,6 +9,7 @@ import { useCartStore } from '@/stores/cart'
 import { useSearchStore } from '@/stores/search'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useFullPageStore } from '@/stores/fullpage'
+import { AppYPFButton } from '@/components/public/AppYPFButton'
 
 export function FullNavbar({ transparent = false }: { transparent?: boolean } = {}) {
   const [activeSection, setActiveSection] = useState<string>('home')
@@ -126,15 +127,7 @@ export function FullNavbar({ transparent = false }: { transparent?: boolean } = 
         }}
       >
         {/* LOGO & INICIO LINK */}
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-slate-200 hover:text-white bg-white/10 hover:bg-white/20 border border-white/15 transition-all shadow-sm"
-          >
-            <Home size={14} className="text-[#FFD100]" />
-            <span className="hidden sm:inline">Inicio</span>
-          </Link>
-
+        <div className="flex items-center gap-2.5 flex-shrink-0">
           <Link
             href="#home"
             onClick={(e) => handleScroll(e, 'home')}
@@ -153,6 +146,14 @@ export function FullNavbar({ transparent = false }: { transparent?: boolean } = 
             ) : (
               <span className="text-white font-black text-lg">YPF FULL</span>
             )}
+          </Link>
+
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-slate-200 hover:text-white bg-white/10 hover:bg-white/20 border border-white/15 transition-all shadow-sm"
+          >
+            <Home size={12} className="text-[#FFD100]" />
+            <span className="hidden sm:inline">Inicio</span>
           </Link>
         </div>
 
@@ -196,30 +197,31 @@ export function FullNavbar({ transparent = false }: { transparent?: boolean } = 
             </Link>
           )}
 
-          <button
-            onClick={() => setIsSearchExpanded(true)}
-            className="flex items-center justify-center bg-transparent border-none cursor-pointer"
-            aria-label="Buscar productos"
-          >
-            <div className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
-              <Search size={22} className="text-white" />
-            </div>
-          </button>
+          {/* APP YPF Button */}
+          <AppYPFButton />
 
-          {/* BOTÓN CARRITO */}
+          {/* Search button — hidden on Menu Completo page because search input is already present below */}
+          {!isMenuPage && (
+            <button
+              onClick={() => setIsSearchExpanded(true)}
+              className="flex items-center justify-center bg-transparent border-none cursor-pointer"
+              aria-label="Buscar productos"
+            >
+              <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+                <Search size={18} className="text-white md:hidden" />
+                <Search size={22} className="text-white hidden md:block" />
+              </div>
+            </button>
+          )}
+
+          {/* BOTÓN CARRITO — styled consistently with AppYPFButton on mobile */}
           <button
             onClick={openCart}
-            className="flex items-center gap-1.5 md:gap-2 rounded-full py-1.5 px-3 md:py-2 md:px-4 transition-colors"
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.12)'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+            className="flex items-center gap-1 px-2.5 py-1 md:py-2 md:px-4 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 transition-all text-[11px] md:text-xs font-medium"
           >
-            <ShoppingCart size={20} className="text-white" />
+            <ShoppingCart size={15} className="text-white md:w-5 md:h-5" />
             {totalItems > 0 && (
-              <span className="bg-[#FFD100] text-black text-xs font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-[#FFD100] text-black text-[10px] md:text-xs font-bold px-1.5 py-0.2 md:px-2 md:py-0.5 rounded-full">
                 {totalItems}
               </span>
             )}

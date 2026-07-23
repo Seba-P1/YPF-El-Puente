@@ -2,12 +2,13 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, LayoutList, LayoutGrid, Plus, Loader2 } from 'lucide-react'
+import { Sparkles, Plus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { CatalogoFiltros } from '@/components/public/CatalogoFiltros'
 import { CatalogoProductCard } from '@/components/public/CatalogoProductCard'
 import { useCartStore } from '@/stores/cart'
+import { createClient } from '@/lib/supabase/client'
 import { formatearPrecioARS } from '@/lib/format'
 import type { Producto } from '@/lib/supabase/types'
 
@@ -23,9 +24,27 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH_SIZE)
   const [isCompact, setIsCompact] = useState(false)
   const [showNav, setShowNav] = useState(true)
-
-  // Vista predeterminada: 'lista' (sin tarjetas/imágenes)
   const [modoVista, setModoVista] = useState<'lista' | 'cuadricula'>('lista')
+
+  // Fetch view mode from DB configuration (defaults to 'lista')
+  useEffect(() => {
+    async function checkViewModeConfig() {
+      try {
+        const supabase = createClient() as any
+        const { data } = await supabase
+          .from('configuracion_tienda')
+          .select('valor')
+          .eq('clave', 'menu_vista_modo')
+          .single()
+        if (data && (data.valor === 'lista' || data.valor === 'cuadricula')) {
+          setModoVista(data.valor)
+        }
+      } catch (err) {
+        // default to 'lista'
+      }
+    }
+    checkViewModeConfig()
+  }, [])
 
   const lastScrollYRef = React.useRef(0)
 
@@ -218,8 +237,8 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
           zIndex: 1,
         }}
       >
-        {/* Result count & View Switcher */}
-        <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
+        {/* Result count */}
+        <div className="flex items-center justify-between mb-4">
           <p
             style={{
               fontSize: 13,
@@ -234,34 +253,6 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
               ? ' encontrados'
               : ' disponibles'}
           </p>
-
-          {/* View Mode Toggle Switcher */}
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10">
-            <button
-              onClick={() => setModoVista('lista')}
-              title="Vista de Lista"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                modoVista === 'lista'
-                  ? 'bg-[#0070C0] text-white shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <LayoutList size={15} />
-              <span className="hidden sm:inline">Lista</span>
-            </button>
-            <button
-              onClick={() => setModoVista('cuadricula')}
-              title="Vista de Cuadrícula"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                modoVista === 'cuadricula'
-                  ? 'bg-[#0070C0] text-white shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <LayoutGrid size={15} />
-              <span className="hidden sm:inline">Tarjetas</span>
-            </button>
-          </div>
         </div>
 
         <h2 className="sr-only">Productos</h2>
@@ -281,36 +272,56 @@ export default function MenuClient({ initialProductos }: MenuClientProps) {
                 {paginados.map((producto) => (
                   <div
                     key={producto.id}
-                    className="flex items-center justify-between py-3 sm:py-3.5 px-2 hover:bg-white/[0.04] transition-colors group"
+                    className="flex items-center justify-between py-2.5 sm:py-3.5 px-2 hover:bg-white/[0.04] transition-colors group gap-3"
                   >
-                    {/* Left: Name, Description & Badges */}
-                    <div className="flex items-center gap-3 min-w-0 pr-4">
-                      <div className="flex flex-col">
-                        <span className="text-xs sm:text-sm font-medium text-slate-200 group-hover:text-white transition-colors line-clamp-1">
+                    {/* Left: Name, Price & Badges */}
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <div className="flex items-start gap-2">
+                        <span
+                          className="text-[13px] sm:text-sm text-slate-200 group-hover:text-white transition-colors leading-snug"
+                          style={{ fontWeight: 350 }}
+                        >
                           {producto.nombre}
                         </span>
-                        {producto.descripcion && (
-                          <span className="text-[11px] text-slate-400 font-normal line-clamp-1 hidden sm:block mt-0.5">
-                            {producto.descripcion}
+                        {producto.es_sin_tacc && (
+                          <span className="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[9px] font-semibold uppercase">
+                            SIN TACC
                           </span>
                         )}
                       </div>
-
-                      {producto.es_sin_tacc && (
-                        <span className="shrink-0 px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-semibold uppercase">
-                          SIN TACC
+                      {producto.descripcion && (
+                        <span className="text-[11px] text-slate-400 font-normal line-clamp-1 hidden sm:block mt-0.5">
+                          {producto.descripcion}
                         </span>
                       )}
-                    </div>
-
-                    {/* Right: Price & Add Button */}
-                    <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-                      <span className="text-xs sm:text-sm font-semibold text-[#FFD100]">
+                      {/* Price below name on mobile, inline on desktop */}
+                      <span
+                        className="text-[12px] sm:text-sm text-[#FFD100] mt-0.5 sm:hidden"
+                        style={{ fontWeight: 400 }}
+                      >
                         {formatearPrecioARS(producto.precio)}
                       </span>
+                    </div>
+
+                    {/* Right: Price (desktop) & Add Button */}
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span
+                        className="hidden sm:block text-sm text-[#FFD100]"
+                        style={{ fontWeight: 400 }}
+                      >
+                        {formatearPrecioARS(producto.precio)}
+                      </span>
+                      {/* Mobile: circular + button */}
                       <button
                         onClick={() => handleAdd(producto)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 sm:px-3 rounded-lg bg-[#0070C0] hover:bg-[#0080FF] text-white text-xs font-medium transition-all active:scale-95 cursor-pointer shadow-sm"
+                        className="sm:hidden w-8 h-8 rounded-full bg-[#0070C0] hover:bg-[#0080FF] text-white flex items-center justify-center transition-all active:scale-90 cursor-pointer shadow-sm"
+                      >
+                        <Plus size={16} strokeWidth={2.5} />
+                      </button>
+                      {/* Desktop: full button */}
+                      <button
+                        onClick={() => handleAdd(producto)}
+                        className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0070C0] hover:bg-[#0080FF] text-white text-xs font-medium transition-all active:scale-95 cursor-pointer shadow-sm"
                       >
                         <Plus size={13} />
                         <span>Agregar</span>

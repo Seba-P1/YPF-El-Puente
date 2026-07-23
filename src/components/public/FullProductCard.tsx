@@ -82,20 +82,24 @@ export function FullProductCard({
         isCarousel ? 'flex-shrink-0 w-[280px] md:w-[clamp(320px,18vw,400px)]' : 'w-full'
       }`}
     >
-      {/* Image container — tall enough to avoid clipping */}
-      <div className="relative w-full h-[400px] md:h-[460px] flex items-end justify-center overflow-visible">
-        <div className="absolute bottom-[-40px] md:bottom-[-50px] w-[408px] h-[374px] md:w-[476px] md:h-[442px] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none">
+      {/* Image container — proportional height for grid layout, tall for carousel */}
+      <div className={`relative w-full ${isCarousel ? 'h-[400px] md:h-[460px]' : 'h-[160px] sm:h-[220px] md:h-[260px]'} flex items-end justify-center overflow-visible`}>
+        <div className={`transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-2 pointer-events-none ${
+          isCarousel
+            ? 'absolute bottom-[-40px] md:bottom-[-50px] w-[408px] h-[374px] md:w-[476px] md:h-[442px]'
+            : 'relative w-full h-full flex items-center justify-center p-2'
+        }`}>
           {!imgError && producto.imagen_url ? (
             <Image
               src={producto.imagen_url.startsWith('http') ? producto.imagen_url : `${producto.imagen_url}?v=2`}
               alt={producto.nombre}
               fill
-              sizes="(max-width: 768px) 408px, 476px"
+              sizes={isCarousel ? "(max-width: 768px) 408px, 476px" : "(max-width: 768px) 50vw, 25vw"}
               quality={100}
               priority={index < 4}
               loading={index < 4 ? undefined : "lazy"}
               className="object-contain"
-              style={{ objectPosition: 'bottom' }}
+              style={{ objectPosition: 'center bottom' }}
               unoptimized={true}
               onError={() => setImgError(true)}
             />
@@ -105,15 +109,17 @@ export function FullProductCard({
 
           {/* Badge — positioned relative to image container. Hidden for mundial variant. */}
           {!isMundial && producto.badge && (
-            <div className="absolute top-2 right-2 bg-[#FFD100] text-black text-[9px] font-extrabold px-2.5 py-0.5 rounded-md uppercase tracking-wider z-20 shadow-md pointer-events-auto">
+            <div className="absolute top-1 right-1 bg-[#FFD100] text-black text-[9px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider z-20 shadow-md pointer-events-auto">
               {producto.badge}
             </div>
           )}
         </div>
       </div>
 
-      {/* Invisible card — no background, border or shadow */}
-      <div className="w-full flex flex-col items-center justify-between px-4 pt-1 pb-2 transition-all duration-300 min-h-[80px] md:min-h-[100px] -mt-[20px] md:-mt-[30px]">
+      {/* Product info container */}
+      <div className={`w-full flex flex-col items-center justify-between px-2 pt-1 pb-2 transition-all duration-300 min-h-[80px] md:min-h-[100px] ${
+        isCarousel ? '-mt-[20px] md:-mt-[30px]' : 'mt-1'
+      }`}>
         <div className="text-center w-full flex flex-col items-center flex-grow">
           <h3 className={`text-[13px] lg:text-[14px] font-bold text-center px-1 ${nameClass}`}>
             {producto.nombre}

@@ -51,38 +51,25 @@ export default function FullClient({
   const lastScrollTimeRef = useRef<number>(0)
   const isTransitioningRef = useRef<boolean>(false)
 
-  const allProducts = useMemo(() => initialDestacados, [initialDestacados])
-
-  // Group products by category (with fallback to first 12 active products if no featured exist)
-  const productosPorCategoria = useMemo(() => {
-    const map: Record<string, Producto[]> = {}
-    
-    // First group all active products by category
-    const groupedAll: Record<string, Producto[]> = {}
-    for (const p of initialDestacados) {
-      if (!groupedAll[p.categoria_slug]) groupedAll[p.categoria_slug] = []
-      groupedAll[p.categoria_slug].push(p)
-    }
-
-    // Populate map: featured first, fallback to first 12 active
-    initialCategorias.forEach((cat) => {
-      const allCatProds = groupedAll[cat.slug] ?? []
-      const featured = allCatProds.filter((p) => p.destacado)
-      if (featured.length > 0) {
-        map[cat.slug] = featured
-      } else {
-        map[cat.slug] = allCatProds.slice(0, 12)
-      }
-    })
-
-    return map
-  }, [initialDestacados, initialCategorias])
-
   const fullHamburguesas = initialFullHamburguesas ?? []
   const fullCafeteria = initialFullCafeteria ?? []
   const productosFullProducts = initialFullMarca ?? []
   const fullSinTacc = initialFullSinTacc ?? []
   const fullMundial = initialFullMundial ?? []
+
+  // Products belonging strictly to the Full Principal page
+  const allProducts = useMemo(() => {
+    const combined = [
+      ...fullHamburguesas,
+      ...fullCafeteria,
+      ...productosFullProducts,
+      ...fullSinTacc,
+      ...fullMundial,
+    ]
+    const map = new Map<string, Producto>()
+    combined.forEach((p) => map.set(p.id, p))
+    return Array.from(map.values())
+  }, [fullHamburguesas, fullCafeteria, productosFullProducts, fullSinTacc, fullMundial])
 
   const catHamb = initialCategorias.find(c => c.slug === 'full_hamburguesas') || { id: '1', nombre: 'Hamburguesas', slug: 'full_hamburguesas', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 1, created_at: '' } as Categoria
   const catCaf = initialCategorias.find(c => c.slug === 'full_cafeteria') || { id: '2', nombre: 'Cafetería', slug: 'full_cafeteria', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 2, created_at: '' } as Categoria
@@ -103,6 +90,28 @@ export default function FullClient({
       'sustentabilidad-section'
     ])
   }, [setSectionIds])
+
+  // Navigate to hash target on mount or hash change (e.g. /full#hamburguesas from menu page)
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace('#', '')
+      if (hash) {
+        // Small delay to ensure sections are mounted and fullpage store is ready
+        setTimeout(() => {
+          if (isEnabled) {
+            goToSectionById(hash)
+          } else {
+            const el = document.getElementById(hash)
+            if (el) el.scrollIntoView({ behavior: 'smooth' })
+          }
+        }, 300)
+      }
+    }
+
+    handleHash()
+    window.addEventListener('hashchange', handleHash)
+    return () => window.removeEventListener('hashchange', handleHash)
+  }, [isEnabled, goToSectionById])
 
   // Handle screen resize to toggle fullpage scroll locking
   useEffect(() => {
@@ -520,11 +529,13 @@ export default function FullClient({
   // RENDER NORMAL (MOBILE / BUSCANDO)
   return (
     <main className="bg-black text-white relative">
-      {/* 1. HERO SECTION */}
-      {renderHeroSection()}
+      {/* 1. HERO SECTION (hidden when user is searching) */}
+      {!isSearching && renderHeroSection()}
 
-      {/* 2. CATEGORY PILLS */}
-      <FullSearchBar />
+      {/* 2. SEARCH BAR & CATEGORY PILLS */}
+      <div className={isSearching ? "pt-[76px] md:pt-[90px]" : ""}>
+        <FullSearchBar />
+      </div>
 
       {/* 3A. RESULTADOS DE BÚSQUEDA Y SECCIONES */}
       <AnimatePresence mode="wait">
@@ -532,30 +543,32 @@ export default function FullClient({
           <motion.section 
             id="search-results"
             key="search-results"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="min-h-screen py-[60px]"
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="min-h-screen pt-4 pb-20"
             style={{ background: '#000000' }}
           >
             <div className="mx-auto" style={{ maxWidth: 'var(--page-max, 1280px)', padding: '0 var(--page-pad-x, 24px)' }}>
-              <h2 className="text-[22px] font-bold text-white">
-                Resultados para &apos;{debouncedQuery}&apos;
-              </h2>
-              <p className="text-[14px] text-white/50 mt-1 mb-8">
-                {searchResults.length} {searchResults.length === 1 ? 'producto encontrado' : 'productos encontrados'}
-              </p>
+              <div className="flex items-center justify-between mb-6 pb-3 border-b border-white/10">
+                <h2 className="text-lg md:text-xl font-bold text-white">
+                  Resultados para &apos;<span className="text-[#FFD100]">{debouncedQuery}</span>&apos;
+                </h2>
+                <span className="text-xs text-white/50 font-medium">
+                  {searchResults.length} {searchResults.length === 1 ? 'producto' : 'productos'}
+                </span>
+              </div>
 
               {searchResults.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 lg:gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
                   {searchResults.map((producto, index) => (
                     <FullProductCard key={producto.id} producto={producto} index={index} layout="grid" />
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10 mt-8">
-                  <p className="text-white/60">No encontramos &apos;{debouncedQuery}&apos; en nuestro menú.</p>
+                <div className="text-center py-16 bg-white/5 rounded-2xl border border-white/10 mt-4">
+                  <p className="text-white/60 text-sm">No encontramos &apos;{debouncedQuery}&apos; en la carta de Full.</p>
                 </div>
               )}
             </div>

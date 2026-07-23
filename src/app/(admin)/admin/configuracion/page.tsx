@@ -17,6 +17,7 @@ interface ConfigFields {
   msg_footer: string
   instagram_url: string
   seccion_boxes_visible: string
+  menu_vista_modo: string
 }
 
 const DEFAULT_CONFIG: ConfigFields = {
@@ -28,6 +29,7 @@ const DEFAULT_CONFIG: ConfigFields = {
   msg_footer: '¡Gracias por tu pedido!',
   instagram_url: 'https://www.instagram.com/ypffull/',
   seccion_boxes_visible: 'true',
+  menu_vista_modo: 'lista',
 }
 
 export default function AdminConfiguracionPage() {
@@ -62,6 +64,7 @@ export default function AdminConfiguracionPage() {
           msg_footer: mapped['msg_footer'] || DEFAULT_CONFIG.msg_footer,
           instagram_url: mapped['instagram_url'] || DEFAULT_CONFIG.instagram_url,
           seccion_boxes_visible: mapped['seccion_boxes_visible'] ?? DEFAULT_CONFIG.seccion_boxes_visible,
+          menu_vista_modo: mapped['menu_vista_modo'] ?? DEFAULT_CONFIG.menu_vista_modo,
         }
         setConfig(loaded)
         setOriginalConfig(loaded)
@@ -181,38 +184,74 @@ export default function AdminConfiguracionPage() {
               Secciones de la Landing
             </h2>
 
-            <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50 border">
-              <div className="flex items-center gap-3">
-                {config.seccion_boxes_visible === 'true' ? (
-                  <Eye className="w-5 h-5 text-emerald-500" />
-                ) : (
-                  <EyeOff className="w-5 h-5 text-rose-500" />
-                )}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50 border">
+                <div className="flex items-center gap-3">
+                  {config.seccion_boxes_visible === 'true' ? (
+                    <Eye className="w-5 h-5 text-emerald-500" />
+                  ) : (
+                    <EyeOff className="w-5 h-5 text-rose-500" />
+                  )}
+                  <div>
+                    <span className="text-sm font-bold text-foreground block">Sección Boxes</span>
+                    <span className="text-xs text-muted-foreground">
+                      {config.seccion_boxes_visible === 'true' ? 'Visible en la landing' : 'Oculta de la landing'}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setConfig({
+                      ...config,
+                      seccion_boxes_visible: config.seccion_boxes_visible === 'true' ? 'false' : 'true',
+                    })
+                  }
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                    config.seccion_boxes_visible === 'true' ? 'bg-emerald-500' : 'bg-muted-foreground/30'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                      config.seccion_boxes_visible === 'true' ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Vista del Menú Completo Switcher */}
+              <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50 border">
                 <div>
-                  <span className="text-sm font-bold text-foreground block">Sección Boxes</span>
+                  <span className="text-sm font-bold text-foreground block">Vista del Menú Completo</span>
                   <span className="text-xs text-muted-foreground">
-                    {config.seccion_boxes_visible === 'true' ? 'Visible en la landing' : 'Oculta de la landing'}
+                    {config.menu_vista_modo === 'lista' ? 'Formato Lista (sin imágenes)' : 'Formato Tarjetas (con cuadrícula e imágenes)'}
                   </span>
                 </div>
+                <div className="flex items-center gap-1.5 p-1 rounded-lg bg-background border">
+                  <button
+                    type="button"
+                    onClick={() => setConfig({ ...config, menu_vista_modo: 'lista' })}
+                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                      config.menu_vista_modo === 'lista'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Lista
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfig({ ...config, menu_vista_modo: 'cuadricula' })}
+                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                      config.menu_vista_modo === 'cuadricula'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Tarjetas
+                  </button>
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={() =>
-                  setConfig({
-                    ...config,
-                    seccion_boxes_visible: config.seccion_boxes_visible === 'true' ? 'false' : 'true',
-                  })
-                }
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
-                  config.seccion_boxes_visible === 'true' ? 'bg-emerald-500' : 'bg-muted-foreground/30'
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                    config.seccion_boxes_visible === 'true' ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
             </div>
           </div>
 
