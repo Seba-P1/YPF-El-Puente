@@ -13,16 +13,17 @@ export function AppYPFButton() {
     const isIOS = /iPhone|iPad|iPod/i.test(userAgent)
     const isAndroid = /Android/i.test(userAgent)
 
-    const playStoreURL = 'https://play.google.com/store/apps/details?id=com.ypf.app'
-    const appStoreURL = 'https://apps.apple.com/ar/app/ypf/id1442111833'
+    // IDs verified against official source: https://app.ypf.com/
+    const playStoreURL = 'https://play.google.com/store/apps/details?id=com.ypf.jpm'
+    const appStoreURL = 'https://apps.apple.com/ar/app/ypf-app/id1401504810'
     const desktopURL = 'https://app.ypf.com/'
 
     if (isIOS) {
       // iOS: Universal Link opens app if installed, or App Store if not
       window.location.href = appStoreURL
     } else if (isAndroid) {
-      // Android: Chrome Intent attempts to open com.ypf.app package, fallback to Play Store
-      const intentURL = `intent://main#Intent;scheme=ypfapp;package=com.ypf.app;S.browser_fallback_url=${encodeURIComponent(playStoreURL)};end`
+      // Android: Chrome Intent attempts to open com.ypf.jpm package, fallback to Play Store
+      const intentURL = `intent://#Intent;package=com.ypf.jpm;S.browser_fallback_url=${encodeURIComponent(playStoreURL)};end`
       window.location.href = intentURL
     } else {
       // PC / Desktop: opens https://app.ypf.com/
