@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import {
   Search,
   ImageOff,
@@ -24,6 +23,7 @@ import {
   deleteProducto,
   bulkUpdateDisponible,
 } from '@/lib/supabase/actions'
+import { fetchProductosPage } from '@/app/(admin)/admin/productos/actions'
 import { formatearPrecioARS } from '@/lib/format'
 import type { Producto } from '@/types'
 import { toast } from 'sonner'
@@ -61,15 +61,9 @@ import {
 type EstadoFiltro = 'all' | 'active' | 'inactive' | 'noprice'
 
 interface ProductTableProps {
-  productos: Producto[]
-  totalCount: number
-  paginaActual: number
-  categoriaActiva: string
-  busquedaActiva: string
-  estadoActivo: EstadoFiltro
+  productosIniciales: Producto[]
+  totalCountInicial: number
 }
-
-const ITEMS_POR_PAGINA = 20
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string }> = {
   comidas_calientes: { bg: 'bg-orange-500/10 dark:bg-orange-500/20', text: 'text-orange-600 dark:text-orange-400' },
@@ -92,19 +86,17 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 export function ProductTable({
-  productos: initialProductos,
-  totalCount,
-  paginaActual,
-  categoriaActiva,
-  busquedaActiva,
-  estadoActivo,
+  productosIniciales,
+  totalCountInicial,
 }: ProductTableProps) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-
-  const [productos, setProductos] = useState(initialProductos)
-  const [busquedaInput, setBusquedaInput] = useState(busquedaActiva)
+  const [productos, setProductos] = useState(productosIniciales)
+  const [totalCount, setTotalCount] = useState(totalCountInicial)
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [cargandoMas, setCargandoMas] = useState(false)
+  const [categoria, setCategoria] = useState<EstadoFiltro | string>('all')
+  const [busqueda, setBusqueda] = useState('')
+  const [estado, setEstado] = useState<EstadoFiltro>('all')
+  const [busquedaInput, setBusquedaInput] = useState('')
   const [editandoPrecio, setEditandoPrecio] = useState<{
     id: string
     valor: string
@@ -122,6 +114,8 @@ export function ProductTable({
 
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const filtroGenRef = useRef(0) // token para evitar race entre cargarMas y aplicarFiltro
 
   useEffect(() => {
     if (editandoPrecio?.id) {
@@ -135,30 +129,66 @@ export function ProductTable({
     }
   }, [])
 
-  const actualizarFiltro = useCallback(
-    (cambios: Record<string, string>) => {
-      const params = new URLSearchParams(searchParams.toString())
-      const cambiarPagina = 'pagina' in cambios
+  const cargarMas = useCallback(async () => {
+    if (cargandoMas || productos.length >= totalCount) return
+    setCargandoMas(true)
+    const genAlIniciar = filtroGenRef.current
+    const siguientePagina = paginaActual + 1
+    const { data, count } = await fetchProductosPage({
+      page: siguientePagina,
+      categoria,
+      busqueda,
+      estado,
+    })
+    // Si el filtro cambió mientras esperaba, descartar esta tanda
+    if (genAlIniciar !== filtroGenRef.current) {
+      setCargandoMas(false)
+      return
+    }
+    setProductos((prev) => [...prev, ...data])
+    setTotalCount(count)
+    setPaginaActual(siguientePagina)
+    setCargandoMas(false)
+  }, [cargandoMas, productos.length, totalCount, paginaActual, categoria, busqueda, estado])
 
-      Object.entries(cambios).forEach(([key, value]) => {
-        if (key !== 'pagina') {
-          if (value && value !== 'all' && value !== '') {
-            params.set(key, value)
-          } else {
-            params.delete(key)
-          }
-        }
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) cargarMas()
+      },
+      { rootMargin: '300px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [cargarMas])
+
+  const aplicarFiltro = useCallback(
+    async (cambios: { categoria?: string; busqueda?: string; estado?: EstadoFiltro }) => {
+      const nuevaCategoria = cambios.categoria ?? categoria
+      const nuevaBusqueda = cambios.busqueda ?? busqueda
+      const nuevoEstado = cambios.estado ?? estado
+
+      filtroGenRef.current += 1 // invalidar cualquier cargarMas en vuelo
+      setCategoria(nuevaCategoria)
+      setBusqueda(nuevaBusqueda)
+      setEstado(nuevoEstado)
+      setCargandoMas(true)
+
+      const { data, count } = await fetchProductosPage({
+        page: 1,
+        categoria: nuevaCategoria,
+        busqueda: nuevaBusqueda,
+        estado: nuevoEstado as EstadoFiltro,
       })
 
-      if (cambiarPagina) {
-        params.set('pagina', cambios.pagina)
-      } else {
-        params.set('pagina', '1')
-      }
-
-      router.push(`${pathname}?${params.toString()}`)
+      setProductos(data)
+      setTotalCount(count)
+      setPaginaActual(1)
+      setCargandoMas(false)
     },
-    [router, pathname, searchParams]
+    [categoria, busqueda, estado]
   )
 
   const handleBusqueda = useCallback(
@@ -166,15 +196,11 @@ export function ProductTable({
       setBusquedaInput(valor)
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(() => {
-        actualizarFiltro({ busqueda: valor })
+        aplicarFiltro({ busqueda: valor })
       }, 300)
     },
-    [actualizarFiltro]
+    [aplicarFiltro]
   )
-
-  const totalPaginas = Math.max(1, Math.ceil(totalCount / ITEMS_POR_PAGINA))
-  const inicio = totalCount === 0 ? 0 : (paginaActual - 1) * ITEMS_POR_PAGINA + 1
-  const fin = Math.min(paginaActual * ITEMS_POR_PAGINA, totalCount)
 
   const handleGuardarPrecio = useCallback(
     async (id: string, valorString: string) => {
@@ -307,12 +333,12 @@ export function ProductTable({
       )
     } catch (error: any) {
       // Revert
-      setProductos(initialProductos)
+      setProductos(productosIniciales)
       toast.error(error.message || 'Error al actualizar')
     } finally {
       setBulkUpdating(false)
     }
-  }, [initialProductos])
+  }, [productosIniciales])
 
   return (
     <div className="space-y-4">
@@ -332,9 +358,9 @@ export function ProductTable({
           </div>
 
           <select
-            value={categoriaActiva}
+            value={categoria}
             onChange={(e) => {
-              actualizarFiltro({ categoria: e.target.value })
+              aplicarFiltro({ categoria: e.target.value })
             }}
             className="h-9 w-full sm:w-[165px] lg:w-[150px] xl:w-[175px] text-sm rounded-md border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
@@ -355,9 +381,9 @@ export function ProductTable({
           </select>
 
           <select
-            value={estadoActivo}
+            value={estado}
             onChange={(e) => {
-              actualizarFiltro({ estado: e.target.value })
+              aplicarFiltro({ estado: e.target.value as EstadoFiltro })
             }}
             className="h-9 w-full sm:w-[145px] lg:w-[132px] xl:w-[150px] text-sm rounded-md border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
@@ -393,7 +419,7 @@ export function ProductTable({
             </Button>
           </div>
           <span className="text-xs lg:text-sm text-muted-foreground whitespace-nowrap">
-            Mostrando {inicio}–{fin} de {totalCount}
+            Mostrando {productos.length} de {totalCount}
           </span>
         </div>
       </GlassCard>
@@ -607,31 +633,16 @@ export function ProductTable({
           </Table>
         </div>
 
-        {totalPaginas > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t">
-            <span className="text-xs text-muted-foreground">
-              Página {paginaActual} de {totalPaginas}
+        <div ref={sentinelRef} style={{ padding: 20, textAlign: 'center' }}>
+          {cargandoMas && (
+            <Loader2 size={20} className="animate-spin" style={{ margin: '0 auto', color: 'var(--admin-accent)' }} />
+          )}
+          {!cargandoMas && productos.length >= totalCount && productos.length > 0 && (
+            <span style={{ fontSize: 12, color: 'var(--admin-text-3)' }}>
+              Mostraste todos los productos ({totalCount})
             </span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => actualizarFiltro({ pagina: String(paginaActual - 1) })}
-                disabled={paginaActual === 1}
-              >
-                Anterior
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => actualizarFiltro({ pagina: String(paginaActual + 1) })}
-                disabled={paginaActual === totalPaginas}
-              >
-                Siguiente
-              </Button>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </GlassCard>
 
       {imageUploadModal && (

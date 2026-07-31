@@ -8,30 +8,15 @@ export const metadata = {
   title: 'Gestión de Productos — Admin YPF El Puente',
 }
 
-interface PageProps {
-  searchParams: Promise<{
-    pagina?: string
-    categoria?: string
-    busqueda?: string
-    estado?: string
-  }>
-}
-
 const LIMIT = 20
 
-export default async function AdminProductosPage({ searchParams }: PageProps) {
-  const params = await searchParams
-  const page = Number(params.pagina) || 1
-  const categoria = params.categoria || 'all'
-  const busqueda = params.busqueda || ''
-  const estado = (params.estado as 'all' | 'active' | 'inactive' | 'noprice') || 'all'
-
-  const { data: productos, count } = await getAllProductos({
-    page,
+export default async function AdminProductosPage() {
+  const { data: productosIniciales, count } = await getAllProductos({
+    page: 1,
     limit: LIMIT,
-    categoria,
-    busqueda,
-    estado,
+    categoria: 'all',
+    busqueda: '',
+    estado: 'all',
   })
 
   return (
@@ -54,13 +39,8 @@ export default async function AdminProductosPage({ searchParams }: PageProps) {
       </div>
 
       <ProductTable
-        key={`${page}-${categoria}-${busqueda}-${estado}`}
-        productos={productos}
-        totalCount={count}
-        paginaActual={page}
-        categoriaActiva={categoria}
-        busquedaActiva={busqueda}
-        estadoActivo={estado}
+        productosIniciales={productosIniciales}
+        totalCountInicial={count}
       />
     </div>
   )
