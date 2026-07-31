@@ -642,7 +642,11 @@ function FuelCard({
           <div className="space-y-2">
             {/* Title */}
             <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              {combustible.nombre.toLowerCase().includes('infinia') ? combustible.nombre : `Nafta ${cleanNombre}`}
+              {combustible.nombre.toLowerCase().includes('infinia')
+                ? combustible.nombre
+                : lowerName.includes('diesel')
+                  ? cleanNombre
+                  : `Nafta ${cleanNombre}`}
             </h3>
 
             {/* Price Tag */}
