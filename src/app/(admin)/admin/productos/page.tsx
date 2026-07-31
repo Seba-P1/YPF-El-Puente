@@ -8,8 +8,31 @@ export const metadata = {
   title: 'Gestión de Productos — Admin YPF El Puente',
 }
 
-export default async function AdminProductosPage() {
-  const { data: productos, count } = await getAllProductos({ page: 1, limit: 20 })
+interface PageProps {
+  searchParams: Promise<{
+    pagina?: string
+    categoria?: string
+    busqueda?: string
+    estado?: string
+  }>
+}
+
+const LIMIT = 20
+
+export default async function AdminProductosPage({ searchParams }: PageProps) {
+  const params = await searchParams
+  const page = Number(params.pagina) || 1
+  const categoria = params.categoria || 'all'
+  const busqueda = params.busqueda || ''
+  const estado = (params.estado as 'all' | 'active' | 'inactive' | 'noprice') || 'all'
+
+  const { data: productos, count } = await getAllProductos({
+    page,
+    limit: LIMIT,
+    categoria,
+    busqueda,
+    estado,
+  })
 
   return (
     <div className="space-y-6">
@@ -19,7 +42,7 @@ export default async function AdminProductosPage() {
             Catálogo de Productos
           </h1>
           <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-            {productos.length} productos
+            {count} productos
           </span>
         </div>
         <Button asChild>
@@ -30,7 +53,15 @@ export default async function AdminProductosPage() {
         </Button>
       </div>
 
-      <ProductTable productos={productos} totalCount={count} />
+      <ProductTable
+        key={`${page}-${categoria}-${busqueda}-${estado}`}
+        productos={productos}
+        totalCount={count}
+        paginaActual={page}
+        categoriaActiva={categoria}
+        busquedaActiva={busqueda}
+        estadoActivo={estado}
+      />
     </div>
   )
 }

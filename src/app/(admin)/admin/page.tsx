@@ -10,7 +10,7 @@ import {
   FileX,
   ChevronRight,
 } from 'lucide-react'
-import { getAllProductos, getUploadsHistorial, getCombustibles } from '@/lib/supabase/queries'
+import { getProductosStats, getUploadsHistorial, getCombustibles } from '@/lib/supabase/queries'
 import { formatearPrecioARS } from '@/lib/format'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -22,35 +22,30 @@ export const metadata = {
 }
 
 export default async function AdminDashboardPage() {
-  const [result, historial, combustibles] = await Promise.all([
-    getAllProductos(),
+  const [stats, historial, combustibles] = await Promise.all([
+    getProductosStats(),
     getUploadsHistorial(5),
     getCombustibles(),
   ])
 
-  const productos = result.data
-
-  const activos = productos.filter((p) => p.disponible).length
-  const sinPrecio = productos.filter((p) => !p.precio || p.precio === 0).length
-
   const metricas = [
     {
       label: 'Total productos',
-      valor: productos.length,
+      valor: stats.total,
       icono: Package,
       colorBg: 'rgba(59, 130, 246, 0.1)',
       colorIcon: '#3b82f6',
     },
     {
       label: 'Productos activos',
-      valor: activos,
+      valor: stats.activos,
       icono: CheckCircle2,
       colorBg: 'rgba(16, 185, 129, 0.1)',
       colorIcon: '#10b981',
     },
     {
       label: 'Sin precio',
-      valor: sinPrecio,
+      valor: stats.sinPrecio,
       icono: AlertTriangle,
       colorBg: 'rgba(245, 158, 11, 0.1)',
       colorIcon: '#f59e0b',

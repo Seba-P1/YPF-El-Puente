@@ -46,21 +46,64 @@ export async function getProductoById(id: string): Promise<Producto | null> {
   return data ?? null
 }
 
-export const getAllProductos = cache(async (options?: { page?: number; limit?: number }): Promise<{ data: Producto[]; count: number }> => {
-  const page = options?.page ?? 1
-  const limit = options?.limit ?? 20
-
+export const getAllProductos = cache(async (params: {
+  page: number
+  limit: number
+  categoria?: string
+  busqueda?: string
+  estado?: 'all' | 'active' | 'inactive' | 'noprice'
+}): Promise<{ data: Producto[]; count: number }> => {
   const supabase = await createServerSupabaseClient()
-  const { data, count, error } = await supabase
+  const { page, limit, categoria, busqueda, estado } = params
+
+  let query = supabase
     .from('productos')
-    .select('id, codigo_plu, nombre, categoria_slug, precio, imagen_url, disponible, badge, orden', { count: 'exact' })
-    .order('categoria_slug')
-    .order('orden', { ascending: true })
-    .range((page - 1) * limit, page * limit - 1)
+    .select('*', { count: 'exact' })
+
+  if (categoria && categoria !== 'all') {
+    query = query.eq('categoria_slug', categoria)
+  }
+  if (busqueda) {
+    query = query.or(`nombre.ilike.%${busqueda}%,codigo_plu.ilike.%${busqueda}%`)
+  }
+  if (estado === 'active') query = query.eq('disponible', true)
+  if (estado === 'inactive') query = query.eq('disponible', false)
+  if (estado === 'noprice') query = query.or('precio.is.null,precio.eq.0')
+
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+
+  const { data, count, error } = await query
+    .order('categoria_slug', { ascending: true })
+    .order('nombre', { ascending: true })
+    .range(from, to)
 
   if (error) throw new Error(`Error fetching all productos: ${error.message}`)
-  return { data: data ?? [], count: count ?? 0 }
+  return { data: (data ?? []) as unknown as Producto[], count: count ?? 0 }
 })
+
+export async function getProductosStats(): Promise<{
+  total: number
+  activos: number
+  sinPrecio: number
+}> {
+  const supabase = await createServerSupabaseClient()
+  const [
+    totalRes,
+    activosRes,
+    sinPrecioRes,
+  ] = await Promise.all([
+    supabase.from('productos').select('*', { count: 'exact', head: true }),
+    supabase.from('productos').select('*', { count: 'exact', head: true }).eq('disponible', true),
+    supabase.from('productos').select('*', { count: 'exact', head: true }).or('precio.is.null,precio.eq.0'),
+  ])
+
+  return {
+    total: totalRes.count ?? 0,
+    activos: activosRes.count ?? 0,
+    sinPrecio: sinPrecioRes.count ?? 0,
+  }
+}
 
 export const getProductosForSearch = cache(async (): Promise<Producto[]> => {
   const supabase = await createServerSupabaseClient()

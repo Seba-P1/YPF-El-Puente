@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import {
   Search,
   ImageOff,
@@ -23,7 +24,6 @@ import {
   deleteProducto,
   bulkUpdateDisponible,
 } from '@/lib/supabase/actions'
-import { getProductosForSearch } from '@/lib/admin/actions'
 import { formatearPrecioARS } from '@/lib/format'
 import type { Producto } from '@/types'
 import { toast } from 'sonner'
@@ -58,9 +58,15 @@ import {
   DialogClose,
 } from '@/components/ui/dialog'
 
+type EstadoFiltro = 'all' | 'active' | 'inactive' | 'noprice'
+
 interface ProductTableProps {
   productos: Producto[]
-  totalCount?: number
+  totalCount: number
+  paginaActual: number
+  categoriaActiva: string
+  busquedaActiva: string
+  estadoActivo: EstadoFiltro
 }
 
 const ITEMS_POR_PAGINA = 20
@@ -85,16 +91,20 @@ const CATEGORY_LABELS: Record<string, string> = {
   sin_categoria: 'Sin Categoría',
 }
 
-export function ProductTable({ productos: initialProductos, totalCount }: ProductTableProps) {
+export function ProductTable({
+  productos: initialProductos,
+  totalCount,
+  paginaActual,
+  categoriaActiva,
+  busquedaActiva,
+  estadoActivo,
+}: ProductTableProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
   const [productos, setProductos] = useState(initialProductos)
-  const [productosParaBuscar, setProductosParaBuscar] = useState<{ id: string; nombre: string; codigo_plu: string; precio: number }[]>([])
-  const [busquedaCargada, setBusquedaCargada] = useState(false)
-  const [filtroNombre, setFiltroNombre] = useState('')
-  const [filtroCategoria, setFiltroCategoria] = useState<string>('all')
-  const [filtroEstado, setFiltroEstado] = useState<
-    'all' | 'active' | 'inactive' | 'noprice'
-  >('all')
-  const [paginaActual, setPaginaActual] = useState(1)
+  const [busquedaInput, setBusquedaInput] = useState(busquedaActiva)
   const [editandoPrecio, setEditandoPrecio] = useState<{
     id: string
     valor: string
@@ -111,6 +121,7 @@ export function ProductTable({ productos: initialProductos, totalCount }: Produc
   const [bulkUpdating, setBulkUpdating] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (editandoPrecio?.id) {
@@ -118,65 +129,52 @@ export function ProductTable({ productos: initialProductos, totalCount }: Produc
     }
   }, [editandoPrecio?.id])
 
-  const filteredProducts = useMemo(() => {
-    // Si hay búsqueda activa y ya se cargó la lista completa
-    if (filtroNombre && busquedaCargada) {
-      const idsFiltrados = productosParaBuscar
-        .filter(p => 
-          p.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) ||
-          p.codigo_plu.toLowerCase().includes(filtroNombre.toLowerCase())
-        )
-        .map(p => p.id)
-      
-      // Mostrar productos de la tabla que matcheen, manteniendo filtros de categoría y estado
-      return productos.filter(p => {
-        if (!idsFiltrados.includes(p.id)) return false
-        const matchesCat =
-          filtroCategoria === 'all' || p.categoria_slug === filtroCategoria
-        const matchesState =
-          filtroEstado === 'all' ||
-          (filtroEstado === 'active' && p.disponible) ||
-          (filtroEstado === 'inactive' && !p.disponible) ||
-          (filtroEstado === 'noprice' && (!p.precio || p.precio === 0))
-        return matchesCat && matchesState
-      })
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-    
-    // Si hay búsqueda pero aún no cargó, mostrar la página actual filtrada (fallback)
-    if (filtroNombre && !busquedaCargada) {
-      return productos.filter((p) => {
-        const matchesSearch =
-          p.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) ||
-          p.codigo_plu.toLowerCase().includes(filtroNombre.toLowerCase())
-        const matchesCat =
-          filtroCategoria === 'all' || p.categoria_slug === filtroCategoria
-        const matchesState =
-          filtroEstado === 'all' ||
-          (filtroEstado === 'active' && p.disponible) ||
-          (filtroEstado === 'inactive' && !p.disponible) ||
-          (filtroEstado === 'noprice' && (!p.precio || p.precio === 0))
-        return matchesSearch && matchesCat && matchesState
-      })
-    }
-    
-    // Sin búsqueda: filtros de categoría y estado con paginación normal
-    return productos.filter((p) => {
-      const matchesCat =
-        filtroCategoria === 'all' || p.categoria_slug === filtroCategoria
-      const matchesState =
-        filtroEstado === 'all' ||
-        (filtroEstado === 'active' && p.disponible) ||
-        (filtroEstado === 'inactive' && !p.disponible) ||
-        (filtroEstado === 'noprice' && (!p.precio || p.precio === 0))
-      return matchesCat && matchesState
-    })
-  }, [productos, filtroNombre, filtroCategoria, filtroEstado, productosParaBuscar, busquedaCargada])
+  }, [])
 
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_POR_PAGINA)
-  const paginatedProducts = filteredProducts.slice(
-    (paginaActual - 1) * ITEMS_POR_PAGINA,
-    paginaActual * ITEMS_POR_PAGINA
+  const actualizarFiltro = useCallback(
+    (cambios: Record<string, string>) => {
+      const params = new URLSearchParams(searchParams.toString())
+      const cambiarPagina = 'pagina' in cambios
+
+      Object.entries(cambios).forEach(([key, value]) => {
+        if (key !== 'pagina') {
+          if (value && value !== 'all' && value !== '') {
+            params.set(key, value)
+          } else {
+            params.delete(key)
+          }
+        }
+      })
+
+      if (cambiarPagina) {
+        params.set('pagina', cambios.pagina)
+      } else {
+        params.set('pagina', '1')
+      }
+
+      router.push(`${pathname}?${params.toString()}`)
+    },
+    [router, pathname, searchParams]
   )
+
+  const handleBusqueda = useCallback(
+    (valor: string) => {
+      setBusquedaInput(valor)
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(() => {
+        actualizarFiltro({ busqueda: valor })
+      }, 300)
+    },
+    [actualizarFiltro]
+  )
+
+  const totalPaginas = Math.max(1, Math.ceil(totalCount / ITEMS_POR_PAGINA))
+  const inicio = totalCount === 0 ? 0 : (paginaActual - 1) * ITEMS_POR_PAGINA + 1
+  const fin = Math.min(paginaActual * ITEMS_POR_PAGINA, totalCount)
 
   const handleGuardarPrecio = useCallback(
     async (id: string, valorString: string) => {
@@ -325,31 +323,18 @@ export function ProductTable({ productos: initialProductos, totalCount }: Produc
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por nombre o PLU..."
-              value={filtroNombre}
+              value={busquedaInput}
               onChange={(e) => {
-                setFiltroNombre(e.target.value)
-                setPaginaActual(1)
-              }}
-              onFocus={async () => {
-                if (!busquedaCargada) {
-                  try {
-                    const productos = await getProductosForSearch()
-                    setProductosParaBuscar(productos)
-                    setBusquedaCargada(true)
-                  } catch (error) {
-                    console.error('Error cargando productos para búsqueda:', error)
-                  }
-                }
+                handleBusqueda(e.target.value)
               }}
               className="pl-9 h-9"
             />
           </div>
 
           <select
-            value={filtroCategoria}
+            value={categoriaActiva}
             onChange={(e) => {
-              setFiltroCategoria(e.target.value)
-              setPaginaActual(1)
+              actualizarFiltro({ categoria: e.target.value })
             }}
             className="h-9 w-full sm:w-[165px] lg:w-[150px] xl:w-[175px] text-sm rounded-md border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
@@ -370,10 +355,9 @@ export function ProductTable({ productos: initialProductos, totalCount }: Produc
           </select>
 
           <select
-            value={filtroEstado}
+            value={estadoActivo}
             onChange={(e) => {
-              setFiltroEstado(e.target.value as any)
-              setPaginaActual(1)
+              actualizarFiltro({ estado: e.target.value })
             }}
             className="h-9 w-full sm:w-[145px] lg:w-[132px] xl:w-[150px] text-sm rounded-md border border-input bg-transparent px-3 py-1 shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
@@ -409,7 +393,7 @@ export function ProductTable({ productos: initialProductos, totalCount }: Produc
             </Button>
           </div>
           <span className="text-xs lg:text-sm text-muted-foreground whitespace-nowrap">
-            {filteredProducts.length} de {totalCount ?? productos.length}
+            Mostrando {inicio}–{fin} de {totalCount}
           </span>
         </div>
       </GlassCard>
@@ -429,8 +413,8 @@ export function ProductTable({ productos: initialProductos, totalCount }: Produc
               </TableRow>
             </TableHeader>
             <TableBody>
-                {paginatedProducts.length > 0 ? (
-                  paginatedProducts.map((p) => (
+                {productos.length > 0 ? (
+                  productos.map((p) => (
                     <tr
                       key={p.id}
                       className="border-b transition-opacity duration-200 hover:bg-muted/50 data-[state=selected]:bg-muted"
@@ -623,16 +607,16 @@ export function ProductTable({ productos: initialProductos, totalCount }: Produc
           </Table>
         </div>
 
-        {totalPages > 1 && !filtroNombre && (
+        {totalPaginas > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t">
             <span className="text-xs text-muted-foreground">
-              Página {paginaActual} de {totalPages}
+              Página {paginaActual} de {totalPaginas}
             </span>
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPaginaActual((p) => Math.max(1, p - 1))}
+                onClick={() => actualizarFiltro({ pagina: String(paginaActual - 1) })}
                 disabled={paginaActual === 1}
               >
                 Anterior
@@ -640,8 +624,8 @@ export function ProductTable({ productos: initialProductos, totalCount }: Produc
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPaginaActual((p) => Math.min(totalPages, p + 1))}
-                disabled={paginaActual === totalPages}
+                onClick={() => actualizarFiltro({ pagina: String(paginaActual + 1) })}
+                disabled={paginaActual === totalPaginas}
               >
                 Siguiente
               </Button>
