@@ -77,11 +77,11 @@ export function FullSustentabilidad() {
             padding: '0 var(--page-pad-x, 24px)',
             display: 'flex',
             flexDirection: 'column',
-            gap: 0,
+            gap: 'clamp(6px, 1.5vw, 12px)',
           }}
         >
           {/* Text content */}
-          <div style={{ maxWidth: 780 }}>
+          <div style={{ maxWidth: 780, display: 'flex', flexDirection: 'column', gap: 'clamp(6px, 1.5vw, 12px)' }}>
             {/* TAG */}
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -93,7 +93,7 @@ export function FullSustentabilidad() {
                 fontSize: 'clamp(28px, 3.5vw, 40px)',
                 fontWeight: 600,
                 color: '#ffffff',
-                marginBottom: -10, // Acerca el tag al título
+                marginBottom: 0,
                 letterSpacing: '0.02em',
                 lineHeight: 1,
               }}
@@ -112,7 +112,7 @@ export function FullSustentabilidad() {
                 fontSize: 'clamp(36px, 6vw, 68px)',
                 fontWeight: 900,
                 color: 'white',
-                lineHeight: 1.0,
+                lineHeight: 1.08,
                 letterSpacing: '-0.02em',
                 marginBottom: 20,
                 textTransform: 'uppercase',
