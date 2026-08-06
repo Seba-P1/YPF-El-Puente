@@ -121,11 +121,20 @@ const MUNDIAL_PRODUCTS: Producto[] = [
 
 export function FullMundialSection() {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const productosRef = useRef<HTMLDivElement>(null)
   const addItem = useCartStore((state) => state.addItem)
 
   const handleAdd = (producto: Producto) => {
     addItem(producto)
     toast.success(`${producto.nombre} agregado al pedido`, { duration: 2000 })
+  }
+
+  const irAlPrimerProducto = () => {
+    scrollRef.current?.scrollTo({ left: 0, behavior: 'auto' })
+    productosRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
   }
 
   const scroll = (direction: 'left' | 'right') => {
@@ -157,7 +166,7 @@ export function FullMundialSection() {
         />
       </motion.div>
 
-      <div className="relative w-full flex-1 min-h-0 group z-10 flex items-center">
+      <div ref={productosRef} className="relative w-full flex-1 min-h-0 group z-10 flex items-center">
         {/* SCROLL BUTTONS (Desktop only) */}
         <button
           onClick={() => scroll('left')}
@@ -183,7 +192,7 @@ export function FullMundialSection() {
             zIndex: 1,
             gap: 'clamp(16px, 2vw, 32px)',
             paddingLeft: 'clamp(24px, 5vw, 80px)',
-            paddingRight: 'clamp(24px, 5vw, 80px)',
+            paddingRight: 40,
             paddingTop: 'clamp(12px, 2svh, 24px)',
             paddingBottom: 'clamp(12px, 2svh, 24px)',
             scrollbarWidth: 'none',
@@ -211,8 +220,20 @@ export function FullMundialSection() {
             <p className="font-[family-name:var(--font-montserrat)] text-sm md:text-base text-[#005A9C]/80 mb-6 leading-relaxed">
               Jugá siempre de local con estos productos.
             </p>
-            {/* Indicator */}
-            <div className="flex items-center gap-2.5 text-[#E2B007] text-base md:text-lg font-extrabold tracking-wider uppercase mt-2">
+            {/* Indicator / CTA */}
+            <button
+              onClick={irAlPrimerProducto}
+              className="flex items-center gap-2.5 text-[#E2B007] text-base md:text-lg font-extrabold tracking-wider uppercase mt-2 bg-transparent border-none p-0 cursor-pointer text-left hover:opacity-80 transition-opacity"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 0',
+              }}
+            >
               <span className="font-[family-name:var(--font-caveat)] text-2xl md:text-3xl text-[#FFD100]">Mirá nuestros productos</span>
               <motion.span
                 animate={{ x: [0, 8, 0], scale: [1, 1.25, 1] }}
@@ -221,7 +242,7 @@ export function FullMundialSection() {
               >
                 →
               </motion.span>
-            </div>
+            </button>
           </motion.div>
 
           {/* 2. PRODUCT CARDS */}

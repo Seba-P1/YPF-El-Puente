@@ -54,6 +54,15 @@ export function FullCategorySection({
   extraSubtitle,
 }: FullCategorySectionProps) {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null)
+  const productosRef = React.useRef<HTMLDivElement>(null)
+
+  const irAlPrimerProducto = () => {
+    scrollContainerRef.current?.scrollTo({ left: 0, behavior: 'auto' })
+    productosRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
@@ -128,7 +137,7 @@ export function FullCategorySection({
       />
 
       {/* PRODUCTS ROW WRAPPER */}
-      <div className="relative w-full group">
+      <div ref={productosRef} className="relative w-full group">
         {/* SCROLL BUTTONS (Desktop only) */}
         <button
           onClick={() => scroll('left')}
@@ -154,7 +163,7 @@ export function FullCategorySection({
             zIndex: 1,
             gap: 'clamp(16px, 2vw, 32px)',
             paddingLeft: 'clamp(24px, 5vw, 80px)',
-            paddingRight: 'clamp(24px, 5vw, 80px)',
+            paddingRight: 40,
             paddingBottom: 40,
             paddingTop: 'clamp(30px, 4vw, 60px)',
             scrollbarWidth: 'none',
@@ -190,8 +199,20 @@ export function FullCategorySection({
                 {extraSubtitle}
               </p>
             )}
-            {/* Indicator */}
-            <div className="flex items-center gap-2.5 text-[#FFD100] text-base md:text-lg font-extrabold tracking-wider uppercase mt-2">
+            {/* Indicator / CTA */}
+            <button
+              onClick={irAlPrimerProducto}
+              className="flex items-center gap-2.5 text-[#FFD100] text-base md:text-lg font-extrabold tracking-wider uppercase mt-2 bg-transparent border-none p-0 cursor-pointer text-left hover:opacity-80 transition-opacity"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 0',
+              }}
+            >
               <span className="font-[family-name:var(--font-caveat)] text-2xl md:text-3xl text-[#FFD100]">Mirá nuestros productos</span>
               <motion.span
                 animate={{ x: [0, 8, 0], scale: [1, 1.25, 1] }}
@@ -200,7 +221,7 @@ export function FullCategorySection({
               >
                 →
               </motion.span>
-            </div>
+            </button>
           </motion.div>
 
           {/* 2. PRODUCT CARDS */}
