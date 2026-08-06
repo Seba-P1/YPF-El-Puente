@@ -277,7 +277,7 @@ export default function FullInstagramSection({ posts }: FullInstagramSectionProp
     <section
       id="instagram"
       className="relative bg-black pt-[100px] pb-[60px] border-t border-white/5
-        md:min-h-[100svh] md:py-0 md:flex md:flex-col md:justify-center"
+        md:min-h-[100svh] md:py-0 md:flex md:flex-col md:justify-center overflow-hidden"
     >
       <div
         className="mx-auto w-full"

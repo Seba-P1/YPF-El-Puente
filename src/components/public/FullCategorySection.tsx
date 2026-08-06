@@ -74,6 +74,7 @@ export function FullCategorySection({
         justifyContent: 'center',
         padding: 'clamp(20px, 3vw, 45px) 0',
         borderTop: '1px solid rgba(255,255,255,0.05)',
+        overflow: 'hidden',
       }}
     >
       {/* REPEATING BACKGROUND PATTERN */}

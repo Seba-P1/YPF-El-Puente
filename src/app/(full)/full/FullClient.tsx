@@ -439,7 +439,7 @@ export default function FullClient({
   // RENDER FULLPAGE DIAPOSITIVAS (DESKTOP)
   if (isEnabled) {
     return (
-      <main className="bg-black text-white relative">
+      <main className="bg-black text-white relative overflow-x-hidden w-full max-w-[100vw]">
         <FullSearchBar />
         <div 
           className="fullpage-wrapper"
@@ -528,7 +528,7 @@ export default function FullClient({
 
   // RENDER NORMAL (MOBILE / BUSCANDO)
   return (
-    <main className="bg-black text-white relative">
+    <main className="bg-black text-white relative overflow-x-hidden w-full max-w-[100vw]">
       {/* 1. HERO SECTION (hidden when user is searching) */}
       {!isSearching && renderHeroSection()}
 
