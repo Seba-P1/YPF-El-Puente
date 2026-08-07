@@ -130,11 +130,21 @@ export function FullMundialSection() {
   }
 
   const irAlPrimerProducto = () => {
-    scrollRef.current?.scrollTo({ left: 0, behavior: 'auto' })
+    // 1. Scroll vertical de la página hasta que la sección quede visible en pantalla
     productosRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'start',
     })
+
+    // 2. Scroll horizontal del carrusel hasta mostrar el primer producto
+    if (scrollRef.current) {
+      const textCard = scrollRef.current.firstElementChild as HTMLElement
+      const offset = textCard ? textCard.offsetWidth : 300
+      scrollRef.current.scrollTo({
+        left: offset,
+        behavior: 'smooth',
+      })
+    }
   }
 
   const scroll = (direction: 'left' | 'right') => {
@@ -206,7 +216,7 @@ export function FullMundialSection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="flex-shrink-0 w-[85vw] max-w-[340px] md:w-[clamp(520px,31vw,676px)] md:max-w-none flex flex-col justify-center snap-center mr-6 md:mr-12"
+            className="flex-shrink-0 w-[72vw] max-w-[340px] md:w-[clamp(520px,31vw,676px)] md:max-w-none flex flex-col justify-center snap-center mr-4 md:mr-12"
           >
             {/* Tag */}
             <span className="font-[family-name:var(--font-caveat)] text-2xl md:text-3xl text-[#0096EB] font-bold tracking-wide mb-2">
