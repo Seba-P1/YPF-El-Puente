@@ -194,18 +194,19 @@ export function FullMundialSection() {
         {/* PRODUCTS SCROLL CONTAINER */}
         <div
           ref={scrollRef}
-          className="hide-scrollbar scroll-smooth snap-x snap-mandatory flex flex-row items-stretch overflow-x-auto overflow-y-visible"
+          className="hide-scrollbar scroll-smooth snap-x snap-proximity flex flex-row items-stretch overflow-x-auto overflow-y-visible"
           style={{
             position: 'relative',
             zIndex: 1,
-            gap: 'clamp(16px, 2vw, 32px)',
-            paddingLeft: 'clamp(24px, 5vw, 80px)',
+            gap: 'clamp(12px, 2vw, 32px)',
+            paddingLeft: 'clamp(16px, 4vw, 80px)',
             paddingRight: 40,
             paddingTop: 'clamp(12px, 2svh, 24px)',
             paddingBottom: 'clamp(12px, 2svh, 24px)',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             WebkitOverflowScrolling: 'touch',
+            overscrollBehaviorX: 'contain',
           }}
         >
           {/* 1. TEXT BLOCK CARD */}
@@ -214,7 +215,7 @@ export function FullMundialSection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="flex-shrink-0 w-[72vw] max-w-[340px] md:w-[clamp(520px,31vw,676px)] md:max-w-none flex flex-col justify-center snap-center mr-4 md:mr-12"
+            className="flex-shrink-0 w-[55vw] max-w-[260px] md:w-[clamp(420px,26vw,560px)] md:max-w-none flex flex-col justify-center snap-center md:mr-8"
           >
             {/* Tag */}
             <span className="font-[family-name:var(--font-caveat)] text-2xl md:text-3xl text-[#0096EB] font-bold tracking-wide mb-2">
