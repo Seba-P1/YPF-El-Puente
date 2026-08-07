@@ -121,7 +121,6 @@ const MUNDIAL_PRODUCTS: Producto[] = [
 
 export function FullMundialSection() {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const productosRef = useRef<HTMLDivElement>(null)
   const addItem = useCartStore((state) => state.addItem)
 
   const handleAdd = (producto: Producto) => {
@@ -129,19 +128,18 @@ export function FullMundialSection() {
     toast.success(`${producto.nombre} agregado al pedido`, { duration: 2000 })
   }
 
-  const irAlPrimerProducto = () => {
-    // 1. Scroll vertical de la página hasta que la sección quede visible en pantalla
-    productosRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    })
+  const irAlPrimerProducto = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
 
-    // 2. Scroll horizontal del carrusel hasta mostrar el primer producto
     if (scrollRef.current) {
       const textCard = scrollRef.current.firstElementChild as HTMLElement
       const offset = textCard ? textCard.offsetWidth : 300
+      const currentScroll = scrollRef.current.scrollLeft
+      const targetLeft = currentScroll > 50 ? 0 : offset
+
       scrollRef.current.scrollTo({
-        left: offset,
+        left: targetLeft,
         behavior: 'smooth',
       })
     }
@@ -176,7 +174,7 @@ export function FullMundialSection() {
         />
       </motion.div>
 
-      <div ref={productosRef} className="relative w-full flex-1 min-h-0 group z-10 flex items-center">
+      <div className="relative w-full flex-1 min-h-0 group z-10 flex items-center">
         {/* SCROLL BUTTONS (Desktop only) */}
         <button
           onClick={() => scroll('left')}

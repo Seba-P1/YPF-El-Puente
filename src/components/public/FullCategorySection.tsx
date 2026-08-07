@@ -54,21 +54,19 @@ export function FullCategorySection({
   extraSubtitle,
 }: FullCategorySectionProps) {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null)
-  const productosRef = React.useRef<HTMLDivElement>(null)
 
-  const irAlPrimerProducto = () => {
-    // 1. Scroll vertical de la página hasta que la sección quede visible en pantalla
-    productosRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    })
+  const irAlPrimerProducto = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
 
-    // 2. Scroll horizontal del carrusel hasta mostrar el primer producto
     if (scrollContainerRef.current) {
       const textCard = scrollContainerRef.current.firstElementChild as HTMLElement
       const offset = textCard ? textCard.offsetWidth : 300
+      const currentScroll = scrollContainerRef.current.scrollLeft
+      const targetLeft = currentScroll > 50 ? 0 : offset
+
       scrollContainerRef.current.scrollTo({
-        left: offset,
+        left: targetLeft,
         behavior: 'smooth',
       })
     }
@@ -147,7 +145,7 @@ export function FullCategorySection({
       />
 
       {/* PRODUCTS ROW WRAPPER */}
-      <div ref={productosRef} className="relative w-full group">
+      <div className="relative w-full group">
         {/* SCROLL BUTTONS (Desktop only) */}
         <button
           onClick={() => scroll('left')}
