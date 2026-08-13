@@ -149,7 +149,7 @@ export function LandingHero() {
 
         {/* 3 Circular Buttons fixed horizontal row (Ubicación, Full, WhatsApp) */}
         <motion.div
-          className="flex items-center justify-center gap-4 sm:gap-7 mt-auto pb-24 md:pb-28"
+          className="flex items-center justify-center gap-4 sm:gap-7 mt-auto pb-36 md:pb-40"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
