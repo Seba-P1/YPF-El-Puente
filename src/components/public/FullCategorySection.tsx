@@ -332,16 +332,20 @@ export function FullCategorySection({
                       ))}
                     </span>
                     {activeArrowImage ? (
-                      <span className="relative w-5 h-5 md:w-7 md:h-7 inline-block shrink-0">
-                        <Image
-                          src={activeArrowImage}
-                          alt=""
-                          fill
-                          sizes="28px"
-                          className="object-contain"
-                          style={{ filter: getArrowFilter() }}
-                        />
-                      </span>
+                      <span
+                        className="relative w-5 h-5 md:w-7 md:h-7 inline-block shrink-0"
+                        style={{
+                          backgroundColor: ctaColor,
+                          WebkitMaskImage: `url('${activeArrowImage}')`,
+                          maskImage: `url('${activeArrowImage}')`,
+                          WebkitMaskSize: 'contain',
+                          maskSize: 'contain',
+                          WebkitMaskRepeat: 'no-repeat',
+                          maskRepeat: 'no-repeat',
+                          WebkitMaskPosition: 'center',
+                          maskPosition: 'center',
+                        }}
+                      />
                     ) : (
                       <motion.span
                         animate={{ x: [0, 6, 0] }}

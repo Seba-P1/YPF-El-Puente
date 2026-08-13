@@ -274,18 +274,20 @@ export function FullMundialSection() {
                 >
                   MIRÁ NUESTROS PRODUCTOS
                 </span>
-                <span className="relative w-5 h-5 md:w-7 md:h-7 inline-block shrink-0">
-                  <Image
-                    src="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
-                    alt=""
-                    fill
-                    sizes="28px"
-                    className="object-contain"
-                    style={{
-                      filter: 'brightness(0) saturate(100%) invert(21%) sepia(98%) saturate(2462%) hue-rotate(189%) brightness(93%) contrast(101%)'
-                    }}
-                  />
-                </span>
+                <span
+                  className="relative w-5 h-5 md:w-7 md:h-7 inline-block shrink-0"
+                  style={{
+                    backgroundColor: '#005A9C',
+                    WebkitMaskImage: "url('/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png')",
+                    maskImage: "url('/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png')",
+                    WebkitMaskSize: 'contain',
+                    maskSize: 'contain',
+                    WebkitMaskRepeat: 'no-repeat',
+                    maskRepeat: 'no-repeat',
+                    WebkitMaskPosition: 'center',
+                    maskPosition: 'center',
+                  }}
+                />
               </span>
             </button>
           </motion.div>
