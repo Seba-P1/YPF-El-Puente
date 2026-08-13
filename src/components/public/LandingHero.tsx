@@ -149,7 +149,7 @@ export function LandingHero() {
 
         {/* 3 Circular Buttons fixed horizontal row (Ubicación, Full, WhatsApp) */}
         <motion.div
-          className="flex items-center justify-center gap-4 sm:gap-7 mt-auto pb-10 md:pb-14"
+          className="flex items-center justify-center gap-4 sm:gap-7 mt-auto pb-24 md:pb-28"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -226,8 +226,6 @@ export function LandingHero() {
           </motion.a>
         </motion.div>
 
-        {/* Spacer at bottom */}
-        <div className="h-6 md:h-10 w-full pointer-events-none flex-shrink-0" />
       </div>
 
       {/* 6. Scroll indicator */}
