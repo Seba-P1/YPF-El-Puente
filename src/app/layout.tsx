@@ -26,6 +26,18 @@ const dinMedium = localFont({
   display: 'swap',
 })
 
+const fontFull = localFont({
+  src: '../fonts/Full.otf',
+  variable: '--font-full',
+  display: 'swap',
+})
+
+const fontDdin = localFont({
+  src: '../fonts/D-DIN.ttf',
+  variable: '--font-ddin',
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
   metadataBase: new URL(CANONICAL_DOMAIN),
   title: {
@@ -57,7 +69,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`${montserrat.variable} ${caveat.variable} ${dinMedium.variable} h-full antialiased`} suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang="es" className={`${montserrat.variable} ${caveat.variable} ${dinMedium.variable} ${fontFull.variable} ${fontDdin.variable} h-full antialiased`} suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col font-[family-name:var(--font-montserrat)]">
         {children}
       </body>

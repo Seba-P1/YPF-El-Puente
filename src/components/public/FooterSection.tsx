@@ -22,41 +22,14 @@ export function FooterSection() {
       >
         {/* Column 1 — Brand */}
         <div className="flex flex-col items-center md:items-start gap-4">
-          <div className="relative">
+          <div className="relative w-48 h-24 sm:w-56 sm:h-28">
             <Image
-              src="/assets/ypf imagenes/logo-modoclaro.png"
-              alt="YPF El Puente"
-              width={140}
-              height={42}
-              className="h-9 w-auto object-contain dark:hidden"
+              src="/assets/ypf imagenes/logo-slogan-corto.png"
+              alt="YPF El Puente — Con la mejor energía desde 1930"
+              fill
+              sizes="224px"
+              className="object-contain"
             />
-            <Image
-              src="/assets/ypf imagenes/logo-modooscuro.png"
-              alt="YPF El Puente"
-              width={140}
-              height={42}
-              className="h-9 w-auto object-contain hidden dark:block"
-            />
-          </div>
-          <div className="flex flex-col items-center md:items-start">
-            <span
-              style={{
-                fontSize: 14,
-                fontWeight: 700,
-                color: 'var(--text-primary)',
-              }}
-            >
-              YPF El Puente
-            </span>
-            <span
-              style={{
-                fontSize: 13,
-                color: 'var(--text-muted)',
-                marginTop: 4,
-              }}
-            >
-              Río Colorado · Río Negro, Argentina
-            </span>
           </div>
         </div>
 

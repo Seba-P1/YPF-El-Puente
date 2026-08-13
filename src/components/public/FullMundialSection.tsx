@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useRef } from 'react'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCartStore } from '@/stores/cart'
@@ -218,39 +219,74 @@ export function FullMundialSection() {
             className="flex-shrink-0 w-[55vw] max-w-[260px] md:w-[clamp(420px,26vw,560px)] md:max-w-none flex flex-col justify-center snap-center md:mr-8"
           >
             {/* Tag */}
-            <span className="font-[family-name:var(--font-caveat)] text-2xl md:text-3xl text-[#0096EB] font-bold tracking-wide mb-2">
+            <p
+              style={{
+                fontFamily: 'var(--font-full), sans-serif',
+                color: '#0096EB',
+                fontSize: 'clamp(22px, 2.6vw, 34px)',
+                fontWeight: 400,
+              }}
+              className="mb-2 tracking-widest uppercase"
+            >
               EDICIÓN ESPECIAL
-            </span>
+            </p>
             {/* Title */}
-            <h2 className="font-[family-name:var(--font-din-medium)] font-black text-4xl md:text-6xl text-[#005A9C] leading-none mb-3 tracking-tight">
+            <h2
+              style={{
+                fontFamily: 'var(--font-ddin), sans-serif',
+                color: '#005A9C',
+              }}
+              className="font-semibold text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.08] mb-3 tracking-normal"
+            >
               Productos mundialistas
             </h2>
             {/* Subtitle */}
-            <p className="font-[family-name:var(--font-montserrat)] text-sm md:text-base text-[#005A9C]/80 mb-6 leading-relaxed">
+            <p
+              style={{
+                fontFamily: 'var(--font-ddin), sans-serif',
+                color: 'rgba(0, 90, 156, 0.8)',
+              }}
+              className="text-base md:text-lg mb-4 leading-relaxed font-normal"
+            >
               Jugá siempre de local con estos productos.
             </p>
             {/* Indicator / CTA */}
             <button
               onClick={irAlPrimerProducto}
-              className="flex items-center gap-2.5 text-[#E2B007] text-base md:text-lg font-extrabold tracking-wider uppercase mt-2 bg-transparent border-none p-0 cursor-pointer text-left hover:opacity-80 transition-opacity"
+              className="block text-left mt-2 bg-transparent border-none p-0 cursor-pointer hover:opacity-80 transition-opacity max-w-full group"
               style={{
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
                 padding: '8px 0',
               }}
             >
-              <span className="font-[family-name:var(--font-caveat)] text-2xl md:text-3xl text-[#FFD100]">Mirá nuestros productos</span>
-              <motion.span
-                animate={{ x: [0, 8, 0], scale: [1, 1.25, 1] }}
-                transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
-                className="text-2xl md:text-3xl font-black text-[#FFD100] inline-block"
-              >
-                →
-              </motion.span>
+              <span className="inline-flex items-center gap-3">
+                <span
+                  style={{
+                    fontFamily: 'var(--font-full), sans-serif',
+                    color: '#005A9C',
+                    fontSize: 'clamp(17px, 2.1vw, 26px)',
+                    letterSpacing: '0.06em',
+                    fontWeight: 400,
+                  }}
+                  className="uppercase"
+                >
+                  MIRÁ NUESTROS PRODUCTOS
+                </span>
+                <span className="relative w-5 h-5 md:w-7 md:h-7 inline-block shrink-0">
+                  <Image
+                    src="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+                    alt=""
+                    fill
+                    sizes="28px"
+                    className="object-contain"
+                    style={{
+                      filter: 'brightness(0) saturate(100%) invert(21%) sepia(98%) saturate(2462%) hue-rotate(189%) brightness(93%) contrast(101%)'
+                    }}
+                  />
+                </span>
+              </span>
             </button>
           </motion.div>
 

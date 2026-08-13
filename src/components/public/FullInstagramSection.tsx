@@ -328,7 +328,7 @@ width: 'clamp(168px, 33.6vw, 264px)',
             transition={{ duration: 0.6, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="text-center md:text-left"
           >
-            <p className="font-[family-name:var(--font-caveat)] text-lg md:text-xl text-white/55 mb-1 tracking-wide">
+            <p className="font-[family-name:var(--font-full)] text-xl md:text-2xl text-white/70 mb-1 tracking-wide uppercase font-medium">
               Seguinos
             </p>
 

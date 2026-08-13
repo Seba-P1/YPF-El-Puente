@@ -126,146 +126,108 @@ export function LandingHero() {
         }}
       />
 
-      {/* Wrapper to align left and occupy full width in BenQ/ultra-wide screens */}
-      <div className="relative z-10 w-full max-w-[1920px] mx-auto px-6 md:px-16 lg:px-24 xl:px-32 flex flex-col justify-between items-center md:items-start min-h-[calc(100vh-80px)] mt-[80px]">
-        {/* Content Top: Badge and Title (cercano al header) */}
+      {/* Wrapper to align center and occupy full width */}
+      <div className="relative z-10 w-full max-w-[1920px] mx-auto px-6 md:px-16 flex flex-col justify-between items-center min-h-[calc(100vh-80px)] mt-[80px] pb-8">
+        {/* Content Top: Logo con Slogan */}
         <motion.div
-          className="relative flex flex-col items-center md:items-start text-center md:text-left pt-4 w-full"
+          className="relative flex flex-col items-center text-center pt-6 md:pt-12 w-full max-w-[340px] sm:max-w-[460px] md:max-w-[560px]"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          {/* 1. Badge Location */}
-          <motion.div
-            variants={itemVariants}
-            className="flex items-center gap-2.5"
-            style={{
-              background: 'rgba(0,112,192,0.1)',
-              border: '1px solid rgba(0,112,192,0.3)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              padding: '6px 18px',
-              borderRadius: 999,
-              marginBottom: 16,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            }}
-          >
-            <span
-              className="animate-pulse-dot"
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: '50%',
-                background: '#22c55e',
-                flexShrink: 0,
-                boxShadow: '0 0 8px #22c55e',
-              }}
+          <motion.div variants={itemVariants} className="relative w-full aspect-[2.2/1]">
+            <Image
+              src="/assets/ypf imagenes/logo-con-slogan.png"
+              alt="YPF El Puente — Con la mejor energía de la Patagonia desde 1930"
+              fill
+              priority
+              sizes="(max-width: 768px) 340px, 560px"
+              className="object-contain drop-shadow-2xl"
             />
-            <span
-              style={{
-                fontFamily: 'var(--font-din-medium), sans-serif',
-                fontSize: 11,
-                color: 'rgba(255, 255, 255, 0.8)',
-                letterSpacing: '0.12em',
-                fontWeight: 500,
-              }}
-            >
-              RÍO COLORADO · PATAGONIA, ARGENTINA
-            </span>
-          </motion.div>
-
-          {/* 2. Brand Identity Block */}
-          <motion.div variants={itemVariants} className="flex flex-col items-center md:items-start">
-            <h1
-              style={{
-                fontFamily: 'var(--font-din-medium), sans-serif',
-                textTransform: 'uppercase',
-              }}
-              className="text-center md:text-left"
-            >
-              <span
-                style={{
-                  display: 'block',
-                  fontSize: 16,
-                  fontWeight: 900,
-                  letterSpacing: '0.45em',
-                  color: '#FFD100',
-                  textShadow: '0 2px 10px rgba(255,209,0,0.2)',
-                  marginBottom: 8,
-                }}
-              >
-                YPF
-              </span>
-              <span
-                style={{
-                  display: 'block',
-                  fontSize: 'clamp(38px, 6.5vw, 76px)',
-                  fontWeight: 900,
-                  color: '#FFFFFF',
-                  letterSpacing: '-0.02em',
-                  lineHeight: 0.98,
-                }}
-              >
-                EL PUENTE
-              </span>
-            </h1>
           </motion.div>
         </motion.div>
 
+        {/* 3 Circular Buttons fixed horizontal row (Ubicación, Full, WhatsApp) */}
         <motion.div
-          className="relative flex flex-col items-center md:items-start text-center md:text-left mt-8 md:mt-[8vh] lg:mt-[10vh] mb-12 md:mb-16 py-4 w-full"
-          style={{ maxWidth: 'min(780px, 92vw)' }}
+          className="flex items-center justify-center gap-4 sm:gap-7 mt-auto pb-10 md:pb-14"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-
-
-          {/* 4. Description */}
-          <motion.p
+          {/* 1. Ubicación Button */}
+          <motion.a
             variants={itemVariants}
+            href="https://www.google.com/maps/dir/?api=1&destination=YPF+El+Puente,+Ruta+Nacional+22+Km+857,+Rio+Colorado"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative rounded-full overflow-hidden hover:scale-105 active:scale-95 transition-transform duration-300 flex items-center justify-center shrink-0"
             style={{
-              fontSize: 'clamp(16px, 2.2vw, 20px)',
-              color: 'rgba(255, 255, 255, 0.72)',
-              maxWidth: 580,
-              lineHeight: 1.6,
-              marginBottom: 36,
-              fontWeight: 400,
+              width: 'clamp(60px, 15vw, 76px)',
+              height: 'clamp(60px, 15vw, 76px)',
+              boxShadow: '0 4px 20px rgba(0,112,192,0.4)',
+              border: '2px solid rgba(255,255,255,0.2)',
             }}
+            title="Ver Ubicación"
           >
-            Una parada estratégica en tu viaje. Tecnología de combustibles premium, servicio de lubricación experta y el mejor café de la Patagonia.
-          </motion.p>
+            <Image
+              src="/assets/ypf imagenes/ubicacion.png"
+              alt="Ubicación"
+              fill
+              sizes="88px"
+              className="object-cover rounded-full"
+            />
+          </motion.a>
 
-          {/* 5. CTA Button — Circular Full Logo */}
-          <motion.div
-            variants={itemVariants}
-            className="flex justify-center md:justify-start w-full sm:w-auto"
-          >
+          {/* 2. Full Button */}
+          <motion.div variants={itemVariants}>
             <Link
               href="/full"
-              className="group relative rounded-full overflow-hidden hover:scale-105 active:scale-95 transition-transform duration-300"
+              className="group relative rounded-full overflow-hidden hover:scale-105 active:scale-95 transition-transform duration-300 flex items-center justify-center shrink-0 block"
               style={{
-                width: 90,
-                height: 90,
-                boxShadow: '0 4px 24px rgba(0,112,192,0.35), 0 0 60px rgba(0,112,192,0.1)',
-                border: '2px solid rgba(255,255,255,0.15)',
+                width: 'clamp(60px, 15vw, 76px)',
+                height: 'clamp(60px, 15vw, 76px)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                border: '2px solid rgba(255,255,255,0.2)',
               }}
+              title="Menú FULL"
             >
               <Image
                 src="/assets/ypf imagenes/logo-circular-full.png"
                 alt="Ver Full"
                 fill
-                sizes="90px"
+                sizes="88px"
                 className="object-cover rounded-full"
               />
-              {/* Glow ring on hover */}
-              <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-[#0080FF]/50 transition-colors duration-300" />
             </Link>
           </motion.div>
+
+          {/* 3. WhatsApp Button */}
+          <motion.a
+            variants={itemVariants}
+            href="https://wa.me/5492920264433"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative rounded-full overflow-hidden hover:scale-105 active:scale-95 transition-transform duration-300 flex items-center justify-center shrink-0"
+            style={{
+              width: 'clamp(60px, 15vw, 76px)',
+              height: 'clamp(60px, 15vw, 76px)',
+              boxShadow: '0 4px 20px rgba(34,197,94,0.4)',
+              border: '2px solid rgba(255,255,255,0.2)',
+            }}
+            title="WhatsApp"
+          >
+            <Image
+              src="/assets/ypf imagenes/wsap.png"
+              alt="WhatsApp"
+              fill
+              sizes="88px"
+              className="object-cover rounded-full"
+            />
+          </motion.a>
         </motion.div>
 
-        {/* Spacer at the bottom to balance the top area and allow perfect my-auto centering */}
-        <div className="h-[60px] md:h-[80px] w-full pointer-events-none flex-shrink-0" />
+        {/* Spacer at bottom */}
+        <div className="h-6 md:h-10 w-full pointer-events-none flex-shrink-0" />
       </div>
 
       {/* 6. Scroll indicator */}

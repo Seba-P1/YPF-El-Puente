@@ -89,16 +89,16 @@ export function FullSustentabilidad() {
               viewport={{ once: true, margin: '-80px' }}
               transition={{ duration: 0.6 }}
               style={{
-                fontFamily: 'var(--font-caveat)',
-                fontSize: 'clamp(28px, 3.5vw, 40px)',
-                fontWeight: 600,
+                fontFamily: 'var(--font-full), sans-serif',
+                fontSize: 'clamp(28px, 3.5vw, 42px)',
+                fontWeight: 500,
                 color: '#ffffff',
                 marginBottom: 0,
                 letterSpacing: '0.02em',
                 lineHeight: 1,
               }}
             >
-              Sustentabilidad
+              SUSTENTABILIDAD
             </motion.p>
 
             {/* TÍTULO */}

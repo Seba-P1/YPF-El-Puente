@@ -16,6 +16,7 @@ interface FullProductCardProps {
   layout?: 'carousel' | 'grid'
   variant?: 'default' | 'mundial'
   showDescription?: boolean
+  priceColor?: string
   onAdd?: (producto: Producto) => void
 }
 
@@ -25,6 +26,7 @@ export function FullProductCard({
   layout = 'carousel',
   variant = 'default',
   showDescription = false,
+  priceColor,
   onAdd,
 }: FullProductCardProps) {
   const [imgError, setImgError] = useState(false)
@@ -67,6 +69,15 @@ export function FullProductCard({
   const priceClass = isMundial
     ? 'font-[family-name:var(--font-montserrat)] text-[14px] font-black text-[#005A9C] bg-[#005A9C]/5'
     : 'text-[15px] font-black text-[#FFD100] bg-[#FFD100]/10'
+
+  const priceCustomStyle = priceColor
+    ? {
+        color: priceColor,
+        backgroundColor: priceColor.startsWith('rgb')
+          ? priceColor.replace('rgb', 'rgba').replace(')', ', 0.15)')
+          : `${priceColor}25`,
+      }
+    : undefined
 
   const buttonClass = isMundial
     ? 'bg-[#005A9C] hover:bg-[#004B82] border-transparent shadow-sm shadow-[#005A9C]/10'
@@ -132,7 +143,10 @@ export function FullProductCard({
           )}
 
           {producto.precio && producto.precio > 0 ? (
-            <div className={`mt-1 px-2.5 py-0.5 rounded-full ${priceClass}`}>
+            <div
+              className={`mt-1 px-2.5 py-0.5 rounded-full ${priceClass}`}
+              style={priceCustomStyle}
+            >
               {formatearPrecioARS(producto.precio)}
             </div>
           ) : (

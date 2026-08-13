@@ -468,7 +468,21 @@ export default function FullClient({
               imagenBack="/assets/ypf imagenes/back-4.webp"
               mandalaPosition="bottom-right"
               mandalaScale={0.6}
-              extraSubtitle="Todas las Hamburguesas vienen con papas y gaseosa linea Coca Cola."
+              customTagName="COMIDAS FULL"
+              tagColor="rgb(75, 128, 68)"
+              tagFont="full"
+              customTitle="Disfrutá una experiencia con sabor único."
+              titleColor="rgb(75, 128, 68)"
+              titleFont="din"
+              customCtaText="MIRÁ TODO LO QUE HAY"
+              ctaColor="rgb(75, 128, 68)"
+              ctaFont="full"
+              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+              ctaArrowColor="green"
+              customSubtitle="Todas vienen en combo con papas y bebida de linea Coca Cola incluidas."
+              subtitleColor="#FFFFFF"
+              subtitlePosition="below-cta"
+              priceColor="rgb(75, 128, 68)"
             />
           </div>
 
@@ -482,6 +496,19 @@ export default function FullClient({
               imagenBack="/assets/ypf imagenes/back-2.webp"
               mandalaPosition="top-left"
               mandalaScale={0.6}
+              customTagName="CAFETERÍA"
+              tagColor="rgb(237, 189, 56)"
+              tagFont="full"
+              customTitle="Lo primero es el café."
+              titleColor="rgb(237, 189, 56)"
+              titleFont="din"
+              customSubtitle="El café más elegido por los argentinos."
+              subtitleColor="rgb(237, 189, 56)"
+              customCtaText="MIRÁ TODO LO QUE HAY"
+              ctaColor="rgb(237, 189, 56)"
+              ctaFont="full"
+              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+              ctaArrowColor="yellow"
             />
           </div>
 
@@ -495,6 +522,18 @@ export default function FullClient({
               imagenBack="/assets/ypf imagenes/back-5.webp"
               mandalaPosition="top-right"
               mandalaScale={0.6}
+              customTagName="PRODUCTOS FULL"
+              tagColor="rgb(237, 189, 56)"
+              tagFont="full"
+              customTitle="La mejor calidad con sello propio."
+              titleColor="rgb(237, 189, 56)"
+              titleFont="din"
+              customSubtitle=""
+              customCtaText={"MIRÁ TODO LO QUE TE\nVAS A QUERER LLEVAR"}
+              ctaColor="rgb(237, 189, 56)"
+              ctaFont="full"
+              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+              ctaArrowColor="yellow"
             />
           </div>
 
@@ -504,10 +543,23 @@ export default function FullClient({
               id="sin-tacc"
               categoria={catSinTacc}
               productos={fullSinTacc}
-              colorFondo="#041E15"
+              colorFondo="rgb(144, 128, 112)"
               imagenBack="/assets/ypf imagenes/back-3.webp"
               mandalaPosition="bottom-left"
               mandalaScale={0.6}
+              customTagName="PRODUCTOS SIN TACC"
+              tagColor="#FFFFFF"
+              tagFont="full"
+              customTitle="Sabor sin preocupaciones."
+              titleColor="#FFFFFF"
+              titleFont="din"
+              customSubtitle="Cero TACC, cien por ciento sabor."
+              subtitleColor="#FFFFFF"
+              customCtaText="MIRÁ TODO LO QUE HAY"
+              ctaColor="#FFFFFF"
+              ctaFont="full"
+              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+              ctaArrowColor="white"
             />
           </div>
 
@@ -591,7 +643,21 @@ export default function FullClient({
               imagenBack="/assets/ypf imagenes/back-4.webp"
               mandalaPosition="bottom-right"
               mandalaScale={0.6}
-              extraSubtitle="Todas las Hamburguesas vienen con papas y gaseosa linea Coca Cola."
+              customTagName="COMIDAS FULL"
+              tagColor="rgb(75, 128, 68)"
+              tagFont="full"
+              customTitle="Disfrutá una experiencia con sabor único."
+              titleColor="rgb(75, 128, 68)"
+              titleFont="din"
+              customCtaText="MIRÁ TODO LO QUE HAY"
+              ctaColor="rgb(75, 128, 68)"
+              ctaFont="full"
+              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+              ctaArrowColor="green"
+              customSubtitle="Todas vienen en combo con papas y bebida de linea Coca Cola incluidas."
+              subtitleColor="#FFFFFF"
+              subtitlePosition="below-cta"
+              priceColor="rgb(75, 128, 68)"
             />
             <FullCategorySection
               id="cafeteria"
@@ -601,6 +667,19 @@ export default function FullClient({
               imagenBack="/assets/ypf imagenes/back-2.webp"
               mandalaPosition="top-left"
               mandalaScale={0.6}
+              customTagName="CAFETERÍA"
+              tagColor="rgb(237, 189, 56)"
+              tagFont="full"
+              customTitle="Lo primero es el café."
+              titleColor="rgb(237, 189, 56)"
+              titleFont="din"
+              customSubtitle="El café más elegido por los argentinos."
+              subtitleColor="rgb(237, 189, 56)"
+              customCtaText="MIRÁ TODO LO QUE HAY"
+              ctaColor="rgb(237, 189, 56)"
+              ctaFont="full"
+              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+              ctaArrowColor="yellow"
             />
             <FullCategorySection
               id="productos-full"
@@ -610,15 +689,40 @@ export default function FullClient({
               imagenBack="/assets/ypf imagenes/back-5.webp"
               mandalaPosition="top-right"
               mandalaScale={0.6}
+              customTagName="PRODUCTOS FULL"
+              tagColor="rgb(237, 189, 56)"
+              tagFont="full"
+              customTitle="La mejor calidad con sello propio."
+              titleColor="rgb(237, 189, 56)"
+              titleFont="din"
+              customSubtitle=""
+              customCtaText={"MIRÁ TODO LO QUE TE\nVAS A QUERER LLEVAR"}
+              ctaColor="rgb(237, 189, 56)"
+              ctaFont="full"
+              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+              ctaArrowColor="yellow"
             />
             <FullCategorySection
               id="sin-tacc"
               categoria={catSinTacc}
               productos={fullSinTacc}
-              colorFondo="#041E15"
+              colorFondo="rgb(144, 128, 112)"
               imagenBack="/assets/ypf imagenes/back-3.webp"
               mandalaPosition="bottom-left"
               mandalaScale={0.6}
+              customTagName="PRODUCTOS SIN TACC"
+              tagColor="#FFFFFF"
+              tagFont="full"
+              customTitle="Sabor sin preocupaciones."
+              titleColor="#FFFFFF"
+              titleFont="din"
+              customSubtitle="Cero TACC, cien por ciento sabor."
+              subtitleColor="#FFFFFF"
+              customCtaText="MIRÁ TODO LO QUE HAY"
+              ctaColor="#FFFFFF"
+              ctaFont="full"
+              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+              ctaArrowColor="white"
             />
           </motion.div>
         )}

@@ -146,7 +146,7 @@ export function CombustiblesGrid({ combustibles }: CombustiblesGridProps) {
       <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-28 md:space-y-40">
         
         {/* ═══════════════════════════════════════════════════════════════
-           1. HERO SECTION — EXACT MATCH TO OFFICIAL YPF SCREENSHOT 1
+           1. HERO SECTION — EXACT MATCH TO OFFICIAL YPF SCREENSHOT 1 & 2
            ═══════════════════════════════════════════════════════════════ */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Text Block */}
@@ -157,15 +157,15 @@ export function CombustiblesGrid({ combustibles }: CombustiblesGridProps) {
             variants={FADE_UP_VARIANT}
             className="lg:col-span-5 space-y-4"
           >
-            <span className="text-[11px] font-bold tracking-[0.25em] text-slate-400 uppercase block">
-              ESTACIONES DE SERVICIO
+            <span className="text-2xl sm:text-3xl font-light text-slate-200 block tracking-tight">
+              Nuestros
             </span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight leading-none">
               Combustibles
             </h1>
             <div className="w-16 h-1 bg-[#0080FF] rounded-full my-4" />
             <p className="text-slate-300 text-base sm:text-lg leading-relaxed pt-2 max-w-lg">
-              Encontrá la mejor calidad en combustibles y servicios en nuestras estaciones. Innovación y eficiencia para el mejor rendimiento de tu vehículo.
+              Encontrá la mejor calidad en combustibles y servicios en nuestra estación. Innovación y eficiencia para el mejor rendimiento de tu vehículo.
             </p>
           </motion.div>
 
@@ -194,183 +194,7 @@ export function CombustiblesGrid({ combustibles }: CombustiblesGridProps) {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════
-           2. PRODUCT CARDS GRID — MATCHING SCREENSHOT 2 (BORDERLESS, BIG IMGS, PERFECT ALIGNMENT)
-           ═══════════════════════════════════════════════════════════════ */}
-        <div className="space-y-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-50px' }}
-            variants={FADE_UP_VARIANT}
-            className="flex items-center justify-between border-b border-white/10 pb-4"
-          >
-            <div>
-              <span className="text-xs font-bold text-[#0080FF] uppercase tracking-wider block">Línea Oficial</span>
-              <h2 className="text-2xl sm:text-3xl font-black text-white">Nuestros Combustibles</h2>
-            </div>
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 items-stretch">
-            {activeCombustibles.length > 0 ? (
-              activeCombustibles.map((c, index) => {
-                const color = getCombustibleColor(c.nombre, c.color_hex)
-                const imageSrc = getCombustibleImage(c.nombre)
-                return (
-                  <FuelCard
-                    key={c.id}
-                    combustible={c}
-                    color={color}
-                    imageSrc={imageSrc}
-                    index={index}
-                  />
-                )
-              })
-            ) : (
-              <div className="col-span-full py-12 text-center text-slate-500 italic">
-                Precios no disponibles temporalmente.
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ═══════════════════════════════════════════════════════════════
-           3. CERTIFICACIÓN TOP TIER™ BANNER
-           ═══════════════════════════════════════════════════════════════ */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-50px' }}
-          variants={FADE_UP_VARIANT}
-          className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-[#091124] via-[#0F1C3F] to-[#091124] p-8 sm:p-10 shadow-2xl backdrop-blur-md"
-        >
-          <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-            <div className="flex flex-col sm:flex-row items-center gap-8 text-center sm:text-left">
-              <div className="relative shrink-0">
-                <Image
-                  src="/assets/ypf imagenes/combustibles/logo-top-tier.webp"
-                  alt="Certificación TOP TIER"
-                  width={200}
-                  height={80}
-                  unoptimized
-                  className="h-20 sm:h-24 w-auto object-contain drop-shadow-2xl"
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FFD100] uppercase tracking-wider">
-                  <Award className="w-4 h-4" /> Certificación Internacional
-                </div>
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white leading-snug">
-                  Nuestros combustibles premium cuentan con Certificación TOP TIER™
-                </h3>
-                <p className="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
-                  Un programa promovido por las diez automotrices más importantes del mercado norteamericano que marcan el estándar más alto de calidad para los combustibles a nivel mundial.
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ═══════════════════════════════════════════════════════════════
-           4. 5 PILARES YPF (WIDE ACCORDION / TABS)
-           ═══════════════════════════════════════════════════════════════ */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-50px' }}
-          variants={FADE_UP_VARIANT}
-          className="space-y-8"
-        >
-          <div className="text-center max-w-2xl mx-auto">
-            <span className="text-xs font-bold text-[#0080FF] uppercase tracking-wider block mb-1">
-              Compromiso de Calidad
-            </span>
-            <h3 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-              Los 5 Pilares de Combustibles YPF
-            </h3>
-            <p className="text-slate-400 text-sm sm:text-base mt-2">
-              Tecnología e innovación aplicada para potenciar, cuidar y proteger cada viaje.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left selector buttons */}
-            <div className="lg:col-span-5 space-y-3">
-              {PILARES_YPF.map((pilar) => {
-                const Icon = pilar.icon
-                const isActive = activePilar === pilar.id
-                return (
-                  <button
-                    key={pilar.id}
-                    onClick={() => setActivePilar(pilar.id)}
-                    className={`w-full flex items-center justify-between p-4 sm:p-5 rounded-2xl text-left transition-all duration-300 border ${
-                      isActive
-                        ? 'bg-gradient-to-r from-[#005A9C]/30 to-[#0070C0]/15 border-[#0080FF]/50 text-white shadow-xl'
-                        : 'bg-white/[0.02] border-white/5 text-slate-400 hover:bg-white/[0.05] hover:text-slate-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`p-3 rounded-xl border transition-colors ${
-                          isActive
-                            ? 'bg-[#0070C0]/30 border-[#0080FF]/50 text-[#FFD100]'
-                            : 'bg-white/5 border-white/10 text-slate-400'
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="font-bold text-base text-white">{pilar.title}</div>
-                        <div className="text-xs text-slate-400 line-clamp-1">{pilar.subtitle}</div>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform duration-300 ${
-                        isActive ? 'rotate-180 text-[#0080FF]' : 'text-slate-500'
-                      }`}
-                    />
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Right details box */}
-            <div className="lg:col-span-7">
-              <div className="h-full min-h-[300px] p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-[#0E1626] to-[#0A0F1D] border border-white/10 flex flex-col justify-center relative overflow-hidden shadow-2xl">
-                <div className="absolute right-0 top-0 w-64 h-64 bg-[#0070C0]/10 rounded-full blur-3xl pointer-events-none" />
-                <AnimatePresence mode="wait">
-                  {PILARES_YPF.filter((p) => p.id === activePilar).map((pilar) => {
-                    const Icon = pilar.icon
-                    return (
-                      <motion.div
-                        key={pilar.id}
-                        initial={{ opacity: 0, x: 16 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -16 }}
-                        transition={{ duration: 0.25 }}
-                        className="space-y-5 relative z-10"
-                      >
-                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#0070C0]/20 border border-[#0080FF]/30 text-[#0080FF] text-xs font-bold">
-                          <Icon className="w-4 h-4 text-[#FFD100]" />
-                          {pilar.title}
-                        </div>
-                        <h4 className="text-2xl sm:text-3xl font-black text-white">
-                          {pilar.subtitle}
-                        </h4>
-                        <p className="text-slate-300 text-base sm:text-lg leading-relaxed">
-                          {pilar.content}
-                        </p>
-                      </motion.div>
-                    )
-                  })}
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ═══════════════════════════════════════════════════════════════
-           5. PRODUCTOS ESPECIALES & SITIOS OFICIALES — PROPORTIONAL & CRISP LOGO WEBP IMAGES WITH SMOOTH ENTRANCE ANIMATIONS
+           2. PRODUCTOS ESPECIALES & SITIOS OFICIALES — PROPORTIONAL & CRISP LOGO WEBP IMAGES WITH SMOOTH ENTRANCE ANIMATIONS
            ═══════════════════════════════════════════════════════════════ */}
         <div className="space-y-16 pt-6">
           <motion.div
@@ -562,6 +386,46 @@ export function CombustiblesGrid({ combustibles }: CombustiblesGridProps) {
               </div>
             </motion.div>
 
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════════
+           3. PRODUCT CARDS GRID — MATCHING SCREENSHOT 2 (BORDERLESS, BIG IMGS, PERFECT ALIGNMENT)
+           ═══════════════════════════════════════════════════════════════ */}
+        <div className="space-y-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-50px' }}
+            variants={FADE_UP_VARIANT}
+            className="flex items-center justify-between border-b border-white/10 pb-4"
+          >
+            <div>
+              <span className="text-xs font-bold text-[#0080FF] uppercase tracking-wider block">Línea Oficial</span>
+              <h2 className="text-2xl sm:text-3xl font-black text-white">Nuestros Combustibles</h2>
+            </div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 items-stretch">
+            {activeCombustibles.length > 0 ? (
+              activeCombustibles.map((c, index) => {
+                const color = getCombustibleColor(c.nombre, c.color_hex)
+                const imageSrc = getCombustibleImage(c.nombre)
+                return (
+                  <FuelCard
+                    key={c.id}
+                    combustible={c}
+                    color={color}
+                    imageSrc={imageSrc}
+                    index={index}
+                  />
+                )
+              })
+            ) : (
+              <div className="col-span-full py-12 text-center text-slate-500 italic">
+                Precios no disponibles temporalmente.
+              </div>
+            )}
           </div>
         </div>
 

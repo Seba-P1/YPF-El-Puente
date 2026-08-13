@@ -39,6 +39,21 @@ interface FullCategorySectionProps {
   sectionBgImage?: string
   fullScreenBgImage?: string
   extraSubtitle?: string
+  customTagName?: string
+  tagColor?: string
+  tagFont?: 'full' | 'caveat' | 'din' | 'montserrat'
+  customTitle?: string
+  titleColor?: string
+  titleFont?: 'din' | 'montserrat' | 'full'
+  customSubtitle?: string
+  subtitleColor?: string
+  subtitlePosition?: 'above-cta' | 'below-cta'
+  customCtaText?: string
+  ctaColor?: string
+  ctaFont?: 'full' | 'caveat' | 'din'
+  ctaArrowImage?: string
+  ctaArrowColor?: 'green' | 'yellow' | 'white'
+  priceColor?: string
 }
 
 export function FullCategorySection({
@@ -52,6 +67,21 @@ export function FullCategorySection({
   sectionBgImage,
   fullScreenBgImage,
   extraSubtitle,
+  customTagName,
+  tagColor = 'rgba(255, 255, 255, 0.55)',
+  tagFont = 'caveat',
+  customTitle,
+  titleColor = '#ffffff',
+  titleFont = 'din',
+  customSubtitle,
+  subtitleColor,
+  subtitlePosition = 'above-cta',
+  customCtaText,
+  ctaColor = '#FFD100',
+  ctaFont = 'caveat',
+  ctaArrowImage,
+  ctaArrowColor = 'green',
+  priceColor,
 }: FullCategorySectionProps) {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null)
 
@@ -77,6 +107,52 @@ export function FullCategorySection({
       const scrollAmount = window.innerWidth > 768 ? 600 : 300
       scrollContainerRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' })
     }
+  }
+
+  const getTagFontFamily = () => {
+    if (tagFont === 'full') return 'var(--font-full), sans-serif'
+    if (tagFont === 'din') return 'var(--font-ddin), sans-serif'
+    if (tagFont === 'montserrat') return 'var(--font-montserrat), sans-serif'
+    return 'var(--font-caveat), cursive'
+  }
+
+  const getTitleFontFamily = () => {
+    if (titleFont === 'full') return 'var(--font-full), sans-serif'
+    if (titleFont === 'montserrat') return 'var(--font-montserrat), sans-serif'
+    return 'var(--font-ddin), sans-serif'
+  }
+
+  const getCtaFontFamily = () => {
+    if (ctaFont === 'full') return 'var(--font-full), sans-serif'
+    if (ctaFont === 'din') return 'var(--font-ddin), sans-serif'
+    return 'var(--font-caveat), cursive'
+  }
+
+  const getArrowFilter = () => {
+    if (ctaArrowColor === 'yellow') return 'brightness(0) saturate(100%) invert(79%) sepia(52%) saturate(520%) hue-rotate(5deg) brightness(97%) contrast(91%)'
+    if (ctaArrowColor === 'white') return 'brightness(0) invert(1)'
+    return 'none'
+  }
+
+  const displayTagName = customTagName ?? (categoria?.nombre?.toUpperCase() ?? id.toUpperCase())
+  const displayTitle = customTitle ?? (categoria?.descripcion || categoria?.nombre)
+  const displaySubtitle = customSubtitle !== undefined ? customSubtitle : categoria?.subtitulo
+  const displayCtaText = customCtaText ?? 'Mirá nuestros productos'
+  const activeArrowImage = ctaArrowImage || '/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png'
+
+  const renderSubtitle = () => {
+    if (!displaySubtitle) return null
+    return (
+      <p
+        style={{
+          fontFamily: 'var(--font-ddin), sans-serif',
+          color: subtitleColor || 'rgba(255, 255, 255, 0.65)',
+        }}
+        className={`text-base md:text-lg leading-relaxed font-normal ${subtitlePosition === 'below-cta' ? 'mt-4 mb-2' : 'mb-4'}`}
+      >
+        {displaySubtitle}
+      </p>
+    )
   }
 
   return (
@@ -189,48 +265,100 @@ export function FullCategorySection({
             className="flex-shrink-0 w-[55vw] max-w-[260px] md:max-w-[420px] flex flex-col justify-center snap-center md:mr-8"
           >
             {/* Tag */}
-            <p className="font-[family-name:var(--font-caveat)] text-2xl md:text-3xl text-white/55 font-bold mb-2 tracking-wide">
-              {categoria?.nombre?.toUpperCase() ?? id.toUpperCase()}
+            <p
+              style={{
+                fontFamily: getTagFontFamily(),
+                color: tagColor,
+                fontSize: tagFont === 'full' ? 'clamp(22px, 2.6vw, 34px)' : 'clamp(20px, 2.5vw, 30px)',
+                fontWeight: tagFont === 'full' ? 400 : 700,
+              }}
+              className="mb-2 tracking-widest"
+            >
+              {displayTagName}
             </p>
+
             {/* Title */}
-<h2 className="font-[family-name:var(--font-din-medium)] font-black text-4xl md:text-6xl text-white leading-none mb-3 tracking-tight">
-  {categoria?.descripcion || categoria?.nombre}
-</h2>
-            {/* Subtitle */}
-            {categoria?.subtitulo && (
-              <p className="font-[family-name:var(--font-montserrat)] text-sm md:text-base text-white/60 mb-4 leading-relaxed">
-                {categoria.subtitulo}
-              </p>
-            )}
-            {/* Extra subtitle (e.g. hamburguesas info) */}
+            <h2
+              style={{
+                fontFamily: getTitleFontFamily(),
+                color: titleColor,
+              }}
+              className="font-semibold text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.08] mb-3 tracking-normal"
+            >
+              {displayTitle}
+            </h2>
+
+            {/* Subtitle (Above CTA) */}
+            {subtitlePosition === 'above-cta' && renderSubtitle()}
+
+            {/* Extra subtitle (e.g. hamburguesas combo info) */}
             {extraSubtitle && (
-              <p className="font-[family-name:var(--font-montserrat)] text-xs md:text-sm text-white/40 mb-6 leading-relaxed italic">
+              <p className="font-[family-name:var(--font-ddin)] text-sm md:text-base text-white/80 mb-4 leading-relaxed font-normal">
                 {extraSubtitle}
               </p>
             )}
-            {/* Indicator / CTA */}
-            <button
-              onClick={irAlPrimerProducto}
-              className="flex items-center gap-2.5 text-[#FFD100] text-base md:text-lg font-extrabold tracking-wider uppercase mt-2 bg-transparent border-none p-0 cursor-pointer text-left hover:opacity-80 transition-opacity"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '8px 0',
-              }}
-            >
-              <span className="font-[family-name:var(--font-caveat)] text-2xl md:text-3xl text-[#FFD100]">Mirá nuestros productos</span>
-              <motion.span
-                animate={{ x: [0, 8, 0], scale: [1, 1.25, 1] }}
-                transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
-                className="text-2xl md:text-3xl font-black text-[#FFD100] inline-block"
-              >
-                →
-              </motion.span>
-            </button>
+
+            {/* Indicator / CTA — Inline text with arrow flow */}
+            {(() => {
+              const ctaLines = displayCtaText.split('\n')
+              return (
+                <button
+                  onClick={irAlPrimerProducto}
+                  className="block text-left mt-2 bg-transparent border-none p-0 cursor-pointer hover:opacity-80 transition-opacity max-w-full group"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '8px 0',
+                  }}
+                >
+                  <span className="inline-flex items-center gap-3">
+                    <span className="flex flex-col text-left">
+                      {ctaLines.map((line, idx) => (
+                        <span
+                          key={idx}
+                          style={{
+                            fontFamily: getCtaFontFamily(),
+                            color: ctaColor,
+                            fontSize: ctaFont === 'full' ? 'clamp(17px, 2.1vw, 26px)' : 'clamp(16px, 2vw, 24px)',
+                            letterSpacing: '0.06em',
+                            fontWeight: ctaFont === 'full' ? 400 : 700,
+                            lineHeight: 1.15,
+                          }}
+                          className="uppercase"
+                        >
+                          {line}
+                        </span>
+                      ))}
+                    </span>
+                    {activeArrowImage ? (
+                      <span className="relative w-5 h-5 md:w-7 md:h-7 inline-block shrink-0">
+                        <Image
+                          src={activeArrowImage}
+                          alt=""
+                          fill
+                          sizes="28px"
+                          className="object-contain"
+                          style={{ filter: getArrowFilter() }}
+                        />
+                      </span>
+                    ) : (
+                      <motion.span
+                        animate={{ x: [0, 6, 0] }}
+                        transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
+                        style={{ color: ctaColor }}
+                        className="text-xl md:text-2xl font-black inline-block shrink-0 ml-1"
+                      >
+                        →
+                      </motion.span>
+                    )}
+                  </span>
+                </button>
+              )
+            })()}
+
+            {/* Subtitle (Below CTA) */}
+            {subtitlePosition === 'below-cta' && renderSubtitle()}
           </motion.div>
 
           {/* 2. PRODUCT CARDS */}
@@ -239,6 +367,7 @@ export function FullCategorySection({
               key={producto.id}
               producto={producto}
               index={i}
+              priceColor={priceColor}
             />
           ))}
         </div>
