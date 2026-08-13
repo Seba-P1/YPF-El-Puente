@@ -48,7 +48,6 @@ export function FooterSection() {
           </span>
           {[
             { href: '#combustibles', label: 'Combustibles' },
-            { href: '/boxes', label: 'Boxes' },
             { href: '/full', label: 'Menú FULL' },
           ].map((link) => (
             <Link
