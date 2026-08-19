@@ -3,6 +3,15 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+  maxDuration: 60,
+}
+
 export async function POST(request: NextRequest) {
   try {
     // ── STEP 1: Verify authentication ──
@@ -59,7 +68,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const MAX_ROWS = 2000
+    const MAX_ROWS = 10_000
     const MAX_NOMBRE_LENGTH = 200
     const MAX_CODIGO_LENGTH = 50
     const MAX_PRECIO = 100_000_000
