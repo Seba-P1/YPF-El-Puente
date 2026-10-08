@@ -3,10 +3,83 @@
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import Image from 'next/image'
-import { Upload, X, Loader2, Image as ImageIcon, AlertCircle } from 'lucide-react'
+import { Upload, X, Loader2, Image as ImageIcon, AlertCircle, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { updateProductoImagen } from '@/lib/supabase/actions'
 import { toast } from 'sonner'
+
+// ---------------------------------------------------------------------------
+// Client-side image compression — converts any image to WebP via Canvas API
+// ---------------------------------------------------------------------------
+
+/** Readable file size string */
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+}
+
+/**
+ * Compress an image File to WebP using an OffscreenCanvas (or regular canvas).
+ * Quality 0.92 is visually lossless. Preserves transparency.
+ * Returns a new File ready to upload, always as image/webp.
+ */
+async function compressImageToWebP(
+  file: File,
+  quality = 0.92,
+  maxDimension = 2048,
+): Promise<File> {
+  // If the file is already small WebP, skip compression
+  if (file.type === 'image/webp' && file.size < 500_000) {
+    return file
+  }
+
+  return new Promise((resolve, reject) => {
+    const img = new window.Image()
+    img.onload = () => {
+      try {
+        // Compute scaled dimensions (keep aspect ratio, cap at maxDimension)
+        let { width, height } = img
+        if (width > maxDimension || height > maxDimension) {
+          const ratio = Math.min(maxDimension / width, maxDimension / height)
+          width = Math.round(width * ratio)
+          height = Math.round(height * ratio)
+        }
+
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          reject(new Error('Canvas 2D context not available'))
+          return
+        }
+        ctx.drawImage(img, 0, 0, width, height)
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Image compression failed'))
+              return
+            }
+            const compressedFile = new File(
+              [blob],
+              file.name.replace(/\.\w+$/, '.webp'),
+              { type: 'image/webp' },
+            )
+            resolve(compressedFile)
+          },
+          'image/webp',
+          quality,
+        )
+      } catch (err) {
+        reject(err)
+      }
+    }
+    img.onerror = () => reject(new Error('Failed to load image for compression'))
+    img.src = URL.createObjectURL(file)
+  })
+}
 
 interface ImageUploaderProps {
   productoId: string
@@ -16,7 +89,7 @@ interface ImageUploaderProps {
   onClose: () => void
 }
 
-type UploadState = 'idle' | 'preview' | 'uploading' | 'error'
+type UploadState = 'idle' | 'preview' | 'compressing' | 'uploading' | 'error'
 
 export function ImageUploader({
   productoId,
@@ -27,6 +100,8 @@ export function ImageUploader({
 }: ImageUploaderProps) {
   const [state, setState] = useState<UploadState>('idle')
   const [file, setFile] = useState<File | null>(null)
+  const [originalSize, setOriginalSize] = useState<number>(0)
+  const [compressedSize, setCompressedSize] = useState<number | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -40,6 +115,8 @@ export function ImageUploader({
     if (acceptedFiles.length > 0) {
       const selectedFile = acceptedFiles[0]
       setFile(selectedFile)
+      setOriginalSize(selectedFile.size)
+      setCompressedSize(null)
       setPreviewUrl(URL.createObjectURL(selectedFile))
       setState('preview')
       setErrorMessage(null)
@@ -56,11 +133,14 @@ export function ImageUploader({
     },
     maxFiles: 1,
     multiple: false,
+    // No maxSize — we compress client-side before uploading
   })
 
   const handleCancel = () => {
     setFile(null)
     setPreviewUrl(null)
+    setOriginalSize(0)
+    setCompressedSize(null)
     setState('idle')
     setErrorMessage(null)
   }
@@ -68,14 +148,19 @@ export function ImageUploader({
   const handleUpload = async () => {
     if (!file) return
 
-    setState('uploading')
     const supabase = createClient()
 
     try {
-      // 1. Remove previous image if exists (to keep storage clean)
-      // Extract the path from the URL if needed, or if we had it passed down
+      // --- Phase 1: Compress image to WebP ---
+      setState('compressing')
+      const compressedFile = await compressImageToWebP(file)
+      setCompressedSize(compressedFile.size)
+
+      // --- Phase 2: Upload ---
+      setState('uploading')
+
+      // Remove previous image if exists (to keep storage clean)
       if (imagenActual) {
-        // Find the path part after the bucket name
         const match = imagenActual.match(/productos-imagenes\/(.+)$/)
         if (match && match[1]) {
           const oldPath = match[1]
@@ -83,33 +168,36 @@ export function ImageUploader({
         }
       }
 
-      // 2. Generate new unique file name
-      const extMap: Record<string, string> = { 'image/png': '.png', 'image/jpeg': '.jpg', 'image/webp': '.webp', 'image/gif': '.gif' }
-      const ext = extMap[file.type] || '.png'
-      const fileName = `${productoId}-${Date.now()}${ext}`
+      // Always upload as .webp
+      const fileName = `${productoId}-${Date.now()}.webp`
 
-      // 3. Upload to Supabase Storage
-      const { data, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('productos-imagenes')
-        .upload(fileName, file, {
+        .upload(fileName, compressedFile, {
           cacheControl: '3600',
           upsert: false,
+          contentType: 'image/webp',
         })
 
       if (uploadError) throw uploadError
 
-      // 4. Get Public URL
+      // Get Public URL
       const { data: publicUrlData } = supabase.storage
         .from('productos-imagenes')
         .getPublicUrl(fileName)
 
       const publicUrl = publicUrlData.publicUrl
 
-      // 5. Update product record in DB
+      // Update product record in DB
       await updateProductoImagen({ id: productoId, imagenUrl: publicUrl, imagenPath: fileName })
 
-      // 6. Success handling
-      toast.success('Imagen actualizada correctamente')
+      // Success
+      const saved = originalSize - compressedFile.size
+      const pct = originalSize > 0 ? Math.round((saved / originalSize) * 100) : 0
+      const sizeMsg = saved > 0
+        ? ` (${formatBytes(originalSize)} → ${formatBytes(compressedFile.size)}, -${pct}%)`
+        : ''
+      toast.success(`Imagen actualizada${sizeMsg}`)
       onUploadSuccess(publicUrl, fileName)
       onClose()
 
@@ -133,7 +221,7 @@ export function ImageUploader({
           </div>
           <button
             onClick={onClose}
-            disabled={state === 'uploading'}
+            disabled={state === 'uploading' || state === 'compressing'}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
           >
             <X className="w-5 h-5" />
@@ -158,18 +246,22 @@ export function ImageUploader({
                 Arrastrá y soltá una imagen aquí
               </p>
               <p className="text-center text-sm text-gray-500 max-w-xs">
-                O hacé click para seleccionar un archivo desde tu computadora.
+                O hacé click para seleccionar un archivo desde tu dispositivo.
               </p>
-              <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
+              <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
                 <AlertCircle className="w-4 h-4" />
                 Formatos aceptados: PNG, JPG, WebP, GIF
+              </div>
+              <div className="mt-2 flex items-center gap-2 text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full">
+                <Zap className="w-4 h-4" />
+                Se optimiza automáticamente al subir
               </div>
             </div>
           )}
 
           {state === 'preview' && previewUrl && (
             <div className="w-full flex flex-col items-center animate-in zoom-in-95 duration-200">
-              <div className="relative w-48 h-48 mb-6 border border-gray-200 rounded-2xl overflow-hidden bg-gray-50/50 shadow-inner p-4 flex items-center justify-center">
+              <div className="relative w-48 h-48 mb-4 border border-gray-200 rounded-2xl overflow-hidden bg-gray-50/50 shadow-inner p-4 flex items-center justify-center">
                 <Image
                   src={previewUrl}
                   alt="Preview"
@@ -177,6 +269,14 @@ export function ImageUploader({
                   className="object-contain filter drop-shadow-xl"
                 />
               </div>
+
+              {/* File size info */}
+              <p className="mb-4 text-xs text-gray-500">
+                Tamaño original: <span className="font-semibold text-gray-700">{formatBytes(originalSize)}</span>
+                {originalSize > 500_000 && (
+                  <span className="ml-1 text-emerald-600">→ se comprimirá a WebP</span>
+                )}
+              </p>
               
               <div className="flex gap-4 w-full">
                 <button
@@ -199,12 +299,27 @@ export function ImageUploader({
             </div>
           )}
 
+          {state === 'compressing' && (
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">
+                <Zap className="w-8 h-8 text-emerald-600 animate-pulse" />
+              </div>
+              <p className="font-bold text-gray-900">Optimizando imagen...</p>
+              <p className="text-sm text-gray-500">Convirtiendo a WebP para subida rápida.</p>
+            </div>
+          )}
+
           {state === 'uploading' && (
             <div className="flex flex-col items-center justify-center space-y-4">
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-[#005A9C] animate-spin" />
               </div>
               <p className="font-bold text-gray-900">Subiendo imagen...</p>
+              {compressedSize !== null && originalSize > 0 && compressedSize < originalSize && (
+                <p className="text-sm text-emerald-600 font-medium">
+                  Comprimida: {formatBytes(originalSize)} → {formatBytes(compressedSize)} (-{Math.round(((originalSize - compressedSize) / originalSize) * 100)}%)
+                </p>
+              )}
               <p className="text-sm text-gray-500">Por favor, no cierres esta ventana.</p>
             </div>
           )}
