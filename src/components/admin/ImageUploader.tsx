@@ -9,7 +9,7 @@ import { updateProductoImagen } from '@/lib/supabase/actions'
 import { toast } from 'sonner'
 
 // ---------------------------------------------------------------------------
-// Client-side image compression — converts any image to WebP via Canvas API
+// Client-side image compression — converts any image to WebP (with mobile fallbacks)
 // ---------------------------------------------------------------------------
 
 /** Readable file size string */
@@ -19,27 +19,65 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
 }
 
+interface CompressionResult {
+  blob: Blob
+  contentType: string
+  extension: string
+  finalSize: number
+}
+
 /**
- * Compress an image File to WebP using an OffscreenCanvas (or regular canvas).
- * Quality 0.92 is visually lossless. Preserves transparency.
- * Returns a new File ready to upload, always as image/webp.
+ * Compress an image to WebP (or JPEG fallback) on the client side.
+ * If compression fails or is unsupported on mobile, gracefully returns the original file.
  */
-async function compressImageToWebP(
+async function compressImageForUpload(
   file: File,
   quality = 0.92,
   maxDimension = 2048,
-): Promise<File> {
-  // If the file is already small WebP, skip compression
+): Promise<CompressionResult> {
+  const originalExt = file.name.match(/\.\w+$/)?.[0]?.toLowerCase() || '.jpg'
+
+  // If already small WebP, upload directly
   if (file.type === 'image/webp' && file.size < 500_000) {
-    return file
+    return {
+      blob: file,
+      contentType: 'image/webp',
+      extension: '.webp',
+      finalSize: file.size,
+    }
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
+    let objectUrl = ''
+    try {
+      objectUrl = URL.createObjectURL(file)
+    } catch {
+      resolve({
+        blob: file,
+        contentType: file.type || 'image/jpeg',
+        extension: originalExt,
+        finalSize: file.size,
+      })
+      return
+    }
+
+    const cleanup = () => {
+      try {
+        if (objectUrl) URL.revokeObjectURL(objectUrl)
+      } catch {}
+    }
+
     const img = new window.Image()
+
     img.onload = () => {
       try {
-        // Compute scaled dimensions (keep aspect ratio, cap at maxDimension)
         let { width, height } = img
+        if (!width || !height) {
+          cleanup()
+          resolve({ blob: file, contentType: file.type || 'image/jpeg', extension: originalExt, finalSize: file.size })
+          return
+        }
+
         if (width > maxDimension || height > maxDimension) {
           const ratio = Math.min(maxDimension / width, maxDimension / height)
           width = Math.round(width * ratio)
@@ -51,33 +89,68 @@ async function compressImageToWebP(
         canvas.height = height
         const ctx = canvas.getContext('2d')
         if (!ctx) {
-          reject(new Error('Canvas 2D context not available'))
+          cleanup()
+          resolve({ blob: file, contentType: file.type || 'image/jpeg', extension: originalExt, finalSize: file.size })
           return
         }
-        ctx.drawImage(img, 0, 0, width, height)
 
+        ctx.drawImage(img, 0, 0, width, height)
+        cleanup()
+
+        // Try WebP first
         canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error('Image compression failed'))
+          (webpBlob) => {
+            if (webpBlob && webpBlob.size > 0) {
+              resolve({
+                blob: webpBlob,
+                contentType: 'image/webp',
+                extension: '.webp',
+                finalSize: webpBlob.size,
+              })
               return
             }
-            const compressedFile = new File(
-              [blob],
-              file.name.replace(/\.\w+$/, '.webp'),
-              { type: 'image/webp' },
+
+            // WebP not supported or returned null (e.g. some mobile WebViews) -> Fallback to JPEG
+            canvas.toBlob(
+              (jpegBlob) => {
+                if (jpegBlob && jpegBlob.size > 0) {
+                  resolve({
+                    blob: jpegBlob,
+                    contentType: 'image/jpeg',
+                    extension: '.jpg',
+                    finalSize: jpegBlob.size,
+                  })
+                } else {
+                  // Fallback to original file
+                  resolve({
+                    blob: file,
+                    contentType: file.type || 'image/jpeg',
+                    extension: originalExt,
+                    finalSize: file.size,
+                  })
+                }
+              },
+              'image/jpeg',
+              0.90,
             )
-            resolve(compressedFile)
           },
           'image/webp',
           quality,
         )
       } catch (err) {
-        reject(err)
+        console.warn('Canvas compression error, using original file:', err)
+        cleanup()
+        resolve({ blob: file, contentType: file.type || 'image/jpeg', extension: originalExt, finalSize: file.size })
       }
     }
-    img.onerror = () => reject(new Error('Failed to load image for compression'))
-    img.src = URL.createObjectURL(file)
+
+    img.onerror = () => {
+      console.warn('Could not decode image into Canvas (e.g. HEIC on older browser), uploading original file')
+      cleanup()
+      resolve({ blob: file, contentType: file.type || 'image/jpeg', extension: originalExt, finalSize: file.size })
+    }
+
+    img.src = objectUrl
   })
 }
 
@@ -106,34 +179,50 @@ export function ImageUploader({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
-    if (rejectedFiles.length > 0) {
-      setState('error')
-      setErrorMessage('Formato no válido. Subí una imagen PNG, JPG, WebP o GIF.')
-      return
-    }
-
     if (acceptedFiles.length > 0) {
       const selectedFile = acceptedFiles[0]
       setFile(selectedFile)
       setOriginalSize(selectedFile.size)
       setCompressedSize(null)
-      setPreviewUrl(URL.createObjectURL(selectedFile))
+      try {
+        setPreviewUrl(URL.createObjectURL(selectedFile))
+      } catch {
+        setPreviewUrl(null)
+      }
       setState('preview')
       setErrorMessage(null)
+      return
+    }
+
+    // On mobile devices, camera photos may end up in rejectedFiles due to strict MIME checks (HEIC, uppercase extensions, etc.)
+    if (rejectedFiles.length > 0) {
+      const candidate = rejectedFiles[0]?.file as File | undefined
+      if (candidate && (candidate.type?.startsWith('image/') || /\.(png|jpe?g|webp|gif|heic|heif)$/i.test(candidate.name))) {
+        setFile(candidate)
+        setOriginalSize(candidate.size)
+        setCompressedSize(null)
+        try {
+          setPreviewUrl(URL.createObjectURL(candidate))
+        } catch {
+          setPreviewUrl(null)
+        }
+        setState('preview')
+        setErrorMessage(null)
+        return
+      }
+
+      setState('error')
+      setErrorMessage('Formato no válido. Seleccioná una imagen PNG, JPG, WebP o GIF.')
     }
   }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/png': ['.png'],
-      'image/jpeg': ['.jpg', '.jpeg'],
-      'image/webp': ['.webp'],
-      'image/gif': ['.gif'],
+      'image/*': [],
     },
     maxFiles: 1,
     multiple: false,
-    // No maxSize — we compress client-side before uploading
   })
 
   const handleCancel = () => {
@@ -151,12 +240,12 @@ export function ImageUploader({
     const supabase = createClient()
 
     try {
-      // --- Phase 1: Compress image to WebP ---
+      // --- Phase 1: Compress image (WebP or JPEG fallback) ---
       setState('compressing')
-      const compressedFile = await compressImageToWebP(file)
-      setCompressedSize(compressedFile.size)
+      const { blob, contentType, extension, finalSize } = await compressImageForUpload(file)
+      setCompressedSize(finalSize)
 
-      // --- Phase 2: Upload ---
+      // --- Phase 2: Upload to Supabase Storage ---
       setState('uploading')
 
       // Remove previous image if exists (to keep storage clean)
@@ -168,15 +257,14 @@ export function ImageUploader({
         }
       }
 
-      // Always upload as .webp
-      const fileName = `${productoId}-${Date.now()}.webp`
+      const fileName = `${productoId}-${Date.now()}${extension}`
 
       const { error: uploadError } = await supabase.storage
         .from('productos-imagenes')
-        .upload(fileName, compressedFile, {
+        .upload(fileName, blob, {
           cacheControl: '3600',
           upsert: false,
-          contentType: 'image/webp',
+          contentType,
         })
 
       if (uploadError) throw uploadError
@@ -191,11 +279,11 @@ export function ImageUploader({
       // Update product record in DB
       await updateProductoImagen({ id: productoId, imagenUrl: publicUrl, imagenPath: fileName })
 
-      // Success
-      const saved = originalSize - compressedFile.size
+      // Success feedback
+      const saved = originalSize - finalSize
       const pct = originalSize > 0 ? Math.round((saved / originalSize) * 100) : 0
       const sizeMsg = saved > 0
-        ? ` (${formatBytes(originalSize)} → ${formatBytes(compressedFile.size)}, -${pct}%)`
+        ? ` (${formatBytes(originalSize)} → ${formatBytes(finalSize)}, -${pct}%)`
         : ''
       toast.success(`Imagen actualizada${sizeMsg}`)
       onUploadSuccess(publicUrl, fileName)
@@ -204,7 +292,8 @@ export function ImageUploader({
     } catch (error: any) {
       console.error('Error uploading image:', error)
       setState('error')
-      setErrorMessage(error.message || 'Error desconocido al subir la imagen')
+      const msg = error?.message || (typeof error === 'string' ? error : 'Error desconocido al subir la imagen')
+      setErrorMessage(msg)
     }
   }
 
