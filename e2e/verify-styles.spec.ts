@@ -33,7 +33,7 @@ test.describe('Verificación 2: Estilos Tailwind post-bump', () => {
         const computed = window.getComputedStyle(el)
         return {
           background: computed.background || computed.backgroundColor,
-          backdropFilter: computed.backdropFilter || computed.webkitBackdropFilter,
+          backdropFilter: computed.backdropFilter || (computed as any).webkitBackdropFilter,
           borderRadius: computed.borderRadius,
           border: computed.border,
           boxShadow: computed.boxShadow,
@@ -151,7 +151,7 @@ test.describe('Verificación 2: Estilos Tailwind post-bump', () => {
         const computed = window.getComputedStyle(el)
         return {
           background: computed.background || computed.backgroundColor,
-          backdropFilter: computed.backdropFilter || computed.webkitBackdropFilter,
+          backdropFilter: computed.backdropFilter || (computed as any).webkitBackdropFilter,
           borderRadius: computed.borderRadius,
           border: computed.border,
           boxShadow: computed.boxShadow,

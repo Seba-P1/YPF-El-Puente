@@ -28,6 +28,7 @@ export function FullNavbar({ transparent = false }: { transparent?: boolean } = 
   const isFullPageEnabled = useFullPageStore((state) => state.isEnabled)
   const currentSection = useFullPageStore((state) => state.currentSection)
   const goToSectionById = useFullPageStore((state) => state.goToSectionById)
+  const sectionIds = useFullPageStore((state) => state.sectionIds)
 
   // Sync active section and navbar scrolled style with fullpage slides on desktop
   useEffect(() => {
@@ -36,15 +37,16 @@ export function FullNavbar({ transparent = false }: { transparent?: boolean } = 
     // Scrolled state
     setIsScrolled(currentSection > 0)
 
-    // Map section index to slug
-    if (currentSection === 0) setActiveSection('home')
-    if (currentSection === 1) setActiveSection('mundial')
-    if (currentSection === 2) setActiveSection('hamburguesas')
-    if (currentSection === 3) setActiveSection('cafeteria')
-    if (currentSection === 4) setActiveSection('productos-full')
-    if (currentSection === 5) setActiveSection('sin-tacc')
-    if (currentSection === 7) setActiveSection('sustentabilidad')
-  }, [isFullPageEnabled, currentSection])
+    // Map section index to slug dynamically from sectionIds
+    const currentId = sectionIds[currentSection]
+    if (!currentId || currentId === 'home-hero') {
+      setActiveSection('home')
+    } else if (currentId === 'sustentabilidad-section') {
+      setActiveSection('sustentabilidad')
+    } else {
+      setActiveSection(currentId)
+    }
+  }, [isFullPageEnabled, currentSection, sectionIds])
 
   // Normal window scroll handler (mobile / standard layout)
   useEffect(() => {
@@ -88,6 +90,7 @@ export function FullNavbar({ transparent = false }: { transparent?: boolean } = 
     if (query.length > 0) return
 
     const sections = ['hamburguesas', 'cafeteria', 'productos-full', 'sin-tacc', 'mundial']
+      .filter((id) => sectionIds.length === 0 || sectionIds.includes(id))
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -106,7 +109,7 @@ export function FullNavbar({ transparent = false }: { transparent?: boolean } = 
     })
 
     return () => observer.disconnect()
-  }, [isFullPageEnabled, query])
+  }, [isFullPageEnabled, query, sectionIds])
 
   return (
     <nav
@@ -165,7 +168,9 @@ export function FullNavbar({ transparent = false }: { transparent?: boolean } = 
             { id: 'cafeteria', label: 'Cafetería' },
             { id: 'productos-full', label: 'Productos Full' },
             { id: 'sin-tacc', label: 'Sin Tacc' },
-          ].map((item) => (
+          ]
+            .filter((item) => sectionIds.length === 0 || sectionIds.includes(item.id))
+            .map((item) => (
             <Link
               key={item.id}
               href={`#${item.id}`}

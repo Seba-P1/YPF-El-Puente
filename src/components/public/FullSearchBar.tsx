@@ -13,21 +13,21 @@ export function FullSearchBar() {
   
   const isFullPageEnabled = useFullPageStore((state) => state.isEnabled)
   const currentSection = useFullPageStore((state) => state.currentSection)
+  const sectionIds = useFullPageStore((state) => state.sectionIds)
 
   // Sync state with fullpage slide changes on desktop
   useEffect(() => {
     if (!isFullPageEnabled || query.length > 0) return
 
-    // Show searchbar pills on category slides (indices 1-5)
-    const isCategorySlide = currentSection >= 1 && currentSection <= 5
+    const currentId = sectionIds[currentSection]
+    // Show searchbar pills on category slides
+    const isCategorySlide = !!currentId && currentId !== 'home-hero' && currentId !== 'instagram' && currentId !== 'sustentabilidad-section'
     setShowSearch(isCategorySlide)
 
-    if (currentSection === 1) setActivePill('mundial')
-    if (currentSection === 2) setActivePill('hamburguesas')
-    if (currentSection === 3) setActivePill('cafeteria')
-    if (currentSection === 4) setActivePill('productos-full')
-    if (currentSection === 5) setActivePill('sin-tacc')
-  }, [isFullPageEnabled, currentSection, query])
+    if (currentId && currentId !== 'home-hero') {
+      setActivePill(currentId)
+    }
+  }, [isFullPageEnabled, currentSection, sectionIds, query])
   
   // Intersection Observer para actualizar el pill activo basado en scroll (solo en mobile/normal scroll)
   useEffect(() => {
@@ -35,6 +35,7 @@ export function FullSearchBar() {
     if (query.length > 0) return // No espiar secciones si estamos buscando
     
     const sections = ['mundial', 'hamburguesas', 'cafeteria', 'productos-full', 'sin-tacc']
+      .filter((id) => sectionIds.length === 0 || sectionIds.includes(id))
     
     const observer = new IntersectionObserver(
       (entries) => {
@@ -100,7 +101,7 @@ export function FullSearchBar() {
     }
   }
 
-  const pills = [
+  const allPills = [
     { id: 'todos', label: 'Todos' },
     { id: 'mundial', label: '⚽ Mundial' },
     { id: 'hamburguesas', label: '🍔 Hamburguesas' },
@@ -108,6 +109,8 @@ export function FullSearchBar() {
     { id: 'productos-full', label: '⭐ Exclusivos' },
     { id: 'sin-tacc', label: '🌾 Sin Tacc' }
   ]
+
+  const pills = allPills.filter(p => p.id === 'todos' || sectionIds.length === 0 || sectionIds.includes(p.id))
 
   return (
     <div 

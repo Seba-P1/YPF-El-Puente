@@ -21,7 +21,8 @@ export const metadata: Metadata = createPageMetadata({
   image: '/opengraph-image',
 })
 
-export const revalidate = 60
+export const revalidate = 0
+export const dynamic = 'force-dynamic'
 
 export default async function LandingPage() {
   const [combustibles, servicios, config] = await Promise.all([

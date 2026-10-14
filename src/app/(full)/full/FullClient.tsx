@@ -57,39 +57,44 @@ export default function FullClient({
   const fullSinTacc = initialFullSinTacc ?? []
   const fullMundial = initialFullMundial ?? []
 
-  // Products belonging strictly to the Full Principal page
-  const allProducts = useMemo(() => {
-    const combined = [
-      ...fullHamburguesas,
-      ...fullCafeteria,
-      ...productosFullProducts,
-      ...fullSinTacc,
-      ...fullMundial,
-    ]
-    const map = new Map<string, Producto>()
-    combined.forEach((p) => map.set(p.id, p))
-    return Array.from(map.values())
-  }, [fullHamburguesas, fullCafeteria, productosFullProducts, fullSinTacc, fullMundial])
-
   const catHamb = initialCategorias.find(c => c.slug === 'full_hamburguesas') || { id: '1', nombre: 'Hamburguesas', slug: 'full_hamburguesas', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 1, created_at: '' } as Categoria
   const catCaf = initialCategorias.find(c => c.slug === 'full_cafeteria') || { id: '2', nombre: 'Cafetería', slug: 'full_cafeteria', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 2, created_at: '' } as Categoria
   const catFull = initialCategorias.find(c => c.slug === 'marca_full') || { id: '3', nombre: 'Marca Full', slug: 'marca_full', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 3, created_at: '' } as Categoria
   const catSinTacc = initialCategorias.find(c => c.slug === 'full_sin_tacc') || { id: '4', nombre: 'Sin TACC', slug: 'full_sin_tacc', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 4, created_at: '' } as Categoria
-  const catMundial = initialCategorias.find(c => c.slug === 'full_mundial') || { id: '5', nombre: 'Mundial', slug: 'full_mundial', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: true, orden: 5, created_at: '' } as Categoria
+  const catMundial = initialCategorias.find(c => c.slug === 'full_mundial') || { id: '5', nombre: 'Mundial', slug: 'full_mundial', descripcion: null, subtitulo: null, imagen_fondo_url: null, activa: false, orden: 5, created_at: '' } as Categoria
 
-  // Define section IDs for programmatic navigation mapping
+  const isMundialActiva = catMundial.activa
+  const isHambActiva = catHamb.activa
+  const isCafActiva = catCaf.activa
+  const isFullActiva = catFull.activa
+  const isSinTaccActiva = catSinTacc.activa
+
+  // Products belonging strictly to the active Full Principal sections
+  const allProducts = useMemo(() => {
+    const combined = [
+      ...(isHambActiva ? fullHamburguesas : []),
+      ...(isCafActiva ? fullCafeteria : []),
+      ...(isFullActiva ? productosFullProducts : []),
+      ...(isSinTaccActiva ? fullSinTacc : []),
+      ...(isMundialActiva ? fullMundial : []),
+    ]
+    const map = new Map<string, Producto>()
+    combined.forEach((p) => map.set(p.id, p))
+    return Array.from(map.values())
+  }, [fullHamburguesas, fullCafeteria, productosFullProducts, fullSinTacc, fullMundial, isHambActiva, isCafActiva, isFullActiva, isSinTaccActiva, isMundialActiva])
+
+  // Define section IDs for programmatic navigation mapping (only active sections)
   useEffect(() => {
-    setSectionIds([
-      'home-hero',
-      'mundial',
-      'hamburguesas',
-      'cafeteria',
-      'productos-full',
-      'sin-tacc',
-      'instagram',
-      'sustentabilidad-section'
-    ])
-  }, [setSectionIds])
+    const ids = ['home-hero']
+    if (isMundialActiva) ids.push('mundial')
+    if (isHambActiva) ids.push('hamburguesas')
+    if (isCafActiva) ids.push('cafeteria')
+    if (isFullActiva) ids.push('productos-full')
+    if (isSinTaccActiva) ids.push('sin-tacc')
+    ids.push('instagram')
+    ids.push('sustentabilidad-section')
+    setSectionIds(ids)
+  }, [setSectionIds, isMundialActiva, isHambActiva, isCafActiva, isFullActiva, isSinTaccActiva])
 
   // Navigate to hash target on mount or hash change (e.g. /full#hamburguesas from menu page)
   useEffect(() => {
@@ -453,115 +458,125 @@ export default function FullClient({
             {renderHeroSection()}
           </div>
           
-          {/* Slide 1: Mundial */}
-          <div className="fullpage-section">
-            <FullMundialSection />
-          </div>
+          {/* Slide: Mundial */}
+          {isMundialActiva && (
+            <div className="fullpage-section">
+              <FullMundialSection />
+            </div>
+          )}
 
-          {/* Slide 2: Hamburguesas */}
-          <div className="fullpage-section">
-            <FullCategorySection
-              id="hamburguesas"
-              categoria={catHamb}
-              productos={fullHamburguesas}
-              colorFondo="#DEB23B"
-              imagenBack="/assets/ypf imagenes/back-4.webp"
-              mandalaPosition="bottom-right"
-              mandalaScale={0.6}
-              customTagName="COMIDAS FULL"
-              tagColor="rgb(75, 128, 68)"
-              tagFont="full"
-              customTitle="Disfrutá una experiencia con sabor único."
-              titleColor="rgb(75, 128, 68)"
-              titleFont="din"
-              customCtaText="MIRÁ TODO LO QUE HAY"
-              ctaColor="rgb(75, 128, 68)"
-              ctaFont="full"
-              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
-              ctaArrowColor="green"
-              customSubtitle="Todas vienen en combo con papas y bebida de linea Coca Cola incluidas."
-              subtitleColor="#FFFFFF"
-              subtitlePosition="below-cta"
-              priceColor="rgb(75, 128, 68)"
-            />
-          </div>
+          {/* Slide: Hamburguesas */}
+          {isHambActiva && (
+            <div className="fullpage-section">
+              <FullCategorySection
+                id="hamburguesas"
+                categoria={catHamb}
+                productos={fullHamburguesas}
+                colorFondo="#DEB23B"
+                imagenBack="/assets/ypf imagenes/back-4.webp"
+                mandalaPosition="bottom-right"
+                mandalaScale={0.6}
+                customTagName="COMIDAS FULL"
+                tagColor="rgb(75, 128, 68)"
+                tagFont="full"
+                customTitle="Disfrutá una experiencia con sabor único."
+                titleColor="rgb(75, 128, 68)"
+                titleFont="din"
+                customCtaText="MIRÁ TODO LO QUE HAY"
+                ctaColor="rgb(75, 128, 68)"
+                ctaFont="full"
+                ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+                ctaArrowColor="green"
+                customSubtitle="Todas vienen en combo con papas y bebida de linea Coca Cola incluidas."
+                subtitleColor="#FFFFFF"
+                subtitlePosition="below-cta"
+                priceColor="rgb(75, 128, 68)"
+              />
+            </div>
+          )}
 
-          {/* Slide 3: Cafetería */}
-          <div className="fullpage-section">
-            <FullCategorySection
-              id="cafeteria"
-              categoria={catCaf}
-              productos={fullCafeteria}
-              colorFondo="#8A4A39"
-              imagenBack="/assets/ypf imagenes/back-2.webp"
-              mandalaPosition="top-left"
-              mandalaScale={0.6}
-              customTagName="CAFETERÍA"
-              tagColor="rgb(237, 189, 56)"
-              tagFont="full"
-              customTitle="Lo primero es el café."
-              titleColor="rgb(237, 189, 56)"
-              titleFont="din"
-              customSubtitle="El café más elegido por los argentinos."
-              subtitleColor="rgb(237, 189, 56)"
-              customCtaText="MIRÁ TODO LO QUE HAY"
-              ctaColor="rgb(237, 189, 56)"
-              ctaFont="full"
-              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
-              ctaArrowColor="yellow"
-            />
-          </div>
+          {/* Slide: Cafetería */}
+          {isCafActiva && (
+            <div className="fullpage-section">
+              <FullCategorySection
+                id="cafeteria"
+                categoria={catCaf}
+                productos={fullCafeteria}
+                colorFondo="#8A4A39"
+                imagenBack="/assets/ypf imagenes/back-2.webp"
+                mandalaPosition="top-left"
+                mandalaScale={0.6}
+                customTagName="CAFETERÍA"
+                tagColor="rgb(237, 189, 56)"
+                tagFont="full"
+                customTitle="Lo primero es el café."
+                titleColor="rgb(237, 189, 56)"
+                titleFont="din"
+                customSubtitle="El café más elegido por los argentinos."
+                subtitleColor="rgb(237, 189, 56)"
+                customCtaText="MIRÁ TODO LO QUE HAY"
+                ctaColor="rgb(237, 189, 56)"
+                ctaFont="full"
+                ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+                ctaArrowColor="yellow"
+              />
+            </div>
+          )}
 
-          {/* Slide 4: Productos Full */}
-          <div className="fullpage-section">
-            <FullCategorySection
-              id="productos-full"
-              categoria={catFull}
-              productos={productosFullProducts}
-              colorFondo="#CA7E31"
-              imagenBack="/assets/ypf imagenes/back-5.webp"
-              mandalaPosition="top-right"
-              mandalaScale={0.6}
-              customTagName="PRODUCTOS FULL"
-              tagColor="rgb(237, 189, 56)"
-              tagFont="full"
-              customTitle="La mejor calidad con sello propio."
-              titleColor="rgb(237, 189, 56)"
-              titleFont="din"
-              customSubtitle=""
-              customCtaText={"MIRÁ TODO LO QUE TE\nVAS A QUERER LLEVAR"}
-              ctaColor="rgb(237, 189, 56)"
-              ctaFont="full"
-              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
-              ctaArrowColor="yellow"
-            />
-          </div>
+          {/* Slide: Productos Full */}
+          {isFullActiva && (
+            <div className="fullpage-section">
+              <FullCategorySection
+                id="productos-full"
+                categoria={catFull}
+                productos={productosFullProducts}
+                colorFondo="#CA7E31"
+                imagenBack="/assets/ypf imagenes/back-5.webp"
+                mandalaPosition="top-right"
+                mandalaScale={0.6}
+                customTagName="PRODUCTOS FULL"
+                tagColor="rgb(237, 189, 56)"
+                tagFont="full"
+                customTitle="La mejor calidad con sello propio."
+                titleColor="rgb(237, 189, 56)"
+                titleFont="din"
+                customSubtitle=""
+                customCtaText={"MIRÁ TODO LO QUE TE\nVAS A QUERER LLEVAR"}
+                ctaColor="rgb(237, 189, 56)"
+                ctaFont="full"
+                ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+                ctaArrowColor="yellow"
+              />
+            </div>
+          )}
 
-          {/* Slide 5: Sin TACC */}
-          <div className="fullpage-section">
-            <FullCategorySection
-              id="sin-tacc"
-              categoria={catSinTacc}
-              productos={fullSinTacc}
-              colorFondo="rgb(144, 128, 112)"
-              imagenBack="/assets/ypf imagenes/back-3.webp"
-              mandalaPosition="bottom-left"
-              mandalaScale={0.6}
-              customTagName="PRODUCTOS SIN TACC"
-              tagColor="#FFFFFF"
-              tagFont="full"
-              customTitle="Sabor sin preocupaciones."
-              titleColor="#FFFFFF"
-              titleFont="din"
-              customSubtitle="Cero TACC, cien por ciento sabor."
-              subtitleColor="#FFFFFF"
-              customCtaText="MIRÁ TODO LO QUE HAY"
-              ctaColor="#FFFFFF"
-              ctaFont="full"
-              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
-              ctaArrowColor="white"
-            />
-          </div>
+          {/* Slide: Sin TACC */}
+          {isSinTaccActiva && (
+            <div className="fullpage-section">
+              <FullCategorySection
+                id="sin-tacc"
+                categoria={catSinTacc}
+                productos={fullSinTacc}
+                colorFondo="rgb(144, 128, 112)"
+                imagenBack="/assets/ypf imagenes/back-3.webp"
+                mandalaPosition="bottom-left"
+                mandalaScale={0.6}
+                customTagName="PRODUCTOS SIN TACC"
+                tagColor="#FFFFFF"
+                tagFont="full"
+                customTitle="Sabor sin preocupaciones."
+                titleColor="#FFFFFF"
+                titleFont="din"
+                customSubtitle="Cero TACC, cien por ciento sabor."
+                subtitleColor="#FFFFFF"
+                customCtaText="MIRÁ TODO LO QUE HAY"
+                ctaColor="#FFFFFF"
+                ctaFont="full"
+                ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+                ctaArrowColor="white"
+              />
+            </div>
+          )}
 
           {/* Slide 6: Instagram */}
           <div className="fullpage-section">
@@ -634,96 +649,104 @@ export default function FullClient({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
-            <FullMundialSection />
-            <FullCategorySection
-              id="hamburguesas"
-              categoria={catHamb}
-              productos={fullHamburguesas}
-              colorFondo="#DEB23B"
-              imagenBack="/assets/ypf imagenes/back-4.webp"
-              mandalaPosition="bottom-right"
-              mandalaScale={0.6}
-              customTagName="COMIDAS FULL"
-              tagColor="rgb(75, 128, 68)"
-              tagFont="full"
-              customTitle="Disfrutá una experiencia con sabor único."
-              titleColor="rgb(75, 128, 68)"
-              titleFont="din"
-              customCtaText="MIRÁ TODO LO QUE HAY"
-              ctaColor="rgb(75, 128, 68)"
-              ctaFont="full"
-              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
-              ctaArrowColor="green"
-              customSubtitle="Todas vienen en combo con papas y bebida de linea Coca Cola incluidas."
-              subtitleColor="#FFFFFF"
-              subtitlePosition="below-cta"
-              priceColor="rgb(75, 128, 68)"
-            />
-            <FullCategorySection
-              id="cafeteria"
-              categoria={catCaf}
-              productos={fullCafeteria}
-              colorFondo="#8A4A39"
-              imagenBack="/assets/ypf imagenes/back-2.webp"
-              mandalaPosition="top-left"
-              mandalaScale={0.6}
-              customTagName="CAFETERÍA"
-              tagColor="rgb(237, 189, 56)"
-              tagFont="full"
-              customTitle="Lo primero es el café."
-              titleColor="rgb(237, 189, 56)"
-              titleFont="din"
-              customSubtitle="El café más elegido por los argentinos."
-              subtitleColor="rgb(237, 189, 56)"
-              customCtaText="MIRÁ TODO LO QUE HAY"
-              ctaColor="rgb(237, 189, 56)"
-              ctaFont="full"
-              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
-              ctaArrowColor="yellow"
-            />
-            <FullCategorySection
-              id="productos-full"
-              categoria={catFull}
-              productos={productosFullProducts}
-              colorFondo="#CA7E31"
-              imagenBack="/assets/ypf imagenes/back-5.webp"
-              mandalaPosition="top-right"
-              mandalaScale={0.6}
-              customTagName="PRODUCTOS FULL"
-              tagColor="rgb(237, 189, 56)"
-              tagFont="full"
-              customTitle="La mejor calidad con sello propio."
-              titleColor="rgb(237, 189, 56)"
-              titleFont="din"
-              customSubtitle=""
-              customCtaText={"MIRÁ TODO LO QUE TE\nVAS A QUERER LLEVAR"}
-              ctaColor="rgb(237, 189, 56)"
-              ctaFont="full"
-              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
-              ctaArrowColor="yellow"
-            />
-            <FullCategorySection
-              id="sin-tacc"
-              categoria={catSinTacc}
-              productos={fullSinTacc}
-              colorFondo="rgb(144, 128, 112)"
-              imagenBack="/assets/ypf imagenes/back-3.webp"
-              mandalaPosition="bottom-left"
-              mandalaScale={0.6}
-              customTagName="PRODUCTOS SIN TACC"
-              tagColor="#FFFFFF"
-              tagFont="full"
-              customTitle="Sabor sin preocupaciones."
-              titleColor="#FFFFFF"
-              titleFont="din"
-              customSubtitle="Cero TACC, cien por ciento sabor."
-              subtitleColor="#FFFFFF"
-              customCtaText="MIRÁ TODO LO QUE HAY"
-              ctaColor="#FFFFFF"
-              ctaFont="full"
-              ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
-              ctaArrowColor="white"
-            />
+            {isMundialActiva && <FullMundialSection />}
+            {isHambActiva && (
+              <FullCategorySection
+                id="hamburguesas"
+                categoria={catHamb}
+                productos={fullHamburguesas}
+                colorFondo="#DEB23B"
+                imagenBack="/assets/ypf imagenes/back-4.webp"
+                mandalaPosition="bottom-right"
+                mandalaScale={0.6}
+                customTagName="COMIDAS FULL"
+                tagColor="rgb(75, 128, 68)"
+                tagFont="full"
+                customTitle="Disfrutá una experiencia con sabor único."
+                titleColor="rgb(75, 128, 68)"
+                titleFont="din"
+                customCtaText="MIRÁ TODO LO QUE HAY"
+                ctaColor="rgb(75, 128, 68)"
+                ctaFont="full"
+                ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+                ctaArrowColor="green"
+                customSubtitle="Todas vienen en combo con papas y bebida de linea Coca Cola incluidas."
+                subtitleColor="#FFFFFF"
+                subtitlePosition="below-cta"
+                priceColor="rgb(75, 128, 68)"
+              />
+            )}
+            {isCafActiva && (
+              <FullCategorySection
+                id="cafeteria"
+                categoria={catCaf}
+                productos={fullCafeteria}
+                colorFondo="#8A4A39"
+                imagenBack="/assets/ypf imagenes/back-2.webp"
+                mandalaPosition="top-left"
+                mandalaScale={0.6}
+                customTagName="CAFETERÍA"
+                tagColor="rgb(237, 189, 56)"
+                tagFont="full"
+                customTitle="Lo primero es el café."
+                titleColor="rgb(237, 189, 56)"
+                titleFont="din"
+                customSubtitle="El café más elegido por los argentinos."
+                subtitleColor="rgb(237, 189, 56)"
+                customCtaText="MIRÁ TODO LO QUE HAY"
+                ctaColor="rgb(237, 189, 56)"
+                ctaFont="full"
+                ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+                ctaArrowColor="yellow"
+              />
+            )}
+            {isFullActiva && (
+              <FullCategorySection
+                id="productos-full"
+                categoria={catFull}
+                productos={productosFullProducts}
+                colorFondo="#CA7E31"
+                imagenBack="/assets/ypf imagenes/back-5.webp"
+                mandalaPosition="top-right"
+                mandalaScale={0.6}
+                customTagName="PRODUCTOS FULL"
+                tagColor="rgb(237, 189, 56)"
+                tagFont="full"
+                customTitle="La mejor calidad con sello propio."
+                titleColor="rgb(237, 189, 56)"
+                titleFont="din"
+                customSubtitle=""
+                customCtaText={"MIRÁ TODO LO QUE TE\nVAS A QUERER LLEVAR"}
+                ctaColor="rgb(237, 189, 56)"
+                ctaFont="full"
+                ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+                ctaArrowColor="yellow"
+              />
+            )}
+            {isSinTaccActiva && (
+              <FullCategorySection
+                id="sin-tacc"
+                categoria={catSinTacc}
+                productos={fullSinTacc}
+                colorFondo="rgb(144, 128, 112)"
+                imagenBack="/assets/ypf imagenes/back-3.webp"
+                mandalaPosition="bottom-left"
+                mandalaScale={0.6}
+                customTagName="PRODUCTOS SIN TACC"
+                tagColor="#FFFFFF"
+                tagFont="full"
+                customTitle="Sabor sin preocupaciones."
+                titleColor="#FFFFFF"
+                titleFont="din"
+                customSubtitle="Cero TACC, cien por ciento sabor."
+                subtitleColor="#FFFFFF"
+                customCtaText="MIRÁ TODO LO QUE HAY"
+                ctaColor="#FFFFFF"
+                ctaFont="full"
+                ctaArrowImage="/assets/ypf imagenes/full_hamburguesas/comidas-full-flecha.png"
+                ctaArrowColor="white"
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

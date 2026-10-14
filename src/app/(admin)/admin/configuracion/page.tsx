@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Settings, Save, Loader2, MessageSquare, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { updateConfiguracion } from '@/lib/supabase/actions'
 import { toast } from 'sonner'
 import { GlassCard } from '@/components/admin/ui/glass-card'
 import { Button } from '@/components/ui/button'
@@ -84,18 +85,9 @@ export default function AdminConfiguracionPage() {
     setSaving(true)
 
     try {
-      const entries = Object.entries(config) as [keyof ConfigFields, string][]
-
-      for (const [clave, valor] of entries) {
-        if (valor !== originalConfig[clave]) {
-          const { error } = await supabase
-            .from('configuracion_tienda')
-            .upsert({ clave, valor }, { onConflict: 'clave' })
-
-          if (error) {
-            throw new Error(`Error actualizando "${clave}": ${error.message}`)
-          }
-        }
+      const res = await updateConfiguracion({ configs: config as unknown as Record<string, string> })
+      if (!res.ok) {
+        throw new Error(res.error)
       }
 
       setOriginalConfig({ ...config })

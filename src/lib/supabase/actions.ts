@@ -478,6 +478,10 @@ export const updateCategoriaActiva = withAdminAction(
 
     if (error) throw new Error(`Error updating Categoria activa: ${error.message}`)
     revalidatePath('/admin/categorias')
+    revalidatePath('/admin/full-principal')
+    revalidatePath('/full')
+    revalidatePath('/full/menu')
+    revalidatePath('/')
     return { id, activa }
   },
   { rateLimitKey: 'update-categoria-activa', maxPerMinute: 60 }
@@ -632,7 +636,10 @@ export const updateCategoriaActivaPorSlug = withAdminAction(
 
     if (error) throw new Error(`Error al cambiar estado de sección: ${error.message}`)
     revalidatePath('/admin/full-principal')
+    revalidatePath('/admin/categorias')
     revalidatePath('/full')
+    revalidatePath('/full/menu')
+    revalidatePath('/')
     return { slug, activa }
   },
   { rateLimitKey: 'update-categoria-slug', maxPerMinute: 60 }
@@ -920,4 +927,27 @@ export const syncInstagramThumbnails = withAdminAction(
     return { synced }
   },
   { rateLimitKey: 'sync-thumbnails', maxPerMinute: 10 }
+)
+
+const updateConfiguracionSchema = z.object({
+  configs: z.record(z.string()),
+})
+
+export const updateConfiguracion = withAdminAction(
+  updateConfiguracionSchema,
+  async ({ configs }) => {
+    const supabase = (await createClient()) as any
+    const entries = Object.entries(configs).map(([clave, valor]) => ({ clave, valor }))
+    const { error } = await supabase
+      .from('configuracion_tienda')
+      .upsert(entries, { onConflict: 'clave' })
+
+    if (error) throw new Error(`Error al actualizar configuración: ${error.message}`)
+    revalidatePath('/')
+    revalidatePath('/full')
+    revalidatePath('/full/menu')
+    revalidatePath('/admin/configuracion')
+    return { ok: true }
+  },
+  { rateLimitKey: 'update-configuracion', maxPerMinute: 60 }
 )
